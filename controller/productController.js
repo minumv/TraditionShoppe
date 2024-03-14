@@ -126,7 +126,7 @@ const submitProducts = async (req,res)=>{
             size:req.body.size,
             weight:req.body.weight,
             images:req.uploadedFiles ,
-            status:true
+            status:'new'
         })
 
         console.log('Final Product:', product);

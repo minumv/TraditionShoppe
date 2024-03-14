@@ -51,8 +51,7 @@ userRoute.get("/signin/otpPage",userController.loadOtp)
 userRoute.get("/",userAuthent.isAuthenticated,userController.loadIndex)
 userRoute.get("/index",userController.loadIndex)
 userRoute.get("/home",userAuthent.isAuthenticated,userController.loadHome)
-userRoute.get("/allproducts",userAuthent.isAuthenticated,userController.loadAllProducts)
-userRoute.get("/viewProduct/:id",userAuthent.isAuthenticated,userController.loadProductDetail)
+
 
 
 //login process
@@ -80,6 +79,10 @@ userRoute.post('/resendOTP/:id/:email',userController.resendOTP)
 
 //logout routing
 userRoute.get("/logout",userController.logoutFrom)
+
+
+
+
 
 
 

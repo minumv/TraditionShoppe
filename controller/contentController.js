@@ -7,6 +7,97 @@ const Discount = require('../model/discount')
 const List = require('../model/wishlist')
 const bcrypt = require('bcrypt')
 
+
+/***************All products handling****************** */
+
+//load all products
+const loadAllProducts = async (req,res)=>{
+    try{
+            const productQuery = Products.find({status:'active',isListing:true}).exec()            
+            const discountQuery = Discount.find({status:true}).exec()
+            console.log( productQuery);
+            const [products, discounts] = await Promise.all([productQuery,discountQuery]);
+            
+            res.render('content/allproducts',{
+            title : "All Products| TraditionShoppe",
+            user : req.session.user,
+            page : 'All products',            
+            products : products,
+             discounts : discounts,
+            errorMessage:req.flash('errorMessage'),
+            successMessage:req.flash('successMessage')
+
+            
+        })
+
+    }
+    catch(err){
+        console.log(err.message);
+    }
+}
+
+//load all products
+const  getnewHandicrafts = async (req,res)=>{
+    try{
+            const categoryQuery = await Category.find({category_name:'Handicrafts', status : true},{_id:1}).exec()
+            const categoryIds = categoryQuery.map(category => category._id);
+            const productQuery = Products.find({ category: { $in: categoryIds }, status: 'new', isListing: true }).exec();       
+            const discountQuery = Discount.find({status:true}).exec()
+            console.log( productQuery);
+            const [products, discounts] = await Promise.all([productQuery,discountQuery]);
+            
+            res.render('content/allproducts',{
+            title : "All Products| TraditionShoppe",
+            user : req.session.user,
+            page : 'All products',            
+            products : products,
+             discounts : discounts,
+            errorMessage:req.flash('errorMessage'),
+            successMessage:req.flash('successMessage')
+
+            
+        })
+
+    }
+    catch(err){
+        console.log(err.message);
+    }
+}
+
+/*******************product view details************************* */
+const loadProductDetail = async (req,res)=>{
+    try{
+        let id = req.params.id
+        console.log(id);
+        const productQuery = Products.find({_id:id}).exec()
+        const categoryQuery = Category.find({status:true}).exec()
+        const sellerQuery = Seller.find({status:{$ne:'inactive'}}).exec()
+        const discountQuery = Discount.find({status:true}).exec()
+        
+        const [products, categories, sellers, discounts] = await Promise.all([productQuery, categoryQuery, sellerQuery, discountQuery]);
+        console.log( products);
+        console.log( products.product_name);
+        res.render('content/productView',{
+            title: "View Product | TraditionShoppe", 
+            user : req.session.user,           
+            products:products,
+            categories:categories,
+            sellers:sellers,
+            discounts:discounts,          
+            errorMessage:req.flash('errorMessage'),
+            successMessage:req.flash('successMessage')
+        })
+
+    }
+    catch(error){
+
+    }
+}
+
+
+
+
+
 /*********load cart*********/
 const loadCart = async(req,res)=>{
     try{
@@ -172,6 +263,10 @@ const loadSaved = async(req,res)=>{
 
 
 module.exports = {
+    loadAllProducts,
+    loadProductDetail,
+    getnewHandicrafts,
+
     loadCart,
     loadCheckout,
     loadWishlist,

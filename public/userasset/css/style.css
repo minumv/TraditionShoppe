@@ -579,6 +579,7 @@ a {
   box-shadow: 0 0 30px -10px rgba(0, 0, 0, 0.3);
   background: #fff; 
   border-radius: 20px; 
+  overflow: hidden;
 }
   
   .block-4 .block-4-text h3 {
@@ -590,9 +591,16 @@ a {
       .block-4{
         height: 504px;
       }
+     
+      .div-height{
+        height: 400px;
+      }
       .block-4-image{
         height: 346px;
         cursor: pointer;
+      }
+      .block-4-image-1{
+        height: 260px;
       }
       .block-4-text{
         height:142px;

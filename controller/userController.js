@@ -448,60 +448,6 @@ const loadHome = async (req,res)=>{
 }
 
 
-
-//load all products
-const loadAllProducts = async (req,res)=>{
-    try{
-        // const productQuery = Product.find({status:true})
-        // await productQuery.exec().
-        // then(products=>{
-            res.render('user/allproducts',{
-                title : "All Products| TraditionShoppe",
-                user : req.session.user,
-                page : 'All products',
-                // products : products,
-                errorMessage:req.flash('errorMessage'),
-            successMessage:req.flash('successMessage')
-
-            })
-        // })
-
-    }
-    catch(err){
-        console.log(err.message);
-    }
-}
-
-const loadProductDetail = async (req,res)=>{
-    try{
-        let id = req.params.id
-        console.log(id);
-        const productQuery = Products.find({_id:id}).exec()
-        const categoryQuery = Category.find({status:true}).exec()
-        const sellerQuery = Seller.find({status:{$ne:'inactive'}}).exec()
-        const discountQuery = Discount.find({status:true}).exec()
-        
-        const [products, categories, sellers, discounts] = await Promise.all([productQuery, categoryQuery, sellerQuery, discountQuery]);
-        console.log( products);
-        console.log( products.product_name);
-        res.render('user/productView',{
-            title: "View Product | TraditionShoppe", 
-            user : req.session.user,           
-            products:products,
-            categories:categories,
-            sellers:sellers,
-            discounts:discounts,          
-            errorMessage:req.flash('errorMessage'),
-            successMessage:req.flash('successMessage')
-        })
-
-    }
-    catch(error){
-
-    }
-}
-
-
 const logoutFrom = async(req,res)=>{
     try{
         req.flash("successMessage", "You have been logged out.");
@@ -525,16 +471,16 @@ module.exports = {
     loadSignup,
     loadOtp,
     loadHome,
-    loadIndex,
-    loadAllProducts,
-    loadProductDetail,
+    loadIndex,    
     customerSignup,
     sendOtpEmail,
     loadverifyOTPMail,
     verifyOTPMail,
     loadOTPSuccess,
     resendOTP,
-    logoutFrom
+    logoutFrom,
+   
+
     // successLogin
 
     
