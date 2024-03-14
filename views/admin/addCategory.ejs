@@ -1,0 +1,36 @@
+<%- include('../layout/adminHeader') %>
+<section>   
+      <div class="container">
+        <form role="form"  action="/addCategory" method="post">    
+        <div class="row ">                    
+            <div class="col-6">
+                <div class="card card-plain">
+                    <div class="card-header">
+                      <h4 class="font-weight-bolder">Add new Category</h4>
+                      <!-- <p class="mb-0">Enter your email and password to register</p> -->
+                    </div>
+
+                    <div class="card-body">             
+                      <div class="input-group input-group-outline mb-3">
+                         <input type="text" name="name" class="form-control" placeholder="Name">
+                      </div>
+                     
+                      <div class="input-group input-group-outline mb-3">                  
+                        <textarea type="text" name="description" class="form-control" placeholder="Description"></textarea>
+                      </div>                    
+                                           
+                        <div class="text-center d-flex justify-content-end">                         
+                            <input type="submit"    class="btn btn-lg bg-gradient-primary btn-lg w-100 mt-4 mb-0 me-2">Add</button>
+                         </div>
+                      
+                    </div>
+                  
+                </div> 
+            </div>             
+          </div> 
+        </form>        
+       </div>   
+  </section>
+
+
+  <%- include('../layout/adminFooter') %>

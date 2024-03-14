@@ -1,0 +1,44 @@
+<%- include('../layout/authheader') %>
+
+<body style="background-image: none;">
+    <div class="container">
+        <div class="d-flex justify-content-center h-100">
+            <div class="card" style="height: 300px; background-color:transparent;">
+                <div class="card-header" style="background-color: rgb(96, 9, 9)">
+                    <h3>Verify Your Mobile</h3>
+                    
+                </div>
+                <div class="card-body " tyle="background-color: white">
+                    <form action="/verify/<%=userId %>" method="post">
+                        <div class="row">
+                            <!-- 4 boxes for digits -->
+                            <div class="col">
+                                <input type="password" class="form-control" name="digit1" >
+                            </div>                          
+                            <div class="col">
+                                <input type="password" class="form-control" name="digit2" >
+                            </div>
+                            <div class="col">
+                                <input type="password" class="form-control" name="digit3" >
+                            </div>
+                            <div class="col">
+                                <input type="password" class="form-control" name="digit4" >
+                            </div>                       
+                        </div>
+                        <div class="row justify-content-end">
+                            <div class="col text-dark"><label for="">Time Remaining</label></div>
+                            <div class="col text-info">
+                                <input type="submit" formaction="/resendOTP/<%=userId%>/<%=email%>" value="Resend" class="bg-transparent text-info text-center">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <input type="submit" formaction="/verifyOTP/<%=userId%>" value="Verify" class="btn float-right login_btn">
+                        </div>
+                        <!-- resend timer add -->
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <%- include('../layout/authfooter') %>

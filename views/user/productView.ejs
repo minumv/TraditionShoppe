@@ -1,0 +1,83 @@
+<%- include('../layout/userHeader') %>
+
+<main>
+    <div class="bg-light py-3">
+        <% products.forEach((pdt, index) => { %>
+        <div class="container">
+          <div class="row">
+            <div class="col-md-12 mb-0"><a href="/home">Home</a> <span class="mx-2 mb-0">/</span> <strong class="text-black"><%= pdt.product_name %></strong></div>
+          </div>
+        </div>
+    </div>
+    <div class="container base_container d-flex">
+        <div id="product-view" class="product_view img-zoom-container"  >
+            <div class="main_image">
+                <picture>
+                    <img id="mainImage" src="../upload/<%= pdt.images[0] %>" alt="" >
+                </picture>
+            </div> 
+            <br>           
+            <span class="thump_images">      
+                <% for( let i = 0 ; i< pdt.images.length ; i++ ) {%>          
+                <a href="#mainImage" onclick="updateMainImage('<%= pdt.images[i] %>')" onmouseover="updateMainImage('<%= pdt.images[i] %>')">
+                    <picture>
+                        <img src="../upload/<%= pdt.images[i]%>" alt="Thumbnail">
+                    </picture>
+                    
+                </a>&ensp;&ensp;
+                <% } %>                
+            </span>
+            
+        </div>
+        <div id="myresult" class="img-zoom-result"></div>
+        <% let mrp = 0; %>
+        <% let per = 0; %>        
+        <% discounts.forEach((disc_row, index) => { %>
+        <%console.log(disc_row._id , pdt.discount)%>
+        <%if(disc_row._id .equals( pdt.discount )) {%>
+            <% per = disc_row.percentage %>
+            <% mrp = (pdt.price_unit * (100 - per) * 0.01)  %>
+        <% } %>
+        <% })%>
+
+        <div class="detail_view">
+            <div  class="product-Name">
+                <p><%= pdt.product_name%></p>
+            </div>
+            <div  class="information d-flex">
+                <p class="text-warning">rating </p>&ensp;&ensp; <p class="text-primary">stock</p>&ensp;&ensp; <p class="text-success">ID</p>
+            </div>
+            <div class="price-value">
+                <div class="d-flex"><p class="p-per">-<%= per %> % </p>&ensp;&ensp; <p class="p-price">₹<%= mrp %></p> </div>
+                <p class="p-mrp">M.R.P.: <span >₹<%= pdt.price_unit %></span></p>
+            </div>
+            <!-- <div class="coupon">
+                <span>Coupon </span>
+            </div> -->
+            <div class="product-details">
+                <p class="det-head">Product Details</p>
+                <p class="det-name">Description : <span><%= pdt.description %></span></p>
+                <p class="det-name">Material : <span><%= pdt.material %></span></p>
+                <p class="det-name">Size : <span><%= pdt.size %> inch</span></p>
+                <p class="det-name">Weight : <span><%= pdt.weight %> grams</span></p>
+            </div>
+            <div class="wish-save d-flex">
+                <a class = "link-wish"href="/addtowishlist/<%= pdt._id %>"><span class="icon icon-heart-o">&nbsp;Add to wishlist</span></a>&ensp;&ensp;&ensp;&nbsp;
+                <a class= "link-wish" href="/saveforlater"><span class="icon icon-save">&nbsp;Save for later</span></a>
+            </div>  <br>          
+            <div class="nav-but-div">
+                <a href="/cart"><button class="btn btn-lg bg-success text-white nav-but" >Add to Cart</button></a>&ensp;
+                <a href="/checkout"><button class="btn btn-lg bg-success text-white nav-but" >Buy Now</button></a>
+
+            </div>
+            <div class ="line-div"></div>
+        </div>
+    </div>
+</main>
+
+
+
+<% })%>
+
+
+<%- include('../layout/userFooter') %>

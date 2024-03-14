@@ -1,0 +1,56 @@
+<%- include('../layout/adminHeader') %>
+<section>   
+      <div class="container">
+       
+        <form role="form" action='/admin/categoryChange/<%= categories._id %>' method="post">    
+        <div class="row ">                    
+            <div class="col-6">
+                <div class="card card-plain">
+                    <div class="card-header">
+                      <h4 class="font-weight-bolder">Add new Category</h4>
+                      <!-- <p class="mb-0">Enter your email and password to register</p> -->
+                    </div>
+
+                    <div class="card-body">             
+                      <div class="input-group input-group-outline mb-3">
+                         <input type="text" name="name" class="form-control" value="<%= categories.category_name %>">
+                      </div>
+                     
+                      <div class="input-group input-group-outline mb-3">                  
+                        <textarea type="text" name="description" class="form-control" ><%= categories.description %></textarea>
+                      </div>                    
+                                           
+                        <div class="text-center d-flex justify-content-end">                         
+                            <input type="submit"  value="Update" formaction="/admin/categoryChange/<%= categories._id %>"  class="btn btn-lg bg-gradient-primary btn-lg w-100 mt-4 mb-0 me-2">
+                            <a href="#" id="openModal"  data-modal-target="#modal" class="btn btn-lg bg-gradient-primary btn-lg w-100 mt-4 mb-0 me-2">delete</a>
+                         </div>
+                      
+                    </div>
+                    
+                </div> 
+            </div>             
+          </div> 
+          <div class="modal" id="modal">
+            <div class="closeModal">
+              <a id="closeModal"  data-close-button class="close-button">&times;<a>              
+            </div>
+            <div class="trash-icon">
+              <span ><i class="fas fa-trash"></i></span>
+            </div>
+            <div class="modal-body">
+              Are you sure you want to delete this category?
+            </div>
+            <div class="modal-footer">
+              <a id="cancel" data-close-button class="btnmodal btn btn-lg bg-light btn-lg w-25 mt-4 mb-0 me-2">No, cancel</a>
+              <button type="submit" formaction="/deleteCat/<%= categories._id %>" class="btnmodal btn btn-lg bg-gradient-primary btn-lg w-25 mt-4 mb-0 me-2">Yes, I'm sure</button>
+            </div>
+         </div> 
+        </form>   
+          
+       </div>   
+      
+       <div id="overlay"></div>
+  </section>
+
+
+  <%- include('../layout/adminFooter') %>

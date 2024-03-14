@@ -1,0 +1,65 @@
+<%- include('../layout/adminHeader') %>
+
+<div class="container-fluid py-4">
+  <form action="/newCategory" method="get">
+    <input type = 'submit' value = 'Add Category' class="btn bg-gradient-info" >
+  </form>
+ 
+    <div class="row">    
+      <div class="col-12">
+        <div class="card my-4">
+          <div class="card-header p-0 position-relative  mt-n4 mx-3 z-index-2">
+            <div class="bg-gradient-primary shadow-primary border-radius-lg pt-2 pb-1 text-center">
+              <h6 class="text-white text-capitalize ps-3">Category Details</h6>
+            </div>
+          </div>
+          <div class="card-body px-0 pb-2">
+            <div class="table-responsive p-0">
+              <% if(categories != '') {%>
+              <table class="table align-items-center mb-0">
+                <thead>
+                  <tr>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">S.No</th>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Category Name</th>                    
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Desciption</th>                    
+                    <th class="text-secondary opacity-7"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% categories.forEach((row,index)=>{%>
+                  <tr>
+                    <td>
+                      <div class="d-flex px-2 py-1">                        
+                        <div class="d-flex flex-column justify-content-center">
+                          <h6 class="mb-0 text-sm"><%= index+1 %></h6>                          
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <p class="text-xs font-weight-bold mb-0" style="width:100px; overflow:hidden ;"><%= row.category_name %> </p>
+                    </td>
+                    <td class="align-middle  text-sm" >
+                      <p class="text-xs font-weight-bold mb-0" style="width:150px; overflow:hidden ;"><%= row.description %> </p>
+                    </td>
+                  
+                    <td class="align-middle">
+                      <a href="/admin/categoryChange/<%= row._id %>" class="text-secondary font-weight-bold text-xs" data-toggle="tooltip" data-original-title="Edit user">
+                       Show more
+                      </a>
+                    </td>
+                    
+                  </tr>
+                  <% }) %>
+                </tbody>
+            </table>
+            <% } else {%>
+              <h1 class="text-center text-secondary mt-5">No category found in the database</h1>
+          <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+   
+  </div>
+
+  <%- include('../layout/adminFooter') %>

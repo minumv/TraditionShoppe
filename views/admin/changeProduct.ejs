@@ -1,0 +1,160 @@
+<%- include('../layout/adminHeader') %>
+<section>   
+      <div class="container">
+        <form role="form" id="product-form" action="/update/<%= products._id %>" method="post">    
+        <div class="row ">                    
+            <div class="col-6">
+                <div class="card card-plain">
+                    <div class="card-header">
+                      <h4 class="font-weight-bolder">Add new Products</h4>
+                      <!-- <p class="mb-0">Enter your email and password to register</p> -->
+                    </div>
+
+                    <div class="card-body">             
+                      <div class="input-group input-group-outline mb-3">
+                         <input type="text" class="form-control" value="<%= products.product_name %>">
+                      </div>
+                      <!-- <div class="input-group input-group-outline mb-3 ">                 
+                        <input type="text" class="form-control" value="<%= products.category %>">
+                      </div> -->
+                      <div class="input-group input-group-outline mb-3 d-flex justify-content-center">                  
+                        <div class="dropdown mx-4">
+                          
+                            <button class="btn bg-gradient-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                               Category
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                              <% categories.forEach((row,index)=>{%>                                        
+                                <a class="dropdown-item" href="#"><%= row.category_name %></a>
+                              <%})%>
+                            </div>
+                           
+                        </div>
+                        <div class="dropdown mx-4">
+                           
+                                <button class="btn bg-gradient-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                                  Seller
+                                </button>
+                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                    <% sellers.forEach((row,index)=>{%>
+                                        <a class="dropdown-item" href="#"><%= row.seller_name %></a>
+                                    <%})%>
+                                </div>
+                            
+                        </div>
+                        <div class="dropdown mx-4">
+                           
+                                <button class="btn bg-gradient-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                                  Discount
+                                </button>
+                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                    <% discounts.forEach((row,index)=>{%>
+                                        <a class="dropdown-item" href="#"><%= row.discount_name %></a>
+                                    <%})%>
+                                </div>
+                             
+                        </div>
+                      </div>
+                      <div class="input-group input-group-outline mb-3">                  
+                        <textarea type="text" class="form-control" value=""><%= products.description %></textarea>
+                      </div>
+                      <div class="input-group input-group-outline mb-3">                   
+                          <input type="text" class="form-control" value="<%= products.stock %>">
+                      </div>
+                      <div class="input-group input-group-outline mb-3">                   
+                          <input type="text" class="form-control" value="<%= products.price_unit %>">
+                      </div>
+                      <div class="input-group input-group-outline mb-3 d-flex"> 
+                            <div class="dropdown mx-3">
+                                <button class="btn bg-gradient-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                                 <%= products.material%>
+                                </button>
+                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                  <a class="dropdown-item" href="#">Wood</a>
+                                  <a class="dropdown-item" href="#">Fibre</a>
+                                  <a class="dropdown-item" href="#">Brass</a>                               
+                                  <a class="dropdown-item" href="#">Metal</a>
+                                  <a class="dropdown-item" href="#">Stone</a>
+                                  <a class="dropdown-item" href="#">Bamboo</a>
+                                  <a class="dropdown-item" href="#">Coconut</a>
+                                  <a class="dropdown-item" href="#">Handloom</a>                            
+                                  <a class="dropdown-item" href="#">Others</a>
+                                </div>
+                            </div>
+                            <div class="dropdown mx-3">
+                                <button class="btn bg-gradient-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="flase">
+                                    <%= products.color%>
+                                </button>
+                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                  <a class="dropdown-item" href="#">Orange</a>
+                                  <a class="dropdown-item" href="#">Golden</a>
+                                  <a class="dropdown-item" href="#">Silver</a>
+                                  <a class="dropdown-item" href="#">Green</a>
+                                  <a class="dropdown-item" href="#">Yellow</a>
+                                  <a class="dropdown-item" href="#">Multicolor</a>
+                                  <a class="dropdown-item" href="#">grey</a>
+                                </div>
+                            </div>                  
+                            <div class="input-group input-group-outline mb-3">                   
+                                <input type="text" class="form-control" value="<%= products.size %>">
+                            </div>
+                            <div class="input-group input-group-outline mb-3">                   
+                                <input type="text" class="form-control" value="<%= products.weight %>">
+                            </div>             
+                      </div>
+                      <div class="input-group input-group-outline mb-3 d-flex">  
+                      <div>
+                           <input type="file" class="form-control mx-3" 
+                            value="Images" id="file-input" accept="image/png,image/jpeg" 
+                            onchange="handleFileInputChange(event)"  multiple>
+                            <p id="num-of-files">No files chosen</p>
+                      </div>             
+                    </div>
+                        
+                        <div class="text-center d-flex justify-content-end">                         
+                            <input type="submit" id="editButton" value="Update" formaction="/update/<%= products._id %>"  class="btn btn-lg bg-gradient-primary btn-lg w-100 mt-4 mb-0 me-2">
+                            <input type="submit" id="deleteButton" value="Delete" formaction="/delete/<%= products._id %>"   class="btn btn-lg bg-gradient-primary btn-lg w-100 mt-4 mb-0 me-2">
+                        </div>
+                      
+                    </div>
+                  
+                </div> 
+            </div> 
+            <div class="col-6 d-block " id="images">
+                <div id="img1" class="bg-gradient-primary w-100 d-flex" style="visibility: hidden;">
+                    <div class="d-block">
+                        <img id="inputImg1" style="width: 200px;height:200px" src="" alt="">
+                        <input type="button" value="Crop" onclick="cropImage(1)">
+                    </div>
+                    <div id="outDiv1">
+                        <img id="croppedImg1"  style="width: 200px;height:200px" src="" alt="">
+                    </div>
+                </div>
+                <div id="img2" class="bg-gradient-primary w-100 d-flex" style="visibility: hidden;">
+                    <div class="d-block">
+                        <img id="inputImg2" style="width: 200px;height:200px" src="" alt="">
+                        <input type="button" value="Crop" onclick="cropImage(2)">
+                    </div>
+                    <div id="outDiv1">
+                        <img id="croppedImg2"  style="width: 200px;height:200px" src="" alt="">
+                    </div>
+                </div>
+                <div id="img3" class="bg-gradient-primary w-100 d-flex" style="visibility: hidden;">
+                    <div class="d-block">
+                        <img id="inputImg3" style="width: 200px;height:200px" src="" alt="">
+                        <input type="button" value="Crop" onclick="cropImage(3)">
+                    </div>
+                    <div id="outDiv1">
+                        <img id="croppedImg3"  style="width: 200px;height:200px" src="" alt="">
+                    </div>
+                </div>               
+               <div> 
+                <input type="button" id="uploadButton" style="visibility:hidden;"   class="form-control mr-3" value="Upload"></div>
+            </div> 
+          </div> 
+        </form>        
+       </div>   
+  </section>
+
+
+  <%- include('../layout/adminFooter') %>

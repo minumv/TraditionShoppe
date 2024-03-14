@@ -1,0 +1,77 @@
+<%- include('../layout/adminHeader') %>
+
+<div class="container-fluid py-4">
+    <div class="row">     
+      <div class="col-12">
+        <div class="card my-4">
+          <div class="card-header p-0 position-relative z-index-2">
+            <div class="bg-gradient-primary shadow-primary border-radius-lg pt-2 pb-1">
+              <h6 class="text-white text-capitalize ps-3">User Details</h6>
+            </div>
+          </div>
+          <div class="card-body px-0 pb-2">
+            <div class="table-responsive p-0">
+                <% if(users != '') {%>
+              <table class="table align-items-center mb-0">               
+                <thead>
+                  <tr>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Name</th>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Email</th>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Mobile</th>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
+                    <th class="text-secondary opacity-7"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                    <% users.forEach((row,index)=>{%>
+                  <tr>
+                    <td>
+                      <div class="d-flex px-2 py-1">
+                        <!-- <div>
+                          <img src="../assets/img/team-2.jpg" class="avatar avatar-sm me-3 border-radius-lg" alt="user1">
+                        </div> -->
+                        <div class="d-flex flex-column justify-content-center">
+                          <h6 class="mb-0 text-sm"><%= row.name %></h6>
+                          <!-- <p class="text-xs text-secondary mb-0">john@creative-tim.com</p> -->
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <p class="text-xs font-weight-bold mb-0"><%= row.email %></p>
+                      <!-- <p class="text-xs text-secondary mb-0">Organization</p> -->
+                    </td>
+                    <td class="align-middle  text-sm">
+                        <p class="text-xs font-weight-bold mb-0"><%= row.phone %></p>
+                    </td>
+                    <td class="align-middle ">
+                        <% if (row.status === 'Verified'){ %>
+                            <span class="badge badge-sm bg-gradient-success">Verified</span>
+                        <% } else if(row.status === 'Pending') { %> 
+                            <span class="badge badge-sm bg-gradient-warning">Pending</span>                           
+                        <% } else if(row.status === 'Blocked') { %> 
+                            <span class="badge badge-sm bg-gradient-danger">Blocked</span>   
+                        <% } else if(row.status === 'Deleted') { %> 
+                            <span class="badge badge-sm bg-gradient-secondary">Deleted</span>   
+                        <% } %>     
+                    
+                    </td>
+                    <td class="align-middle">
+                      <a href="/admin/customer/update/<%= row._id %>" class="text-secondary font-weight-bold text-xs" data-toggle="tooltip" data-original-title="Edit user">
+                       Show more
+                      </a>
+                    </td>
+                    
+                  </tr>
+                  <% }) %>
+                </tbody>
+            </table>
+            <% } else {%>
+                <h1 class="text-center text-secondary mt-5">No user found in the database</h1>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%- include('../layout/adminFooter') %>

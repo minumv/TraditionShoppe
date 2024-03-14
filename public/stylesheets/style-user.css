@@ -1,0 +1,132 @@
+/*******************product detail view page*********************/
+.base_container{
+    height:1590px;
+}
+.product_view{
+    width:670px;
+    height :590px;    
+    margin-bottom: 50px;
+    border-radius: 10px;   
+    box-shadow:  0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+.detail_view{
+    width:670px;
+    height :590px;
+    padding-left: 40px;
+    padding-top: 15px;
+}
+.main_image{
+    width:670px;
+    height :590px;
+   
+}
+.main_image img{
+    width:670px;
+    height :590px;
+    border-radius: 10px;
+}
+/* .thump_images picture{
+    width: 100px;
+    height: 100px;
+    padding:10px;
+    background-color: bisque;
+} */
+.thump_images img{
+    width: 90px;
+    height: 90px;
+    border-radius: 5px;
+    box-shadow:  0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+   
+}
+
+.nav-but{
+   font-size: 15px;
+    border:none;
+    width:190px;
+    height:40px;
+    box-shadow:  0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+
+}
+.product-Name{
+    font-size: 25px;
+    color:rgb(40, 35, 35);
+    font-weight: 600;
+    text-transform: uppercase ;
+}
+.p-per{
+    font-size: 23px;
+    padding-top:2px;
+    color:red;
+}
+.p-price{
+    font-size: 26px;
+    color:rgb(11, 11, 11);
+}
+.p-mrp{
+    font-size: 13px;
+    color: rgb(69, 93, 93);
+}
+.p-mrp span{
+    text-decoration: line-through;
+}
+.det-head{
+    font-size: 19px;
+    color:rgb(93, 89, 89);
+    font-weight: 600;
+}
+.det-name{
+    font-size: 15px;
+    color:rgb(168, 150, 15);
+    font-weight: 400;
+    text-shadow:1px 1px 2px pink;
+}
+.det-name span{
+    font-size: 14px;
+    color:rgb(29, 26, 2);
+    font-weight: 200;    
+}
+.link-wish{
+    font-size: 16px;
+    color:rgb(8, 4, 218);
+    font-weight: 200;
+}
+
+/*********image zooming effect************/
+
+.img-zoom-container {
+    position: relative;
+  }
+  
+  .img-zoom-lens {
+    position: absolute;
+    border: 1px solid #d4d4d4;
+    /*set the size of the lens:*/
+    width: 50px;
+    height: 50px;
+  }
+  
+  .img-zoom-result {
+    /* border: 1px solid #d4d4d4;
+    
+    transform: translate(5%, 0) ;
+    z-index: 10;
+    width: 700px;
+    height: 500px; */
+    position: fixed;
+    /* top: 18%;
+    left: 55%; */
+    top: 18%;
+    left: 20%;
+    transform: translate(10%, 0%) ;
+    transition:  200ms ease-in-out ;
+    border: 0;
+    border-radius: 20px;
+    box-shadow: 0 0 1em rgb(0 0 0 /.3);
+    z-index : 199999;
+    visibility: hidden;
+    width: 600px;
+    height:585px;
+    max-width:80%;
+   
+
+  }

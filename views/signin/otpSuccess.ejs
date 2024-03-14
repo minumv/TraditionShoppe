@@ -1,0 +1,32 @@
+<%- include('../layout/authheader') %>
+
+<body style="background-image: none;">
+    <div class="container">
+        <div class="d-flex justify-content-center h-100">
+            <div class="card" style="height: 300px; background-color:transparent;">
+                <div class="card-header" style="background-color: rgb(96, 9, 9)">
+                    <h3>Change Password</h3>
+                    <!-- <div class="d-flex justify-content-end social_icon">
+                        <span><i class="fab fa-facebook-square"></i></span>
+                        <span><i class="fab fa-google-plus-square"></i></span>
+                        <span><i class="fab fa-twitter-square"></i></span>
+                    </div> -->
+                </div>
+                <div class="card-body" tyle="background-color: white">
+                    <form action="/otpSuccess" method="post">
+                        <div class="input-group form-group">
+                            <div class="input-group-prepend">
+                                <!-- <span class="input-group-text"><i class="fas fa-mobile"></i></span> -->
+                            </div>
+                            <lable>Your Account created. Please Log in to the system.</lable>
+                            
+                        </div>                        
+                        <div class="form-group">
+                            <input type="submit" value="login" class="btn float-right login_btn">
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+<%- include('../layout/authfooter') %>   
