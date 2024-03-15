@@ -210,7 +210,13 @@ const loadOtp = async (req,res)=>{
                     .save()
                     .then((result)=>{
                         //handle otp verification
-                        sendOtpEmail(result,res)
+
+                        // const { _id: userId, email } = result;
+                        // sendOtpEmail({ userId, email }, res);
+
+
+                         sendOtpEmail(result,res)
+
                         
                         res.redirect(`/verifyOTP/${result._id}/${result.email}`)
                     })
@@ -253,6 +259,7 @@ const sendOtpEmail = async({_id,email},res)=>{
     try{
         const otp = `${Math.floor(1000+Math.random()*9000)}`;
         
+        console.log("at send : id"+_id,email,otp);
         //mail options
         const mailOptions = {
             from: process.env.AUTH_EMAIL,
@@ -272,6 +279,7 @@ const sendOtpEmail = async({_id,email},res)=>{
 
         //save new otp
         await newOTP.save();
+        console.log(newOTP);
         await transporter.sendMail(mailOptions)
         
        //res.redirect('/signin/otpVerifyPage/_id')
@@ -293,7 +301,7 @@ const sendOtpEmail = async({_id,email},res)=>{
 }
 const loadverifyOTPMail = async(req,res)=>{
     try{        
-
+            console.log("at loading id: "+req.params.id+ " email: "+ req.params.email);
         // let id = req.params.id
         // User.findById(id)
         // .then(otps=>{
@@ -313,12 +321,13 @@ const loadverifyOTPMail = async(req,res)=>{
 const verifyOTPMail = async(req,res)=>{
     try{
         let userId = req.params.id;
+        console.log("userId at  verify : "+userId);
         // let email = req.params.email
         let{ digit1,digit2,digit3,digit4 }=req.body
         let otp = digit1+digit2+digit3+digit4
 
         // let {otp} = [...req.body.digit1,...req.body.digit2,...req.body.digit3,...req.body.digit4];
-        console.log(userId,otp);
+        console.log("userid : "+userId +" otp : "+otp);
         
         if(!userId || !otp){
             throw new error("Empty otp details are not allowed")
@@ -326,7 +335,7 @@ const verifyOTPMail = async(req,res)=>{
             const userOtpNumber = await Otp.find({user_id:userId})
         
            // res.json({message:userOtpNumber})
-            console.log(userOtpNumber);
+            console.log("user at otp table" + userOtpNumber);
 
             if(userOtpNumber.length <= 0){
                 //no record found
@@ -353,7 +362,7 @@ const verifyOTPMail = async(req,res)=>{
                         //success
                         await User.updateOne({_id:userId},{isVerifiedByOtp:true})
                         Otp.deleteMany({userId})
-                        res.redirect('/otpSuccess')
+                        res.redirect('/signin/userLogin')
                         // res.json({
                         //     status: "VERIFIED",
                         //     message: `User email verified successfully`
@@ -387,15 +396,16 @@ const loadOTPSuccess = async(req,res)=>{
    // resend otp
     const resendOTP = async(req,res)=>{
         try{
-            let userId=req.params.id
+            let _id=req.params.id
             let email=req.params.email
-
+            console.log("at resend userid : " + _id + " email : "+ email);
             // if(!userId || !email){
             //     throw Error("Empty user details are not allowed!!")
             // }
-            //await Otp.deleteMany({user_id:userId})
-            sendOtpEmail({userId, email},res)
-            res.redirect(`/verifyOTP/${userId}/${email}`)
+            await Otp.deleteMany({user_id:_id})
+            console.log("at resend after delete userid : " + _id + " email : "+ email);
+            sendOtpEmail({_id, email},res)
+            res.redirect(`/verifyOTP/${_id}/${email}`)
         }
         catch(err){
             console.log(err.message);

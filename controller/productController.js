@@ -15,7 +15,7 @@ const bcrypt = require('bcrypt')
   // load products page
   const loadProducts = async(req,res)=>{
     try{
-        const productQuery = Products.find({status:true}).exec()
+        const productQuery = Products.find().exec()
         const categoryQuery = Category.find({status:true}).exec()
         const sellerQuery = Seller.find({status:true}).exec()
         const discountQuery = Discount.find({status:true}).exec()
@@ -43,7 +43,7 @@ const bcrypt = require('bcrypt')
 const loadNewProducts = async(req,res)=>{
     try{
         const categoryQuery = Category.find({status:true}).exec()
-        const sellerQuery = Seller.find({status:true}).exec()
+        const sellerQuery = Seller.find({status:{$ne:'inactive'}}).exec()
         const discountQuery = Discount.find({status:true}).exec()
 
         const [categories, sellers, discounts] = await Promise.all([categoryQuery, sellerQuery, discountQuery]);
@@ -72,10 +72,10 @@ const storeDropdownValues = async (req,res,next)=>{
 
         // Extract dropdown values from the request body
         console.log(req.body);
-        const { category, seller, discount, material, color } = req.body;
+        const { category, seller, discount, material, color, product_type } = req.body;
 
         // Store dropdown values in session
-        req.session.dropdownValues = { category, seller, discount, material, color  };  
+        req.session.dropdownValues = { category, seller, discount, material, color, product_type  };  
         console.log("session values in storeDropdonValues:");
         console.log(req.session.dropdownValues); 
         res.sendStatus(200);    
@@ -93,7 +93,7 @@ const submitProducts = async (req,res)=>{
         console.log(req.body);
         console.log("try for session in /submitProducts");
         console.log(req.session.dropdownValues);
-        const { category, seller, discount, material, color} = req.session.dropdownValues;
+        const { category, seller, discount, material, color, product_type} = req.session.dropdownValues;
         // const catName = req.body.category;
         const categ = await Category.findOne({ category_name: category }, { _id: 1 }).exec();
         console.log('Category:', category, categ);
@@ -126,7 +126,9 @@ const submitProducts = async (req,res)=>{
             size:req.body.size,
             weight:req.body.weight,
             images:req.uploadedFiles ,
-            status:'new'
+            product_type:product_type,
+            status:'new',
+            isListing:true
         })
 
         console.log('Final Product:', product);
@@ -150,7 +152,7 @@ const submitProducts = async (req,res)=>{
 const loadProductsChange = async(req,res)=>{
     try{
         const categoryQuery = Category.find({status:true}).exec()
-        const sellerQuery = Seller.find({status:true}).exec()
+        const sellerQuery = Seller.find({status:{$ne:'inactive'}}).exec()
         const discountQuery = Discount.find({status:true}).exec()
 
         const [categories, sellers, discounts] = await Promise.all([categoryQuery, sellerQuery, discountQuery]);
@@ -176,24 +178,64 @@ const loadProductsChange = async(req,res)=>{
     }
 }
 
+
+const storeDropdownEdit = async (req,res,next)=>{
+    try{
+
+        // Extract dropdown values from the request body
+        console.log(req.body);
+        const { category, seller, discount, material, color, product_type, status, isListing } = req.body;
+
+        // Store dropdown values in session
+        req.session.dropdownEdit = { category, seller, discount, material, color, product_type, status, isListing   };  
+        console.log("session values in storeDropdonValues:");
+        console.log(req.session.dropdownEdit); 
+        res.sendStatus(200);    
+    
+    }
+    catch(err){
+        console.log(err.message);
+    }
+   
+}
 //update products
 const updateProduct = async(req,res)=>{
     try{
         let id = req.params.id
+        console.log(req.session.dropdownEdit);
+        const { category, seller, discount, material, color, product_type, status, isListing } = req.session.dropdownEdit;
+        // const catName = req.body.category;
+        const categ = await Category.findOne({ category_name: category }, { _id: 1 }).exec();
+        console.log('Category:', category, categ);
+
+        // const sellName = req.body.seller;
+        const sellr = await Seller.findOne({ seller_name: seller }, { _id: 1 }).exec();
+        console.log('Seller:', seller, sellr);
+
+        // const discName = req.body.discount;
+        const disc = await Discount.findOne({ discount_name: discount }, { _id: 1 }).exec();
+        console.log('Discount:', discount, disc);
+
+        // Ensure that categ, sellr, and disc are not null before proceeding
+        if (!categ || !sellr || !disc) {
+            console.log('One or more documents not found in the database.');
+            // Handle the case where one or more documents are not found
+        }
         await Products.updateOne({_id:id},{$set:{
-            product_name: 'Brass leaping leopard figurine',
-            category: '65e8c0844498fdb4f05deb44',
-            seller: '65e8de074498fdb4f05deb4c',
-            description : 'The leopard is one of the five extant species in the genus Panthera, a member of the Felidae. This fine carved leopard in the shinning brass gives it an unique look. A perfect showpiece for your living room and office.',
-            stock:15,
-            price_unit:4850,
-            discount: '65e9cfeb587c94ef622d45f1',
-            material:'Brass',
-            color:'golden',
-            size:2,
-            weight:1.5,
-            images:'no value',
-            status:true
+            product_name: req.body.name,
+            category: categ,
+            seller: sellr,
+            description : req.body.description,
+            stock:req.body.stock,
+            price_unit:req.body.price,
+            discount: disc,
+            material:material,
+            color:color,
+            size:req.body.size,
+            weight:req.body.weight,           
+            product_type:product_type,
+            status:status,
+            isListing:isListing
         }})
         res.redirect('/admin/products')
     }
@@ -205,13 +247,14 @@ const updateProduct = async(req,res)=>{
 
 // delete product
 const  deleteProduct = async (req,res)=>{
-    try{        
+    try{       
 
         let id = req.params.id
+        console.log(id)
         await Products.updateOne({_id:id},{$set:{
-        status : false           
+        status : 'inactive'           
     }})
-       res.redirect('/admin/products')
+    res.redirect('/admin/products')
      
     } catch (err){
         console.log(err.message);
@@ -377,6 +420,7 @@ const  deleteCategory = async (req,res)=>{
         submitProducts,
         storeDropdownValues,
         loadProductsChange ,
+        storeDropdownEdit,
         updateProduct,
         deleteProduct,
         loadCategory,
