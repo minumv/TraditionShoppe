@@ -71,6 +71,7 @@ productRoute.get('/newProducts',productController.loadNewProducts)
 
 productRoute.get("/admin/products/update/:id",productController.loadProductsChange);
 
+productRoute.post("/getDropdownEdit",productController.storeDropdownEdit)
 productRoute.post("/update/:id",productController.updateProduct)
 productRoute.post("/delete/:id",productController.deleteProduct)
 

@@ -48,6 +48,10 @@ const productSchema = new mongoose.Schema({
         type : Number,
         require : true
     },
+    product_type:{
+        type : String,
+        require : true
+    },
     images : {
         type : Array,
         require : true 
@@ -59,8 +63,8 @@ const productSchema = new mongoose.Schema({
     },
     isListing: {
         type : Boolean,
-        require : true 
-    },
+        required : true 
+    },    
     created:{
         type:Date,
         required:true,

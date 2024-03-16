@@ -14,12 +14,12 @@ contentRoute.use(bodyParser.urlencoded({extended:true}))
 
 
 /*************navigation****************/
-contentRoute.get("/cart",userAuthent.isAuthenticated,contentController.loadCart)
-contentRoute.get("/checkout",userAuthent.isAuthenticated,contentController.loadCheckout)
-contentRoute.get("/wishlist",userAuthent.isAuthenticated,contentController.loadWishlist)
-contentRoute.get("/saveforlater",userAuthent.isAuthenticated,contentController.loadSaved)
-contentRoute.get("/allproducts",userAuthent.isAuthenticated,contentController.loadAllProducts)
-contentRoute.get("/viewProduct/:id",userAuthent.isAuthenticated,contentController.loadProductDetail)
+contentRoute.get("/cart",contentController.loadCart)
+contentRoute.get("/checkout",contentController.loadCheckout)
+contentRoute.get("/wishlist",contentController.loadWishlist)
+contentRoute.get("/saveforlater",contentController.loadSaved)
+contentRoute.get("/allproducts",contentController.loadAllProducts)
+contentRoute.get("/viewProduct/:id",contentController.loadProductDetail)
 // userRoute.get("/handicratfs",userController.loadHandicrafts)
 // userRoute.get("/decor",userController.loadDecor)
 // userRoute.get("/spices",userController.loadSpices)
@@ -30,7 +30,26 @@ contentRoute.get("/viewProduct/:id",userAuthent.isAuthenticated,contentControlle
 
 /****************All products handling************* */
 
-contentRoute.get("/newHandicrafts",userAuthent.isAuthenticated,contentController.getnewHandicrafts)
+contentRoute.get("/newHandicrafts",contentController.getnewHandicrafts)
+contentRoute.get("/newAntique",contentController.getnewAntique)
+contentRoute.get("/newSpices",contentController.getnewSpices)
+contentRoute.get("/newApparels",contentController.getnewApparels)
+
+contentRoute.get("/mostSold",contentController.getmostSold)
+contentRoute.get("/lowtohigh",contentController.getLowtoHigh)
+contentRoute.get("/hightolow",contentController.getHightoLow)
+
+contentRoute.get("/toycategory",contentController.gettoyCategory)
+contentRoute.get("/ecofriendly",contentController.getecoFriendly)
+contentRoute.get("/giftcategory",contentController.getgiftCategory)
+
+contentRoute.get("/brassmaterial",contentController.getbrassMaterial)
+contentRoute.get("/metalmaterial",contentController.getmetalMaterial)
+contentRoute.get("/woodmaterial",contentController.getwoodMaterial)
+
+/*********price slider********** */
+contentRoute.get("/pricerange",contentController.getpriceRange)
+contentRoute.post("/setpricerange",contentController.setpriceRange)
 
 
 /****************to cart table*********************/

@@ -1,4 +1,20 @@
 <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+<script>
+    const startMin = 1;
+    let time = startMin * 60;
+    setInterval(updateCount,1000)
+    const countElmt = document.getElementById('countdown');
+    function updateCount(){
+        const minutes = Math.floor(time / 60)
+        let seconds = time % 60
+
+        seconds = seconds < 10 ? '0' + seconds : seconds;
+
+        countElmt.innerHTML = `${minutes} : ${seconds}`
+        time--;
+    }
+    
+</script>
 </body>
 </html>

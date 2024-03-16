@@ -125,7 +125,8 @@ $(document).ready(function () {
         const discountValue = $('#discountName').val();
         const materialValue = $('#material').val();
         const colorValue = $('#color').val();
-        console.log( categoryValue, discountValue, colorValue);
+        const typeValue = $('#type').val();
+        console.log( categoryValue, discountValue, colorValue,typeValue);
         console.log( $('#discountName').val());
         console.log($('#sellerName').val());
         console.log($('#material').val());
@@ -139,7 +140,8 @@ $(document).ready(function () {
                 seller: sellerValue,
                 discount: discountValue,
                 material: materialValue,
-                color: colorValue
+                color: colorValue,
+                product_type: typeValue
             },
             success: function(response) {
                 // Handle success response
@@ -151,6 +153,44 @@ $(document).ready(function () {
         });
     });
 
+    $('#editButton').click(function() {
+        // Get selected values from dropdowns
+        const sellerValue = $('#sellerName').val();
+        const categoryValue = $('#categoryName').val();       
+        const discountValue = $('#discountName').val();
+        const materialValue = $('#material').val();
+        const colorValue = $('#color').val();
+        const typeValue = $('#type').val();
+        const statusValue = $('#status').val();
+        const listValue = $('#list').val();
+        console.log( categoryValue, discountValue, colorValue,typeValue);
+        console.log( $('#discountName').val());
+        console.log($('#sellerName').val());
+        console.log($('#material').val());
+    
+        // Send selected values to server
+        $.ajax({
+            url: '/getDropdownEdit', // Change this URL to match your server route
+            method: 'POST',
+            data: {
+                category: categoryValue,
+                seller: sellerValue,
+                discount: discountValue,
+                material: materialValue,
+                color: colorValue,
+                product_type: typeValue,
+                status: statusValue,
+                list: listValue
+            },
+            success: function(response) {
+                // Handle success response
+                console.log('Server response:', response);
+            },
+            error: function(xhr, status, error) {
+                console.error('Error:', error);
+            }
+        });
+    });
 
 
 

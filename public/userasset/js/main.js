@@ -147,19 +147,57 @@ jQuery(document).ready(function($) {
 	};
 	sitePlusMinus();
 
+//slider price
+
+	function updateContent(){
+		$.ajax({
+			url: '/setpricerange',
+			type: 'POST',
+			success: function(response) {
+				// Once the price range is set and product page is rendered, you can redirect the user to the product page or handle the response as needed
+				// For example, redirect to the product page
+				//window.location.href = '/allproducts';
+			},
+			error: function(xhr, status, error) {
+				// Handle error
+				console.error(xhr.responseText);
+			}
+		});
+	}
+
+	function fetchProductDetails(minPrice, maxPrice) {
+        // Send AJAX request to backend
+        $.ajax({
+            url: "/pricerange",
+            type: "GET",
+            data: {
+                minPrice: minPrice,
+                maxPrice: maxPrice
+            },
+            success: function(response) {
+                // Handle the response from the backend and update the UI with the fetched product details
+              updateContent() // Assuming response contains product details in JSON format
+            },
+            error: function(xhr, status, error) {
+                // Handle error
+                console.error(xhr.responseText);
+            }
+        });
+    }
 
 	var siteSliderRange = function() {
     $( "#slider-range" ).slider({
       range: true,
       min: 0,
-      max: 500,
-      values: [ 75, 300 ],
+      max: 55000,
+      values: [ 8000, 20000 ],
       slide: function( event, ui ) {
-        $( "#amount" ).val( "$" + ui.values[ 0 ] + " - $" + ui.values[ 1 ] );
+        $( "#amount" ).val( "₹" + ui.values[ 0 ] + " - ₹" + ui.values[ 1 ] );
+		fetchProductDetails(ui.values[0], ui.values[1]);
       }
     });
-    $( "#amount" ).val( "$" + $( "#slider-range" ).slider( "values", 0 ) +
-      " - $" + $( "#slider-range" ).slider( "values", 1 ) );
+    $( "#amount" ).val( "₹" + $( "#slider-range" ).slider( "values", 0 ) +
+      " - ₹" + $( "#slider-range" ).slider( "values", 1 ) );
 	};
 	siteSliderRange();
 
