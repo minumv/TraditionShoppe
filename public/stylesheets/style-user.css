@@ -1,6 +1,14 @@
 /*******************product detail view page*********************/
+
+body {
+    background: rgba(1, 1, 1, 0);
+    height: 100%;
+    box-sizing:border-box
+  }
+
 .base_container{
     height:800px;
+    /* box-sizing:border-box */
 }
 .product_view{
     width:670px;
@@ -130,3 +138,9 @@
    
 
   }
+
+  /***************footer*****************/
+
+.foot-email{
+    height:60px;
+}

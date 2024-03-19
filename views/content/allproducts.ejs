@@ -59,20 +59,24 @@
                   <% })%>
 
             <div class="col-sm-6 col-lg-4 mb-4" data-aos="fade-up">
-              <a href="/viewProduct/<%= pdt._id %>">
+              <!-- <a href="/viewProduct/<%= pdt._id %>"> -->
                 <div class="block-4 div-height text-center border">
+                
                   <figure class="block-4-image-1">
+                    <button id="wish-but" class="icon icon-heart" type="button" onclick="clickWishButton(event)">
+                      <!-- &#10084; -->
+                    </button>
                     <a href="/viewProduct/<%= pdt._id %>"><img src="../upload/<%= pdt.images[0]%>" alt="Image placeholder" class="img-fluid"></a>
                   </figure>
                   <div class="block-4-text p-4">
                     <h3><a href="shop-single.html"><%= pdt.product_name %></a></h3>
-                    <div class="d-flex justify-content-around ">
-                      <p class=" mb-0 text-danger font-weight-light">RS.<%= pdt.price_unit %></p>
+                    <div class="d-flex justify-content-around mt-2 ">
+                      <p class=" mb-0 text-danger font-weight-light"><del>RS.<%= pdt.price_unit %></del></p>
                       <p class="text-black font-weight-light">Rs.<%=mrp %></p>
                     </div>
                   </div>
                 </div>
-              </a>
+              <!-- </a> -->
             </div>
          
            

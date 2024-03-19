@@ -6,13 +6,15 @@ body{
 
 @import url('https://fonts.googleapis.com/css?family=Numans');
 
-html,body{
+/*******************user login**********************/
+
+/* html,body{
 background-image: url('/userasset/images/deepam.png');
 background-size: cover;
 background-repeat: no-repeat;
 height: 100%;
 font-family: 'Numans', sans-serif;
-}
+} */
 
 .container{
 height: 100%;

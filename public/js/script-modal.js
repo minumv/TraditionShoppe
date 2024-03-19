@@ -102,3 +102,14 @@ function imageZoom(imgID, resultID) {
       return {x : x, y : y};
     }
   }
+
+
+  /**************wishlist button************** */
+  alert("button")
+  function clickWishButton(event){
+    console.log("buton")
+  
+    document.getElementById("wish-but").style.color='red';
+    // document.getElementById("wish-but").style.border='none';
+  
+  }
