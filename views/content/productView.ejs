@@ -31,7 +31,7 @@
         </div>
         <div id="myresult" class="img-zoom-result"></div>
         <% let mrp = 0; %>
-        <% let per = 0; %>        
+        <% let per = 0; %>            
         <% discounts.forEach((disc_row, index) => { %>
         <%console.log(disc_row._id , pdt.discount)%>
         <%if(disc_row._id .equals( pdt.discount )) {%>
@@ -45,7 +45,13 @@
                 <p><%= pdt.product_name%></p>
             </div>
             <div  class="information d-flex">
-                <p class="text-warning">rating </p>&ensp;&ensp; <p class="text-primary">stock</p>&ensp;&ensp; <p class="text-success">ID</p>
+              <% let stock = ""; %>  
+              <%if( pdt.stock>0) {%>
+                <% stock ="In Stock" %>
+                  <% } else {%>
+                    <%stock = "Out of Stock" %>
+                    <% }%>
+                <p class="text-warning">rating </p>&ensp;&ensp; <p class="text-primary"><%= stock %></p>&ensp;&ensp; <p class="text-success">ID</p>
             </div>
             <div class="price-value">
                 <div class="d-flex"><p class="p-per">-<%= per %> % </p>&ensp;&ensp; <p class="p-price">₹<%= mrp %></p> </div>
@@ -62,11 +68,11 @@
                 <p class="det-name">Weight : <span><%= pdt.weight %> grams</span></p>
             </div>
             <div class="wish-save d-flex">
-                <a class = "link-wish"href="/addtowishlist/<%= pdt._id %>"><span class="icon icon-heart-o">&nbsp;Add to wishlist</span></a>&ensp;&ensp;&ensp;&nbsp;
+                <a class = "link-wish"href="/addtowishlist/<%= pdt._id %>/<%= mrp %>"><span class="icon icon-heart-o">&nbsp;Add to wishlist</span></a>&ensp;&ensp;&ensp;&nbsp;
                 <a class= "link-wish" href="/saveforlater"><span class="icon icon-save">&nbsp;Save for later</span></a>
             </div>  <br>          
             <div class="nav-but-div">
-                <a href="/cart"><button class="btn btn-lg bg-success text-white nav-but" >Add to Cart</button></a>&ensp;
+                <a href="/addtocart/<%= pdt._id %>/<%= mrp %>"><button class="btn btn-lg bg-success text-white nav-but" >Add to Cart</button></a>&ensp;
                 <a href="/checkout"><button class="btn btn-lg bg-success text-white nav-but" >Buy Now</button></a>
 
             </div>

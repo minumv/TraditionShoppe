@@ -1,3 +1,72 @@
 <%- include('../layout/userHeader') %>
-<h3>my cart</h3>
+<main>
+    <div class="bg-light py-3">      
+        
+          <div class="row">
+            <div class="col-md-12 mb-0"><a href="/home">Home</a> <span class="mx-2 mb-0">/</span> <strong class="text-black">Shopping Cart</strong></div>
+          </div>
+        <div class="d-flex" >
+            <div class="w-75">
+                <div class="col-md-12 mb-0">
+                    <ul class="">
+                        <% if(user_cart){%>
+                        <li>
+                            <div class="cart-head">
+                                <p>price</p>
+                            </div>
+                        </li>
+                        <% let mrp = 0; %>
+                        <% let per = 0; %> 
+                        <% user_cart.product_list.forEach((cart, index) => { %>
+                            <% products.forEach((pdt, index) => { %>
+                            <% if(cart.productId.equals(pdt._id) ){%>                                       
+                                <% discounts.forEach((disc_row, index) => { %>
+                                    <%console.log(disc_row._id , pdt.discount)%>
+                                    <%if(disc_row._id .equals( pdt.discount )) {%>
+                                        <% per = disc_row.percentage %>
+                                        <% mrp = (pdt.price_unit * (100 - per) * 0.01)  %>
+                                    <% } %>
+                                <% })%>
+                            <li>
+                                <div class="cart-list">
+                                    <div class="d-flex align-items-center">
+                                        <img src="" alt="" class="cart-image">
+                                        <p class="cart-name"><%=pdt.product_name %></p>
+                                    </div>
+                                    <div class="cart-details">
+                                       
+                                        <div class="cart-opert but">
+                                            <div class="p-1 m-0">-</div>
+                                            <div class="p-1 m-0"><button></button></div>
+                                            <div class="p-1 m-0">+</div>
+                                        </div>
+                                    </div>
+                                    <div class="cart-price">
+                                        <p><%=mrp %></p>
+                                        <p><%=pdt.price_unit %></p>
+                                    </div>
+                                </div>
+                            </li>
+                            <% } %>
+                            <% }) %>
+                            <% }) %>
+                            <% } else {%>
+                                <p>Your Cart is empty!!</p>
+                                <%}%>
+                    </ul>
+                </div>           
+            </div>
+            <div class="">
+                <div class="col-md-12 mb-0 bg-danger"><div>
+                    <p>proceed to buy</p>
+                </div></div>
+            </div>
+        </div>  
+       
+        
+    </div> 
+
+
+
+</main>
 <%- include('../layout/userFooter') %>

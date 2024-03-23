@@ -4,21 +4,103 @@ const Products = require('../model/product')
 const Category = require('../model/category')
 const Seller = require('../model/seller')
 const Discount = require('../model/discount')
+const Cart = require('../model/cart')
 const List = require('../model/wishlist')
 const bcrypt = require('bcrypt')
 
 
 /***************All products handling****************** */
 
+//store search value
+const storeSerachValue = async(req,res)=>{
+    try{
+        
+        // const {serachValue} =req.body;
+        // req.session.search = serachValue;
+        // // res.sendStatus(200);
+        // res.redirect('/getSearchProduct');
+
+        const search = req.body.search;
+        req.session.search = search;
+        console.log(search)
+        // Query the database to find products matching the search term
+        const products = await Products.find({ "product_name":{$regex:".*"+search+".*",$options:'i'}  });
+        //console.log(products);
+        const discounts = await Discount.find({status:true}).exec()
+        // Respond with the found products
+        
+        // res.render('content/allproducts',{
+        //     title : "All Products| TraditionShoppe",
+        //     user : req.session.user,
+        //     page : 'All products',            
+        //     products : products,
+        //      discounts : discounts,
+        //     errorMessage:req.flash('errorMessage'),
+        //     successMessage:req.flash('successMessage')
+        // })
+        res.json({products:products});
+    }
+    catch(err){
+        console.log(err.message);
+    }
+}
+
+
+
+//serach products
+const listSearchProduct = async(req,res)=>{
+    try{
+        const {name} = req.session.search;
+        console.log(name)
+
+    }
+    catch(err){
+        console.log(err.message);
+    }
+}
+
+
+
+
+
+
+
 //load all products
 const loadAllProducts = async (req,res)=>{
     try{
             const productQuery = Products.find({status:'active',isListing:true}).exec()            
             const discountQuery = Discount.find({status:true}).exec()
-            console.log( productQuery);
+            //console.log( productQuery);
             const [products, discounts] = await Promise.all([productQuery,discountQuery]);
             
             res.render('content/allproducts',{
+            title : "All Products| TraditionShoppe",
+            user : req.session.user,
+            page : 'All products',            
+            products : products,
+             discounts : discounts,
+            errorMessage:req.flash('errorMessage'),
+            successMessage:req.flash('successMessage')
+
+            
+        })
+
+    }
+    catch(err){
+        console.log(err.message);
+    }
+}
+
+const loadSearchProducts = async (req,res)=>{
+    try{
+            const product = await Products.find({status:'active',isListing:true}).exec()            
+            const discounts = await Discount.find({status:true}).exec()
+            //console.log( productQuery);
+        //    const [products, discounts] = await Promise.all([productQuery,discountQuery]);
+               
+            const products = req.query.searchData ? JSON.parse(req.query.searchData) : product;
+        
+            res.render('content/searchproducts',{
             title : "All Products| TraditionShoppe",
             user : req.session.user,
             page : 'All products',            
@@ -435,8 +517,8 @@ const loadProductDetail = async (req,res)=>{
         const otherProducts = Products.find({status:{ $ne:'inactive'} , isListing: true }).exec()
         
         const [products, categories, sellers, discounts, allproducts] = await Promise.all([productQuery, categoryQuery, sellerQuery, discountQuery, otherProducts]);
-        console.log( products);
-        console.log( products.product_name);
+        //console.log( products);
+        //console.log( products.product_name);
         res.render('content/productView',{
             title: "View Product | TraditionShoppe", 
             user : req.session.user,           
@@ -462,10 +544,20 @@ const loadProductDetail = async (req,res)=>{
 /*********load cart*********/
 const loadCart = async(req,res)=>{
     try{
+
+        const user = req.session.user       
+        const user_id = await User.findOne({email:user},{_id:1}).exec()        
+        const user_cart = await Cart.findOne({user:user_id}).exec()
+        const products = await Products.find({status:{$ne:'inactive'},isListing:true}).exec()
+        const discounts = await Discount.find({status:true}).exec()
+            
         res.render('content/myCart',{
             title: "My Cart - TraditionShoppe",
             page:"My Cart",   
-            user : req.session.user,          
+            user : req.session.user, 
+            products:products,  
+            discounts:discounts,
+            user_cart:user_cart,       
             errorMessage : req.flash('errorMessage'),
             successMesssage : req.flash('successMessage')
         })
@@ -479,36 +571,82 @@ const loadCart = async(req,res)=>{
 const addToCartTable = async(req,res)=>{
     try{
         let pdt_id = req.params.id;
+        let price = req.params.mrp;
         const user = req.session.user
+       // const product = await Products.findOne({_id:pdt_id}).exec();
         const user_id = await User.findOne({email:user},{_id:1}).exec()
-        const user_list_id = await List.findOne({user:user_id},{_id:1}).exec()
+        const user_cart = await Cart.findOne({user:user_id}).exec()
+        console.log("pdtid: "+pdt_id)
+        console.log("userid: "+user_id)
+        console.log("price: "+price)
+        console.log("cart user: "+user_cart)
+        let pdt_check = false;
+        let amount = 0;
+        let qty;
+           
+                if (!user_cart){
+                    console.log("cart is empty")
+                    const cart = new Cart({
+                        user:user_id,
+                        product_list:[{productId :pdt_id,quantity:1,price:price,total:price}],
+                        total_amount : price
+                   })
+                   const cartData = await cart.save()
+                   if(cartData){
+                       console.log('successful');
+                       req.flash("successMessage", "Product is successfully added to cart...");
+                       res.redirect(`/viewProduct/${pdt_id}`)
+                   } else {
+                       console.log('failed');
+                       req.flash("errorMessage", "Product is not added to cart... Try again!!");
+                       res.redirect("/newProducts");
+                   }  
 
-        if (user_list_id){
+                }
+        if (user_cart){
+            user_cart.product_list.forEach(product => {
+                if( product.productId == pdt_id ){
+                    pdt_check = true;
+                    qty = product.quantity;                           
 
-            await List.updateOne({_id:user_list_id},
-                { $push: { product_list: pdt_id }})
-                
+                }})
+              
+                    console.log("total amount : "+ user_cart.total_amount);
+                    amount = parseFloat(user_cart.total_amount);          
+                //console.log("total amount : "+ product.total_amount);
+                console.log("after parsing : "+ amount);
+                console.log("total amount added:  "+ (amount+price));
+            if(pdt_check){
+                console.log("user and pdt exist")
+                await Cart.updateOne( { 
+                    user: user_id,
+                    "product_list.productId": pdt_id 
+                },
+                { 
+                    $set: { 
+                        "product_list.$.quantity": qty + 1,
+                        "product_list.$.price": price,
+                        "product_list.$.total": (qty+1)*price,
+                        total_amount: amount + parseFloat(price)
+                    } 
+                })
+                    
                 console.log('successful');
                 req.flash("successMessage", "Product is successfully updated to cart...");
-                res.redirect('/viewProduct/:pdt_id')
-
-        } else {
-            const list = new List({
-                 user:user_id,
-                 product_list:pdt_id,
-            })
-            const listData = await list.save()
-            if(listData){
-                console.log('successful');
-                req.flash("successMessage", "Product is successfully added to cart...");
-                res.redirect('/viewProduct/:pdt_id')
+                res.redirect(`/viewProduct/${pdt_id}`)
             } else {
-                console.log('failed');
-                req.flash("errorMessage", "Product is not added to cart... Try again!!");
-                res.redirect("/newProducts");
-            }  
+                console.log("user exist pdt not")
+                await Cart.updateOne({_id:user_cart.id},
+                    { $push: { 'product_list':{productId :pdt_id ,quantity:1,price:price,total:price}} , $inc: { total_amount: parseFloat(price) }})  
+                   
+                   console.log('successful');
+                req.flash("successMessage", "Product is successfully updated to cart...");
+                res.redirect(`/viewProduct/${pdt_id}`)
 
-        }
+            }
+            
+
+        } 
     }
     catch(err){
         console.log(err.message);
@@ -625,26 +763,37 @@ const loadSaved = async(req,res)=>{
 
 module.exports = {
     loadAllProducts,
+    loadSearchProducts,
     loadProductDetail,
+
     getnewHandicrafts,
     getnewAntique,
     getnewApparels,
     getnewSpices,
+
     getmostSold,
     getLowtoHigh,
     getHightoLow,
+
     getecoFriendly,
     getgiftCategory,
     gettoyCategory,
+
     getpriceRange,
     setpriceRange,
+
     getbrassMaterial,
     getmetalMaterial,
     getwoodMaterial,
+
+    storeSerachValue,
+    listSearchProduct,
+
     loadCart,
     loadCheckout,
     loadWishlist,
     loadSaved,
+
     addToCartTable,
     addToWishlist,
     addToSave

@@ -113,3 +113,60 @@ function imageZoom(imgID, resultID) {
     // document.getElementById("wish-but").style.border='none';
   
   }
+
+    /**************search bar on header************** */
+    function getSearchValue(){
+         const search = document.getElementById('ser-bar').value;
+        console.log(search); 
+        fetch('/getSearchValue', {
+            method: 'POST',
+          //  agent: new https.Agent({ rejectUnauthorized: false }),
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ search: search })
+        })
+        .then(response => {
+            if (response.ok) {
+                // Handle the HTML response
+                return response.text(); 
+               // Parse the response as text (HTML)
+            } else {
+                throw new Error('Failed to fetch HTML');
+            }
+        })
+        .then(data => {
+            console.log('Received search results:', data);
+            window.location.href = '/searchProducts?searchData=' + encodeURIComponent(JSON.stringify(data));
+        })
+        // .then(html => {
+        //     // Display the HTML response on the page
+        //     document.getElementById('container').innerHTML = html;
+        // })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+    // $('#ser-bar').keyup(function() {
+    //     // Get selected values from dropdowns
+    //     console.log("in event" );
+    //     const searchValue = $('#ser-bar').val();
+       
+    //     console.log(searchValue );
+       
+    //     // Send selected values to server
+    //     $.ajax({
+    //         url: '/getSerachValue', // Change this URL to match your server route
+    //         method: 'POST',
+    //         data: {
+    //             search:  searchValue               
+    //         },
+    //         success: function(response) {
+    //             // Handle success response
+    //             console.log('Server response:', response);
+    //         },
+    //         error: function(xhr, status, error) {
+    //             console.error('Error:', error);
+    //         }
+    //     });
+    // });

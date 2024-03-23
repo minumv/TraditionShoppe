@@ -15,7 +15,8 @@ const isAuthenticated = async (req, res, next)=>{
         // User is not logged in, redirect to the login page with an error message
         req.flash("errorMessage", "Please log in !!.");
        // console.log("is authenticated?")
-        res.redirect("/index");
+       res.redirect("/signin/userLogin")
+        // res.redirect("/index");
         
       }
    

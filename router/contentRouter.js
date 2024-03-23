@@ -11,15 +11,21 @@ const bodyParser = require('body-parser')
 contentRoute.use(bodyParser.json())
 contentRoute.use(bodyParser.urlencoded({extended:true}))
 
+/*************searching****************/
+contentRoute.post("/getSearchValue",contentController.storeSerachValue)
+contentRoute.post("/getSearchProduct",contentController.listSearchProduct)
+
+
 
 
 /*************navigation****************/
-contentRoute.get("/cart",contentController.loadCart)
-contentRoute.get("/checkout",contentController.loadCheckout)
-contentRoute.get("/wishlist",contentController.loadWishlist)
-contentRoute.get("/saveforlater",contentController.loadSaved)
-contentRoute.get("/allproducts",contentController.loadAllProducts)
-contentRoute.get("/viewProduct/:id",contentController.loadProductDetail)
+contentRoute.get("/cart",userAuthent.isAuthenticated,contentController.loadCart)
+contentRoute.get("/checkout",userAuthent.isAuthenticated,contentController.loadCheckout)
+contentRoute.get("/wishlist",userAuthent.isAuthenticated,contentController.loadWishlist)
+contentRoute.get("/saveforlater",userAuthent.isAuthenticated,contentController.loadSaved)
+contentRoute.get("/allproducts",userAuthent.isAuthenticated,contentController.loadAllProducts)
+contentRoute.get("/searchProducts",userAuthent.isAuthenticated,contentController.loadSearchProducts)
+contentRoute.get("/viewProduct/:id",userAuthent.isAuthenticated,contentController.loadProductDetail)
 // userRoute.get("/handicratfs",userController.loadHandicrafts)
 // userRoute.get("/decor",userController.loadDecor)
 // userRoute.get("/spices",userController.loadSpices)
@@ -53,7 +59,7 @@ contentRoute.post("/setpricerange",contentController.setpriceRange)
 
 
 /****************to cart table*********************/
-contentRoute.get("/addtocart/:id",contentController.addToCartTable)
+contentRoute.get("/addtocart/:id/:mrp",contentController.addToCartTable)
 contentRoute.get("/addtowishlist/:id",contentController.addToWishlist)
 contentRoute.get("/addtosave/:id",contentController.addToSave)
 

@@ -144,3 +144,47 @@ body {
 .foot-email{
     height:60px;
 }
+
+
+/*****************cart page******************/
+.base-div{
+    /* width:1000px;
+    background-color: white; */
+}
+.cart-left{
+    /* width:900px; */
+}
+.cart-head{
+    display:flex;
+    justify-content: end;
+    align-items: end;
+    border-bottom: solid .5px black;
+}
+.cart-list{
+    display:flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: solid .5px black;
+}
+.cart-image{
+    width:90px;
+    height:90px;
+    /* margin-right:10px; */
+}
+.cart-name{
+    /* margin-right:400px; */
+}
+.cart-details{
+    display:flex;
+    justify-content:flex-start;
+    align-items: center;
+    /* margin-right:100px; */
+}
+.cart-opert{
+    display:flex;
+    justify-content: center;
+    align-items: center;
+    border:  .8px black;
+    padding:5px;
+    /* margin-right:100px; */
+}
