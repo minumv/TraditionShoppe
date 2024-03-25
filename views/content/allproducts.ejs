@@ -69,7 +69,7 @@
                     <a href="/viewProduct/<%= pdt._id %>"><img src="../upload/<%= pdt.images[0]%>" alt="Image placeholder" class="img-fluid"></a>
                   </figure>
                   <div class="block-4-text p-4">
-                    <h3><a href="shop-single.html"><%= pdt.product_name %></a></h3>
+                    <h3><a href="/viewProduct/<%= pdt._id %>"><%= pdt.product_name %></a></h3>
                     <div class="d-flex justify-content-around mt-2 ">
                       <p class=" mb-0 text-danger font-weight-light"><del>RS.<%= pdt.price_unit %></del></p>
                       <p class="text-black font-weight-light">Rs.<%=mrp %></p>

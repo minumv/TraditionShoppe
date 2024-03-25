@@ -8,6 +8,8 @@ const Products = require('../model/product')
 const Category = require('../model/category')
 const Seller = require('../model/seller')
 const Discount = require('../model/discount')
+const Cart = require('../model/cart')
+const List = require('../model/wishlist')
 
 //email handler
 const nodemailer = require('nodemailer')
@@ -418,9 +420,18 @@ const loadOTPSuccess = async(req,res)=>{
 //load index page
 const loadIndex = async (req,res)=>{
     try{
+        const products = await Products.find({status:{$ne:'inactive'},isListing:true}).exec()
+        const categories = await Category.find({status:true}).exec()
+        const sellers = await Seller.find({status:{$ne:'inactive'}}).exec()
+        const discounts = await Discount.find({status:true}).exec()
+        
         res.render('user/index',{
-            title: "Home | TraditionShoppe",  
-            user : req.session.user,          
+            title: "Home | TraditionShoppe", 
+            user:req.session.user, 
+            products:products,
+            categories:categories,
+            sellers:sellers,
+            discounts:discounts,           
             errorMessage:req.flash('errorMessage'),
             successMessage:req.flash('successMessage')
         })
@@ -434,15 +445,41 @@ const loadIndex = async (req,res)=>{
 //load homepage
 const loadHome = async (req,res)=>{
     try{
-        const productQuery = Products.find({status:{$ne:'inactive'},isListing:true}).exec()
-        const categoryQuery = Category.find({status:true}).exec()
-        const sellerQuery = Seller.find({status:{$ne:'inactive'}}).exec()
-        const discountQuery = Discount.find({status:true}).exec()
-        console.log( productQuery);
-        const [products, categories, sellers, discounts] = await Promise.all([productQuery, categoryQuery, sellerQuery, discountQuery]);
+        const email =  req.session.user
+        const products = await Products.find({status:{$ne:'inactive'},isListing:true}).exec()
+        const categories = await Category.find({status:true}).exec()
+        const sellers = await Seller.find({status:{$ne:'inactive'}}).exec()
+        const discounts = await Discount.find({status:true}).exec()
+        
+        // console.log( productQuery);
+        // const [products, categories, sellers, discounts] = await Promise.all([productQuery, categoryQuery, sellerQuery, discountQuery]);
+        const users = await User.findOne({email:email},{_id:1}).exec()
+        console.log("user : "+users)
+        const user_cart = await Cart.findOne({user:users}).exec()
+        console.log("cart : "+user_cart)
+        let qtyCount = 0;
+        let listCount = 0;
+        if(user_cart){
+            console.log("inside cart");
+            console.log( user_cart.total_amount);
+            user_cart.product_list.forEach(product => { 
+                console.log(product.quantity);       
+                qtyCount += product.quantity; })
+        } 
+        const user_list = await List.findOne({user:users}).exec()
+        if(user_list){            
+            
+            listCount = user_list.product_list.length;
+        } 
+        // else {
+        //     qtyCount=0;
+        // }
+        console.log("qty"+ qtyCount);
         res.render('user/home',{
             title: "Home | TraditionShoppe", 
-            user : req.session.user, 
+            user : email, 
+            qtyCount:qtyCount,
+            listCount:listCount,
             products:products,
             categories:categories,
             sellers:sellers,

@@ -668,7 +668,96 @@ a {
         cursor: pointer;
       }
      
+/***********index page*************/
 
+.div-box {
+  -webkit-box-shadow: 0 0 30px -10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 30px -10px rgba(0, 0, 0, 0.3);
+  background: #fff; 
+  border-radius: 20px; 
+  overflow: hidden;
+  height: 520px;
+}
+  
+.div-box .div-text h3 {
+    font-size: 18px;
+    font-weight: 200;
+    margin-bottom: 0; }
+    .div-box .div-text h3 a {
+      text-decoration: none; color:rgb(79, 77, 77); }
+      
+      
+        .div-box .block-4-text-1 h3 a {
+          text-decoration: none;}
+          
+        
+     
+      
+    
+      .div-image{
+        height: 350px;
+        cursor: pointer;
+        /* margin-bottom: 0; */
+        border-bottom-left-radius: 20px;
+        border-bottom-right-radius: 15px;
+      }
+       #wish-but{
+        position: absolute;
+        top: 10px;
+        right: 30px;
+        font-size: 25px;
+        color:rgb(249, 251, 249);
+        cursor: pointer;
+        background: transparent;
+        border: none;
+        
+        /* transform: translate(-50%, -50%); */
+      }
+     
+      .div-box img{
+        border-bottom-left-radius: 10px;
+        border-bottom-right-radius: 10px;
+        height: 350px;
+      }
+      .div-text{
+        height:160px;
+        cursor: pointer;
+      }
+     
+     
+
+/**************related products***************/
+.rel-box{
+  -webkit-box-shadow: 0 0 30px -10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 30px -10px rgba(0, 0, 0, 0.3);
+  background: #fff; 
+  border-radius: 20px; 
+  overflow: hidden;
+  height: 450px;
+  width:300px;
+}
+
+.rel-image{
+  height: 300px;
+  cursor: pointer;
+  /* margin-bottom: 0; */
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 15px;
+}
+.rel-box img{
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+  height: 300px;
+}
+.rel-box .rel-text h3 a {
+  text-decoration: none; color:rgb(79, 77, 77); }
+  
+  .rel-box .rel-text h3 {
+    font-size: 18px;
+    font-weight: 200;
+    margin-bottom: 0; }
+
+/*****************************/
       
 .block-5 ul, .block-5 ul li {
   list-style: none;
@@ -700,7 +789,9 @@ a {
 .block-6 {
   display: block; }
   .block-6 img {
-    display: block; }
+    display: block;
+  height:100px;
+  width:100px; }
   .block-6 h3 {
     font-size: 18px; }
   .block-6 p {

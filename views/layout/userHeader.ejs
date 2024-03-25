@@ -68,18 +68,19 @@
                   <div class="site-top-icons">
                     <% if(user){ %>
                       <% console.log(user) %>
+                       
                     <ul>                     
                       
                       <li>
                         <a href="/cart" class="site-cart">
                           <span class="icon icon-shopping_cart"></span>
-                          <span class="count">n</span>
+                          <span class="count"><%= qtyCount %></span>
                         </a>
                       </li>&nbsp;
                       <li>
                         <a href="/wishlist" class="site-cart">
                           <span class="icon icon-heart-o"></span>
-                          <span class="count">n</span>
+                          <span class="count"><%= listCount %></span>
                         </a>
                       </li>&nbsp; 
                       <li><a href="/userProfile"><span class="icon icon-person"></span></a></li>&nbsp;

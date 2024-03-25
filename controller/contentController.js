@@ -68,15 +68,37 @@ const listSearchProduct = async(req,res)=>{
 //load all products
 const loadAllProducts = async (req,res)=>{
     try{
-            const productQuery = Products.find({status:'active',isListing:true}).exec()            
-            const discountQuery = Discount.find({status:true}).exec()
+            const products = await Products.find({status:'active',isListing:true}).exec()            
+            const discounts = await Discount.find({status:true}).exec()
             //console.log( productQuery);
-            const [products, discounts] = await Promise.all([productQuery,discountQuery]);
-            
+            // const [products, discounts] = await Promise.all([productQuery,discountQuery]);
+
+            const users = await User.findOne({email:req.session.user},{_id:1}).exec()
+            console.log("user : "+users)
+            const user_cart = await Cart.findOne({user:users}).exec()
+            console.log("cart : "+user_cart)
+            let qtyCount = 0;
+            let listCount = 0;
+            if(user_cart){
+                console.log("inside cart");
+                console.log( user_cart.total_amount);
+                user_cart.product_list.forEach(product => { 
+                    console.log(product.quantity);       
+                    qtyCount += product.quantity; })
+            } 
+            const user_list = await List.findOne({user:users}).exec()
+            if(user_list){            
+                
+                listCount = user_list.product_list.length;
+            }
+
+
             res.render('content/allproducts',{
             title : "All Products| TraditionShoppe",
             user : req.session.user,
-            page : 'All products',            
+            page : 'All products',
+            qtyCount:qtyCount,
+            listCount:listCount,            
             products : products,
              discounts : discounts,
             errorMessage:req.flash('errorMessage'),
@@ -123,15 +145,36 @@ const  getnewHandicrafts = async (req,res)=>{
     try{
             const categoryQuery = await Category.find({category_name:'Handicrafts', status : true},{_id:1}).exec()
             const categoryIds = categoryQuery.map(category => category._id);
-            const productQuery = Products.find({ category: { $in: categoryIds }, status: 'new', isListing: true }).exec();       
-            const discountQuery = Discount.find({status:true}).exec()
+            const products = await Products.find({ category: { $in: categoryIds }, status: 'new', isListing: true }).exec();       
+            const discounts = await Discount.find({status:true}).exec()
             console.log( productQuery);
-            const [products, discounts] = await Promise.all([productQuery,discountQuery]);
+            // const [products, discounts] = await Promise.all([productQuery,discountQuery]);
+
+            const users = await User.findOne({email:req.session.user},{_id:1}).exec()
+            console.log("user : "+users)
+            const user_cart = await Cart.findOne({user:users}).exec()
+            console.log("cart : "+user_cart)
+            let qtyCount = 0;
+            let listCount = 0;
+            if(user_cart){
+                console.log("inside cart");
+                console.log( user_cart.total_amount);
+                user_cart.product_list.forEach(product => { 
+                    console.log(product.quantity);       
+                    qtyCount += product.quantity; })
+            } 
+            const user_list = await List.findOne({user:users}).exec()
+            if(user_list){            
+                
+                listCount = user_list.product_list.length;
+            }
             
             res.render('content/allproducts',{
             title : "All Products| TraditionShoppe",
             user : req.session.user,
-            page : 'All products',            
+            page : 'All products',
+            qtyCount:qtyCount,
+            listCount:listCount,            
             products : products,
              discounts : discounts,
             errorMessage:req.flash('errorMessage'),
@@ -150,15 +193,36 @@ const  getnewAntique = async (req,res)=>{
     try{
             const categoryQuery = await Category.find({category_name:'Antique', status : true},{_id:1}).exec()
             const categoryIds = categoryQuery.map(category => category._id);
-            const productQuery = Products.find({ category: { $in: categoryIds }, status: 'new', isListing: true }).exec();       
-            const discountQuery = Discount.find({status:true}).exec()
-            console.log( productQuery);
-            const [products, discounts] = await Promise.all([productQuery,discountQuery]);
+            const products = await Products.find({ category: { $in: categoryIds }, status: 'new', isListing: true }).exec();       
+            const discounts = await Discount.find({status:true}).exec()
+            // console.log( productQuery);
+            // const [products, discounts] = await Promise.all([productQuery,discountQuery]);
+
+            const users = await User.findOne({email:req.session.user},{_id:1}).exec()
+            console.log("user : "+users)
+            const user_cart = await Cart.findOne({user:users}).exec()
+            console.log("cart : "+user_cart)
+            let qtyCount = 0;
+            let listCount = 0;
+            if(user_cart){
+                console.log("inside cart");
+                console.log( user_cart.total_amount);
+                user_cart.product_list.forEach(product => { 
+                    console.log(product.quantity);       
+                    qtyCount += product.quantity; })
+            } 
+            const user_list = await List.findOne({user:users}).exec()
+            if(user_list){            
+                
+                listCount = user_list.product_list.length;
+            }
             
             res.render('content/allproducts',{
             title : "All Products| TraditionShoppe",
             user : req.session.user,
-            page : 'All products',            
+            page : 'All products', 
+            listCount:listCount,
+            qtyCount:qtyCount,           
             products : products,
              discounts : discounts,
             errorMessage:req.flash('errorMessage'),
@@ -177,15 +241,36 @@ const  getnewSpices = async (req,res)=>{
     try{
             const categoryQuery = await Category.find({category_name:'Spice', status : true},{_id:1}).exec()
             const categoryIds = categoryQuery.map(category => category._id);
-            const productQuery = Products.find({ category: { $in: categoryIds }, status: 'new', isListing: true }).exec();       
-            const discountQuery = Discount.find({status:true}).exec()
-            console.log( productQuery);
-            const [products, discounts] = await Promise.all([productQuery,discountQuery]);
+            const products = await Products.find({ category: { $in: categoryIds }, status: 'new', isListing: true }).exec();       
+            const discounts = await Discount.find({status:true}).exec()
+            // console.log( productQuery);
+            // const [products, discounts] = await Promise.all([productQuery,discountQuery]);
+
+            const users = await User.findOne({email:req.session.user},{_id:1}).exec()
+            console.log("user : "+users)
+            const user_cart = await Cart.findOne({user:users}).exec()
+            console.log("cart : "+user_cart)
+            let qtyCount = 0;
+            let listCount = 0;
+            if(user_cart){
+                console.log("inside cart");
+                console.log( user_cart.total_amount);
+                user_cart.product_list.forEach(product => { 
+                    console.log(product.quantity);       
+                    qtyCount += product.quantity; })
+            } 
+            const user_list = await List.findOne({user:users}).exec()
+            if(user_list){            
+                
+                listCount = user_list.product_list.length;
+            }
             
             res.render('content/allproducts',{
             title : "All Products| TraditionShoppe",
             user : req.session.user,
-            page : 'All products',            
+            page : 'All products',
+            listCount:listCount,
+            qtyCount:qtyCount,            
             products : products,
              discounts : discounts,
             errorMessage:req.flash('errorMessage'),
@@ -205,15 +290,36 @@ const  getnewApparels = async (req,res)=>{
     try{
             const categoryQuery = await Category.find({category_name:'Apparels', status : true},{_id:1}).exec()
             const categoryIds = categoryQuery.map(category => category._id);
-            const productQuery = Products.find({ category: { $in: categoryIds }, status: 'new', isListing: true }).exec();       
-            const discountQuery = Discount.find({status:true}).exec()
-            console.log( productQuery);
-            const [products, discounts] = await Promise.all([productQuery,discountQuery]);
+            const products = await Products.find({ category: { $in: categoryIds }, status: 'new', isListing: true }).exec();       
+            const discounts = await Discount.find({status:true}).exec()
+            // console.log( productQuery);
+            // const [products, discounts] = await Promise.all([productQuery,discountQuery]);
+
+            const users = await User.findOne({email:req.session.user},{_id:1}).exec()
+            console.log("user : "+users)
+            const user_cart = await Cart.findOne({user:users}).exec()
+            console.log("cart : "+user_cart)
+            let qtyCount = 0;
+            let listCount = 0;
+            if(user_cart){
+                console.log("inside cart");
+                console.log( user_cart.total_amount);
+                user_cart.product_list.forEach(product => { 
+                    console.log(product.quantity);       
+                    qtyCount += product.quantity; })
+            } 
+            const user_list = await List.findOne({user:users}).exec()
+            if(user_list){            
+                
+                listCount = user_list.product_list.length;
+            }
             
             res.render('content/allproducts',{
             title : "All Products| TraditionShoppe",
             user : req.session.user,
-            page : 'All products',            
+            page : 'All products',  
+            listCount:listCount,
+            qtyCount:qtyCount,          
             products : products,
              discounts : discounts,
             errorMessage:req.flash('errorMessage'),
@@ -259,15 +365,36 @@ const  getmostSold = async (req,res)=>{
 //load all new handicrafts products
 const  getLowtoHigh = async (req,res)=>{
     try{
-            const productQuery = Products.find({isListing: true }).sort({'price_unit':1}).exec();       
-            const discountQuery = Discount.find({status:true}).exec()
-            console.log( productQuery);
-            const [products, discounts] = await Promise.all([productQuery,discountQuery]);
+            const products = await Products.find({isListing: true }).sort({'price_unit':1}).exec();       
+            const discounts = await Discount.find({status:true}).exec()
+            // console.log( productQuery);
+            // const [products, discounts] = await Promise.all([productQuery,discountQuery]);
+
+            const users = await User.findOne({email:req.session.user},{_id:1}).exec()
+            console.log("user : "+users)
+            const user_cart = await Cart.findOne({user:users}).exec()
+            console.log("cart : "+user_cart)
+            let qtyCount = 0;
+            let listCount = 0;
+            if(user_cart){
+                console.log("inside cart");
+                console.log( user_cart.total_amount);
+                user_cart.product_list.forEach(product => { 
+                    console.log(product.quantity);       
+                    qtyCount += product.quantity; })
+            } 
+            const user_list = await List.findOne({user:users}).exec()
+            if(user_list){            
+                
+                listCount = user_list.product_list.length;
+            }
             
             res.render('content/allproducts',{
             title : "All Products| TraditionShoppe",
             user : req.session.user,
-            page : 'All products',            
+            page : 'All products',
+            listCount:listCount,
+            qtyCount:qtyCount,           
             products : products,
              discounts : discounts,
             errorMessage:req.flash('errorMessage'),
@@ -285,15 +412,36 @@ const  getLowtoHigh = async (req,res)=>{
 //load all new handicrafts products
 const  getHightoLow = async (req,res)=>{
     try{
-            const productQuery = Products.find({isListing: true }).sort({'price_unit':-1}).exec();      
-            const discountQuery = Discount.find({status:true}).exec()
-            console.log( productQuery);
-            const [products, discounts] = await Promise.all([productQuery,discountQuery]);
+            const products = await Products.find({isListing: true }).sort({'price_unit':-1}).exec();      
+            const discounts = await Discount.find({status:true}).exec()
+            // console.log( productQuery);
+            // const [products, discounts] = await Promise.all([productQuery,discountQuery]);
+
+            const users = await User.findOne({email:req.session.user},{_id:1}).exec()
+            console.log("user : "+users)
+            const user_cart = await Cart.findOne({user:users}).exec()
+            console.log("cart : "+user_cart)
+            let qtyCount = 0;
+            let listCount = 0;
+            if(user_cart){
+                console.log("inside cart");
+                console.log( user_cart.total_amount);
+                user_cart.product_list.forEach(product => { 
+                    console.log(product.quantity);       
+                    qtyCount += product.quantity; })
+            } 
+            const user_list = await List.findOne({user:users}).exec()
+            if(user_list){            
+                
+                listCount = user_list.product_list.length;
+            }
             
             res.render('content/allproducts',{
             title : "All Products| TraditionShoppe",
             user : req.session.user,
-            page : 'All products',            
+            page : 'All products',
+            listCount:listCount,
+            qtyCount:qtyCount,            
             products : products,
              discounts : discounts,
             errorMessage:req.flash('errorMessage'),
@@ -311,15 +459,36 @@ const  getHightoLow = async (req,res)=>{
 //load all new handicrafts products
 const  gettoyCategory = async (req,res)=>{
     try{
-        const productQuery = Products.find({ product_type : 'toys' , status:{ $ne:'inactive'} , isListing: true }).exec();           
-            const discountQuery = Discount.find({status:true}).exec()
-            console.log( productQuery);
-            const [products, discounts] = await Promise.all([productQuery,discountQuery]);
+            const products = await Products.find({ product_type : 'toys' , status:{ $ne:'inactive'} , isListing: true }).exec();           
+            const discounts = await Discount.find({status:true}).exec()
+            // console.log( productQuery);
+            // const [products, discounts] = await Promise.all([productQuery,discountQuery]);
+
+            const users = await User.findOne({email:req.session.user},{_id:1}).exec()
+            console.log("user : "+users)
+            const user_cart = await Cart.findOne({user:users}).exec()
+            console.log("cart : "+user_cart)
+            let qtyCount = 0;
+            let listCount = 0;
+            if(user_cart){
+                console.log("inside cart");
+                console.log( user_cart.total_amount);
+                user_cart.product_list.forEach(product => { 
+                    console.log(product.quantity);       
+                    qtyCount += product.quantity; })
+            } 
+            const user_list = await List.findOne({user:users}).exec()
+            if(user_list){            
+                
+                listCount = user_list.product_list.length;
+            }
             
             res.render('content/allproducts',{
             title : "All Products| TraditionShoppe",
             user : req.session.user,
-            page : 'All products',            
+            page : 'All products',
+            listCount:listCount,
+            qtyCount:qtyCount,            
             products : products,
              discounts : discounts,
             errorMessage:req.flash('errorMessage'),
@@ -337,14 +506,35 @@ const  gettoyCategory = async (req,res)=>{
 //load all new handicrafts products
 const  getecoFriendly = async (req,res)=>{
     try{
-        const productQuery = Products.find({ product_type : 'eco-friendly' , status:{ $ne:'inactive'} , isListing: true }).exec();          
-            const discountQuery = Discount.find({status:true}).exec()
-            console.log( productQuery);
-            const [products, discounts] = await Promise.all([productQuery,discountQuery]);
+        const products = await Products.find({ product_type : 'eco-friendly' , status:{ $ne:'inactive'} , isListing: true }).exec();          
+            const discounts = await Discount.find({status:true}).exec()
+            // console.log( productQuery);
+            // const [products, discounts] = await Promise.all([productQuery,discountQuery]);
+
+            const users = await User.findOne({email:req.session.user},{_id:1}).exec()
+            console.log("user : "+users)
+            const user_cart = await Cart.findOne({user:users}).exec()
+            console.log("cart : "+user_cart)
+            let qtyCount = 0;
+            let listCount = 0;
+            if(user_cart){
+                console.log("inside cart");
+                console.log( user_cart.total_amount);
+                user_cart.product_list.forEach(product => { 
+                    console.log(product.quantity);       
+                    qtyCount += product.quantity; })
+            } 
+            const user_list = await List.findOne({user:users}).exec()
+            if(user_list){            
+                
+                listCount = user_list.product_list.length;
+            }
             
             res.render('content/allproducts',{
             title : "All Products| TraditionShoppe",
             user : req.session.user,
+            listCount:listCount,
+            qtyCount:qtyCount,
             page : 'All products',            
             products : products,
              discounts : discounts,
@@ -362,15 +552,36 @@ const  getecoFriendly = async (req,res)=>{
 //load all new handicrafts products
 const  getbrassMaterial= async (req,res)=>{
     try{
-            const productQuery = Products.find({ material: 'Brass' , status:{ $ne:'inactive'} , isListing: true }).exec();       
-            const discountQuery = Discount.find({status:true}).exec()
-            console.log( productQuery);
-            const [products, discounts] = await Promise.all([productQuery,discountQuery]);
+            const products = await Products.find({ material: 'Brass' , status:{ $ne:'inactive'} , isListing: true }).exec();       
+            const discounts = await Discount.find({status:true}).exec()
+            // console.log( productQuery);
+            // const [products, discounts] = await Promise.all([productQuery,discountQuery]);
+
+            const users = await User.findOne({email:req.session.user},{_id:1}).exec()
+            console.log("user : "+users)
+            const user_cart = await Cart.findOne({user:users}).exec()
+            console.log("cart : "+user_cart)
+            let qtyCount = 0;
+            let listCount = 0;
+            if(user_cart){
+                console.log("inside cart");
+                console.log( user_cart.total_amount);
+                user_cart.product_list.forEach(product => { 
+                    console.log(product.quantity);       
+                    qtyCount += product.quantity; })
+            } 
+            const user_list = await List.findOne({user:users}).exec()
+            if(user_list){            
+                
+                listCount = user_list.product_list.length;
+            }
             
             res.render('content/allproducts',{
             title : "All Products| TraditionShoppe",
             user : req.session.user,
-            page : 'All products',            
+            page : 'All products',
+            qtyCount:qtyCount,
+            listCount:listCount,            
             products : products,
              discounts : discounts,
             errorMessage:req.flash('errorMessage'),
@@ -387,15 +598,35 @@ const  getbrassMaterial= async (req,res)=>{
 
 const  getmetalMaterial = async (req,res)=>{
     try{
-        const productQuery = Products.find({ material: 'Metal' , status:{ $ne:'inactive'} , isListing: true }).exec();         
-            const discountQuery = Discount.find({status:true}).exec()
-            console.log( productQuery);
-            const [products, discounts] = await Promise.all([productQuery,discountQuery]);
+        const products = await Products.find({ material: 'Metal' , status:{ $ne:'inactive'} , isListing: true }).exec();         
+            const discounts = await Discount.find({status:true}).exec()
+            // console.log( productQuery);
+            // const [products, discounts] = await Promise.all([productQuery,discountQuery]);
+            const users = await User.findOne({email:req.session.user},{_id:1}).exec()
+            console.log("user : "+users)
+            const user_cart = await Cart.findOne({user:users}).exec()
+            console.log("cart : "+user_cart)
+            let qtyCount = 0;
+            let listCount = 0;
+            if(user_cart){
+                console.log("inside cart");
+                console.log( user_cart.total_amount);
+                user_cart.product_list.forEach(product => { 
+                    console.log(product.quantity);       
+                    qtyCount += product.quantity; })
+            } 
+            const user_list = await List.findOne({user:users}).exec()
+            if(user_list){            
+                
+                listCount = user_list.product_list.length;
+            }
             
             res.render('content/allproducts',{
             title : "All Products| TraditionShoppe",
             user : req.session.user,
-            page : 'All products',            
+            page : 'All products',
+            listCount:listCount,
+            qtyCount:qtyCount,            
             products : products,
              discounts : discounts,
             errorMessage:req.flash('errorMessage'),
@@ -412,15 +643,36 @@ const  getmetalMaterial = async (req,res)=>{
 
 const  getwoodMaterial = async (req,res)=>{
     try{
-        const productQuery = Products.find({ material: 'Wood' , status:{ $ne:'inactive'} , isListing: true }).exec();            
-            const discountQuery = Discount.find({status:true}).exec()
-            console.log( productQuery);
-            const [products, discounts] = await Promise.all([productQuery,discountQuery]);
+        const products = await Products.find({ material: 'Wood' , status:{ $ne:'inactive'} , isListing: true }).exec();            
+            const discounts = await Discount.find({status:true}).exec()
+            // console.log( productQuery);
+            // const [products, discounts] = await Promise.all([productQuery,discountQuery]);
+
+            const users = await User.findOne({email:req.session.user},{_id:1}).exec()
+            console.log("user : "+users)
+            const user_cart = await Cart.findOne({user:users}).exec()
+            console.log("cart : "+user_cart)
+            let qtyCount = 0;
+            let listCount = 0;
+            if(user_cart){
+                console.log("inside cart");
+                console.log( user_cart.total_amount);
+                user_cart.product_list.forEach(product => { 
+                    console.log(product.quantity);       
+                    qtyCount += product.quantity; })
+            } 
+            const user_list = await List.findOne({user:users}).exec()
+            if(user_list){            
+                
+                listCount = user_list.product_list.length;
+            }
             
             res.render('content/allproducts',{
             title : "All Products| TraditionShoppe",
             user : req.session.user,
-            page : 'All products',            
+            page : 'All products', 
+            listCount:listCount,
+            qtyCount:qtyCount,           
             products : products,
              discounts : discounts,
             errorMessage:req.flash('errorMessage'),
@@ -437,15 +689,20 @@ const  getwoodMaterial = async (req,res)=>{
 
 const  getgiftCategory = async (req,res)=>{
     try{
-            const productQuery = Products.find({ product_type : 'gift' , status:{ $ne:'inactive'} , isListing: true }).exec();       
-            const discountQuery = Discount.find({status:true}).exec()
-            console.log( productQuery);
-            const [products, discounts] = await Promise.all([productQuery,discountQuery]);
+            const products = await Products.find({ product_type : 'gift' , status:{ $ne:'inactive'} , isListing: true }).exec();       
+            const discounts = await Discount.find({status:true}).exec()
+            // console.log( productQuery);
+            // const [products, discounts] = await Promise.all([productQuery,discountQuery]);
+
+            let qtyCount = await getQtyCount(req,res)
+            let listCount = await getListCount(req,res)
             
             res.render('content/allproducts',{
             title : "All Products| TraditionShoppe",
             user : req.session.user,
-            page : 'All products',            
+            page : 'All products',
+            listCount:listCount,
+            qtyCount:qtyCount,            
             products : products,
              discounts : discounts,
             errorMessage:req.flash('errorMessage'),
@@ -479,10 +736,12 @@ const  setpriceRange = async (req,res)=>{
             try{     
                 
                 const { minPrice, maxPrice } = req.session.priceValues;     
-            const productQuery = Products.find({price_unit:{$gt:minPrice,$lt:maxPrice} , status:{ $ne:'inactive'} , isListing: true }).exec();       
-            const discountQuery = Discount.find({status:true}).exec()
-            console.log( productQuery);
-            const [products, discounts] = await Promise.all([productQuery,discountQuery]);
+            const products = Products.find({price_unit:{$gt:minPrice,$lt:maxPrice} , status:{ $ne:'inactive'} , isListing: true }).exec();       
+            const discounts = Discount.find({status:true}).exec()
+            // console.log( productQuery);
+            // const [products, discounts] = await Promise.all([productQuery,discountQuery]);
+
+           
             
             res.render('content/allproducts',{
             title : "All Products| TraditionShoppe",
@@ -503,6 +762,47 @@ const  setpriceRange = async (req,res)=>{
     }
 }
 
+const getQtyCount = async(req,res)=>{
+    try{
+
+        let qtyCount = 0;
+        const users = await User.findOne({email:req.session.user},{_id:1}).exec()
+        console.log("user : "+users)
+        const user_cart = await Cart.findOne({user:users}).exec()
+        console.log("cart : "+user_cart)
+        
+        if(user_cart){
+            console.log("inside cart");
+            console.log( user_cart.total_amount);
+            user_cart.product_list.forEach(product => { 
+                console.log(product.quantity);       
+                qtyCount += product.quantity; })
+        }
+        return qtyCount;
+    }
+    catch(err){
+        console.log(err.message);
+    }
+}
+
+const getListCount = async(req,res)=>{
+    try{
+        let listCount = 0;
+        const users = await User.findOne({email:req.session.user},{_id:1}).exec()
+        console.log("user : "+users)
+        const user_list = await List.findOne({user:users}).exec()
+
+        if(user_list){           
+            
+            listCount = user_list.product_list.length;
+        }
+        return listCount;
+    }
+    catch(err){
+        console.log(err.message);
+    }
+}
+
 //load all new handicrafts products
 
 /*******************product view details************************* */
@@ -510,18 +810,23 @@ const loadProductDetail = async (req,res)=>{
     try{
         let id = req.params.id
         console.log(id);
-        const productQuery = Products.find({_id:id}).exec()
-        const categoryQuery = Category.find({status:true}).exec()
-        const sellerQuery = Seller.find({status:{$ne:'inactive'}}).exec()
-        const discountQuery = Discount.find({status:true}).exec()
-        const otherProducts = Products.find({status:{ $ne:'inactive'} , isListing: true }).exec()
+        const products = await Products.find({_id:id}).exec()
+        const categories = await Category.find({status:true}).exec()
+        const sellers = await Seller.find({status:{$ne:'inactive'}}).exec()
+        const discounts = await Discount.find({status:true}).exec()
+        const allproducts = await Products.find({status:{ $ne:'inactive'} , isListing: true }).exec()
         
-        const [products, categories, sellers, discounts, allproducts] = await Promise.all([productQuery, categoryQuery, sellerQuery, discountQuery, otherProducts]);
+        // const [products, categories, sellers, discounts, allproducts] = await Promise.all([productQuery, categoryQuery, sellerQuery, discountQuery, otherProducts]);
         //console.log( products);
         //console.log( products.product_name);
+        let qtyCount = await getQtyCount(req,res)
+        let listCount = await getListCount(req,res)
+
         res.render('content/productView',{
             title: "View Product | TraditionShoppe", 
-            user : req.session.user,           
+            user : req.session.user,
+            listCount:listCount,
+            qtyCount:qtyCount,              
             products:products,
             allproducts:allproducts,
             categories:categories,
@@ -550,14 +855,28 @@ const loadCart = async(req,res)=>{
         const user_cart = await Cart.findOne({user:user_id}).exec()
         const products = await Products.find({status:{$ne:'inactive'},isListing:true}).exec()
         const discounts = await Discount.find({status:true}).exec()
+        let qtyCount = 0;
+        if(user_cart){
+            if(user_cart.product_list == ''){
+                await Cart.deleteOne( { 
+                    user: user_id,
+                })
+            } else {
+                user_cart.product_list.forEach(product => {        
+                    qtyCount += product.quantity; })
+            }                                
             
+        }        
+         let listCount = await getListCount(req,res)   
         res.render('content/myCart',{
             title: "My Cart - TraditionShoppe",
             page:"My Cart",   
             user : req.session.user, 
             products:products,  
             discounts:discounts,
-            user_cart:user_cart,       
+            user_cart:user_cart, 
+            qtyCount:qtyCount, 
+            listCount:listCount,     
             errorMessage : req.flash('errorMessage'),
             successMesssage : req.flash('successMessage')
         })
@@ -574,6 +893,7 @@ const addToCartTable = async(req,res)=>{
         let price = req.params.mrp;
         const user = req.session.user
        // const product = await Products.findOne({_id:pdt_id}).exec();
+       const stock = await Products.findOne({_id:pdt_id},{stock:1}).exec()
         const user_id = await User.findOne({email:user},{_id:1}).exec()
         const user_cart = await Cart.findOne({user:user_id}).exec()
         console.log("pdtid: "+pdt_id)
@@ -583,7 +903,7 @@ const addToCartTable = async(req,res)=>{
         let pdt_check = false;
         let amount = 0;
         let qty;
-           
+        if(stock.stock>0)  { 
                 if (!user_cart){
                     console.log("cart is empty")
                     const cart = new Cart({
@@ -644,14 +964,174 @@ const addToCartTable = async(req,res)=>{
                 res.redirect(`/viewProduct/${pdt_id}`)
 
             }
-            
-
         } 
+    }else{
+        req.flash("errorMessage", "Out of the stock!!");
+        res.redirect(`/viewProduct/${pdt_id}`)
+    }
     }
     catch(err){
         console.log(err.message);
     }
 }
+
+/*********add qty to cart table*********/
+const addQtyToCart = async(req,res)=>{
+    try{
+        const userid = req.params.userid;
+        const pdtid = req.params.pdtid;
+        const price = req.params.price;
+
+        const stock = await Products.findOne({_id:pdtid},{stock:1,_id:0}).exec()
+        const user_cart = await Cart.findOne({user:userid}).exec()
+        console.log("stock: "+stock.stock)
+
+        if( stock.stock>0 ){
+            let qty = 0;
+            let amount = 0;
+
+            user_cart.product_list.forEach(product => {
+                if( product.productId == pdtid ){
+                    //pdt_check = true;
+                    qty = product.quantity;                           
+
+                }})
+                console.log("qty: "+qty);
+                    console.log("total amount : "+ user_cart.total_amount);
+                    amount = parseFloat(user_cart.total_amount);  
+            await Cart.updateOne({
+                user: userid,
+                "product_list.productId": pdtid 
+                },
+                {
+                    $set: { 
+                        "product_list.$.quantity": qty + 1,
+                        "product_list.$.price": price,
+                        "product_list.$.total": (qty+1)*price,
+                        total_amount: amount + parseFloat(price)
+                    } 
+                }
+            )
+            console.log('successful');
+            req.flash("successMessage", "Product is successfully updated to cart...");
+            res.redirect('/cart')
+
+        } else {
+            req.flash("errorMessage", "Out of the stock!!");
+            res.redirect('/cart')
+        }
+
+
+
+
+    }
+    catch(err){
+        console.log(err.message);
+    }
+}
+
+/*********remove qty from cart table*********/
+const subQtyFromCart = async(req,res)=>{
+    try{
+         const userid = req.params.userid;
+        const pdtid = req.params.pdtid;
+        const price = req.params.price;
+
+        const stock = await Products.findOne({_id:pdtid},{stock:1,_id:0}).exec()
+        const user_cart = await Cart.findOne({user:userid}).exec()
+        console.log("stock: "+stock.stock)
+        let qty = 0;
+        let amount = 0;
+        user_cart.product_list.forEach(product => {
+            if( product.productId == pdtid ){
+                //pdt_check = true;
+                qty = product.quantity;                           
+
+            }}) 
+            let newPrice = qty * price;
+            console.log("qty: "+qty);
+            console.log("total amount : "+ user_cart.total_amount);
+            amount = parseFloat(user_cart.total_amount);  
+
+        if( stock.stock>0 && qty>1){
+            
+            await Cart.updateOne({
+                user: userid,
+                "product_list.productId": pdtid 
+                },
+                {
+                    $set: { 
+                        "product_list.$.quantity": qty - 1,
+                        "product_list.$.price": price,
+                        "product_list.$.total": (qty-1)*price,
+                        total_amount: amount - parseFloat(price)
+                    } 
+                }
+            )
+            console.log('successful');
+            req.flash("successMessage", "Product is successfully updated to cart...");
+            res.redirect('/cart')
+
+        } else if (qty<=1){
+            if( user_cart.product_list.length === 1 ){
+            await Cart.deleteOne(
+                { user: userid })
+                console.log('successful');
+                req.flash("successMessage", "User is deleted from cart...");
+                res.redirect('/cart')
+        } else{
+            await Cart.updateOne(
+                { user: userid },
+                { $pull: { product_list: { productId: pdtid } },
+                $set: { 
+                    total_amount: amount - parseFloat(newPrice)
+                }  
+            })
+            console.log('successful');
+            req.flash("successMessage", "Product is deleted from cart...");
+            res.redirect('/cart')
+        }
+    }
+    }
+    catch(err){
+        console.log(err.message);
+    }
+}
+
+/*********delete from cart table*********/
+const deleteFromCart = async(req,res)=>{
+    try{
+        const userid = req.params.userid;
+        const pdtid = req.params.pdtid; 
+        const user_cart = await Cart.findOne({user:userid}).exec()
+        let qty = 0;
+        let amount = 0;
+        let price = 0;
+        user_cart.product_list.forEach(product => {
+            if( product.productId == pdtid ){
+                qty = product.quantity,
+                price = product.price
+            }}) 
+            amount = user_cart.total_amount
+            let newPrice = qty * price;
+            await Cart.updateOne(
+                { user: userid },
+                { $pull: { product_list: { productId: pdtid } },
+                $set: { 
+                    total_amount: amount - parseFloat(newPrice)
+                }  
+            }) 
+                      
+        
+        console.log('successful');
+        req.flash("successMessage", "Product is deleted from cart...");
+        res.redirect('/cart')
+    }
+    catch(err){
+        console.log(err.message);
+    }
+}
+
 
 /*********add to wishlist table*********/
 const addToWishlist = async(req,res)=>{
@@ -669,7 +1149,7 @@ const addToWishlist = async(req,res)=>{
 
                 console.log('successful');
                 req.flash("successMessage", "Product is successfully updated to cart...");
-                res.redirect('/viewProduct/pdt_id')
+                res.redirect(`/viewProduct/${pdt_id}`)
 
         } else {
             const list = new List({
@@ -713,10 +1193,21 @@ const addToSave = async(req,res)=>{
 /*********load checkout*********/
 const loadCheckout = async(req,res)=>{
     try{
+        const userid = req.params.userid;
+        const amount = req.params.amount;
+
+        const users = await User.find({_id:userid}).exec()
+        const user_cart = await Cart.find({user:userid}).exec()
+
+        let qtyCount = await getQtyCount(req,res)
+        let listCount = await getListCount(req,res)
+
         res.render('content/checkout',{
             title: "Checkout - TraditionShoppe",
             page:"Checkout",   
-            user : req.session.user,          
+            user : req.session.user,
+            qtyCount:qtyCount,
+            listCount:listCount,          
             errorMessage : req.flash('errorMessage'),
             successMesssage : req.flash('successMessage')
         })
@@ -795,6 +1286,13 @@ module.exports = {
     loadSaved,
 
     addToCartTable,
+    addQtyToCart,
+    subQtyFromCart,
+    deleteFromCart,
+
     addToWishlist,
-    addToSave
+    addToSave,
+
+    getQtyCount,
+    getListCount
 }

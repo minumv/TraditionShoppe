@@ -20,7 +20,7 @@ contentRoute.post("/getSearchProduct",contentController.listSearchProduct)
 
 /*************navigation****************/
 contentRoute.get("/cart",userAuthent.isAuthenticated,contentController.loadCart)
-contentRoute.get("/checkout",userAuthent.isAuthenticated,contentController.loadCheckout)
+contentRoute.get("/checkout/:userid/:amount",userAuthent.isAuthenticated,contentController.loadCheckout)
 contentRoute.get("/wishlist",userAuthent.isAuthenticated,contentController.loadWishlist)
 contentRoute.get("/saveforlater",userAuthent.isAuthenticated,contentController.loadSaved)
 contentRoute.get("/allproducts",userAuthent.isAuthenticated,contentController.loadAllProducts)
@@ -60,6 +60,12 @@ contentRoute.post("/setpricerange",contentController.setpriceRange)
 
 /****************to cart table*********************/
 contentRoute.get("/addtocart/:id/:mrp",contentController.addToCartTable)
+contentRoute.get("/addCart/:userid/:pdtid/:price",contentController.addQtyToCart)
+contentRoute.get("/subCart/:userid/:pdtid/:price",contentController.subQtyFromCart)
+contentRoute.get("/deleteCart/:userid/:pdtid",contentController.deleteFromCart)
+
+/****************wishlist and save for later******************/
+
 contentRoute.get("/addtowishlist/:id",contentController.addToWishlist)
 contentRoute.get("/addtosave/:id",contentController.addToSave)
 

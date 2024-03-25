@@ -1,66 +1,105 @@
 <%- include('../layout/userHeader') %>
 <main>
-    <div class="bg-light py-3">      
+    <div class="bg-light py-3 mt-3">      
         
-          <div class="row">
+          <!-- <div class="row">
             <div class="col-md-12 mb-0"><a href="/home">Home</a> <span class="mx-2 mb-0">/</span> <strong class="text-black">Shopping Cart</strong></div>
-          </div>
+          </div> -->
         <div class="d-flex" >
-            <div class="w-75">
+            <div class="w-75 cart-left">
                 <div class="col-md-12 mb-0">
-                    <ul class="">
+                    <ul class="list-unstyled">
+                        <% let amount = 0 %>
                         <% if(user_cart){%>
                         <li>
                             <div class="cart-head">
-                                <p>price</p>
+                                <p class="main">Shopping Cart <span>(<%= qtyCount%> items)</span> </p>
+                                <p class="text-black">price</p>
                             </div>
                         </li>
                         <% let mrp = 0; %>
-                        <% let per = 0; %> 
+                        <% let per = 0; %>
+                        <% let mrpTotal = 0; %>
                         <% user_cart.product_list.forEach((cart, index) => { %>
-                            <% products.forEach((pdt, index) => { %>
-                            <% if(cart.productId.equals(pdt._id) ){%>                                       
+                            <% products.forEach((pdt, index) => { %>                                
+                            <% if(cart.productId.equals(pdt._id) ){%> 
+                                <% console.log("qty: "+cart.quantity) %>
+                                <% console.log("price: "+pdt.price_unit) %>      
+                                <%  mrpTotal += parseFloat(cart.quantity * pdt.price_unit) %> 
+                                <% console.log("total price: "+ mrpTotal) %>                                    
                                 <% discounts.forEach((disc_row, index) => { %>
                                     <%console.log(disc_row._id , pdt.discount)%>
                                     <%if(disc_row._id .equals( pdt.discount )) {%>
                                         <% per = disc_row.percentage %>
-                                        <% mrp = (pdt.price_unit * (100 - per) * 0.01)  %>
+                                        <% mrp = parseFloat(pdt.price_unit * (100 - per) * 0.01)  %>
                                     <% } %>
                                 <% })%>
                             <li>
                                 <div class="cart-list">
                                     <div class="d-flex align-items-center">
-                                        <img src="" alt="" class="cart-image">
+                                        <img src="../upload/<%= pdt.images[0] %>" alt="" class="cart-image">
                                         <p class="cart-name"><%=pdt.product_name %></p>
                                     </div>
                                     <div class="cart-details">
                                        
                                         <div class="cart-opert but">
-                                            <div class="p-1 m-0">-</div>
-                                            <div class="p-1 m-0"><button></button></div>
-                                            <div class="p-1 m-0">+</div>
+                                            <a href="/subCart/<%=user_cart.user%>/<%=cart.productId%>/<%=mrp%>"><div class="p-1 m-0 side">-</div></a>
+                                            <div class="p-1 m-0"><button><%=cart.quantity %></button></div>
+                                            <a href="/addCart/<%=user_cart.user%>/<%=cart.productId%>/<%=mrp%>"><div class="p-1 m-0 side">+</div></a>
                                         </div>
+                                        <a href="/deleteCart/<%=user_cart.user%>/<%=cart.productId%>"><span class="icon icon-trash cart-trash-icon"></span></a>
+
                                     </div>
                                     <div class="cart-price">
-                                        <p><%=mrp %></p>
-                                        <p><%=pdt.price_unit %></p>
+                                        <p class="disc">₹<%=mrp.toFixed(2) %></p>
+                                        <p class="mrp">₹<%=pdt.price_unit.toFixed(2) %></p>
                                     </div>
                                 </div>
                             </li>
                             <% } %>
                             <% }) %>
                             <% }) %>
-                            <% } else {%>
-                                <p>Your Cart is empty!!</p>
-                                <%}%>
+                            <% amount = user_cart.total_amount %>
+                            <% console.log("amount: "+ amount) %>    
+                            <% let savings = parseFloat(mrpTotal - amount )%>
+                            <% console.log("savings: "+ savings) %>    
+                           
+                        <li>
+                            <div class="cart-footer">
+                                <p>Subtotal (<%=qtyCount%> items):<span>₹<%=amount.toFixed(2)%> </span> </p>
+                            </div>
+                            
+                        </li>
                     </ul>
                 </div>           
             </div>
             <div class="">
-                <div class="col-md-12 mb-0 bg-danger"><div>
-                    <p>proceed to buy</p>
-                </div></div>
+                <div class="col-md-12 mb-0 ">
+                    <div class="cart-proceed">
+                        <p class="head">TraditionShoppe Subtotal(<%=qtyCount%><br> items):<span>₹<%=amount.toFixed(2)%> </span></p>
+                        <p class="sub">Total Savings : <span>₹<%=savings.toFixed(2)%> </span></p>
+                        <a href="/checkout/<%=user_cart.user%>/<%=user_cart.total_amount%>"><button>Proceed to Buy Item</button></a>
+                        <div class="d-flex">
+                            <div class="line"></div>
+                            &nbsp;or&nbsp;
+                            <div class="line"></div>
+                        </div>
+                        <a href="/allproducts"><p class="link">Continue Shopping</p></a>
+                    </div>
+                </div>
             </div>
+            <% } else if(!user_cart || user_cart.product_list == '') {%>
+                <div class="block">
+                    <div class="cart-empty">
+                        <p>Your TraditionShoppe Cart is empty.</p>
+                    </div>
+                    <div>
+                        <p>Check your Saved for later items below or <a href="/allproducts"><span>continue shopping.</span> </a></p>
+                    </div>
+                </div>
+               
+                
+                <%}%>
         </div>  
        
         

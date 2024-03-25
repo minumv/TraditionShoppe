@@ -252,7 +252,7 @@ const  deleteProduct = async (req,res)=>{
         let id = req.params.id
         console.log(id)
         await Products.updateOne({_id:id},{$set:{
-        status : 'inactive'           
+        status : "inactive"           
     }})
     res.redirect('/admin/products')
      

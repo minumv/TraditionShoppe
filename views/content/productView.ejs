@@ -68,9 +68,16 @@
                 <p class="det-name">Weight : <span><%= pdt.weight %> grams</span></p>
             </div>
             <div class="wish-save d-flex">
-                <a class = "link-wish"href="/addtowishlist/<%= pdt._id %>/<%= mrp %>"><span class="icon icon-heart-o">&nbsp;Add to wishlist</span></a>&ensp;&ensp;&ensp;&nbsp;
+                <a class = "link-wish"href="/addtowishlist/<%= pdt._id %>"><span class="icon icon-heart-o">&nbsp;Add to wishlist</span></a>&ensp;&ensp;&ensp;&nbsp;
                 <a class= "link-wish" href="/saveforlater"><span class="icon icon-save">&nbsp;Save for later</span></a>
-            </div>  <br>          
+            </div>
+            <% if (errorMessage.length > 0) { %>                
+                <p style="color : red;"><%- errorMessage %></p>                    
+            <% } %>
+            <% if (successMessage.length > 0) { %>                
+                <p style="color : green;"> <%- successMessage %> </p>                   
+            <% } %>
+            <br>          
             <div class="nav-but-div">
                 <a href="/addtocart/<%= pdt._id %>/<%= mrp %>"><button class="btn btn-lg bg-success text-white nav-but" >Add to Cart</button></a>&ensp;
                 <a href="/checkout"><button class="btn btn-lg bg-success text-white nav-but" >Buy Now</button></a>
@@ -91,16 +98,29 @@
                   <div class="row">
                     <div class="col-md-12">
                     <div class="nonloop-block-3 owl-carousel">
+                      <% let disc = 0; %>
+                      <% let perc = 0; %>  
                     <% allproducts.forEach((allpdt, index) => { %>
                     <%if(allpdt.material == pdt.material || allpdt.product_type == pdt.product_type ) {%>
+                      <% discounts.forEach((disc_row, index) => { %>
+                        <%console.log(disc_row._id , allpdt.discount)%>
+                        <%if(disc_row._id .equals( allpdt.discount )) {%>
+                            <% perc = disc_row.percentage %>
+                            <% disc = (allpdt.price_unit * (100 - per) * 0.01)  %>
+                        <% } %>
+                      <% })%>
                         <div class="col-sm-6 col-lg-4 mb-4" data-aos="fade-up">
                             <a href="/viewProduct/<%= allpdt._id %>">
-                              <div class="block-4 div-height text-center border">
-                                <figure class="block-4-image-1">
+                              <div class="rel-box  text-center border">
+                                <figure class="rel-image">
                                   <a href="/viewProduct/<%= pdt._id %>"><img src="../upload/<%= allpdt.images[0]%>" alt="Image placeholder" class="img-fluid"></a>
                                 </figure>
-                                <div class="block-4-text p-4">
-                                  <h3><a href="shop-single.html"><%= allpdt.product_name %></a></h3>                              
+                                <div class="rel-text p-4">
+                                  <h3><a href="/viewProduct/<%= pdt._id %>"><%= allpdt.product_name %></a></h3>  
+                                  <div class="d-flex justify-content-around mt-2 ">
+                                    <p class=" mb-0 text-danger font-weight-light"><del>RS.<%= allpdt.price_unit %></del></p>
+                                    <p class="text-black font-weight-light">Rs.<%=mrp %></p>
+                                  </div>                            
                                 </div>
                               </div>
                             </a>
