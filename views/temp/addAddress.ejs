@@ -10,6 +10,17 @@
 					<span><i class="fab fa-facebook-square"></i></span>
 					<span><i class="fab fa-google-plus-square"></i></span>
 					<span><i class="fab fa-twitter-square"></i></span>
+
+ 						 <% if (errorMessage.length > 0) { %>                
+                                        <p style="color : red;"><%- errorMessage %></p>                    
+                                    <% } %>
+                                    <% if (successMessage.length > 0) { %>                
+                                        <p style="color : green;"> <%- successMessage %> </p>                   
+                                    <% } %>
+
+
+
+
 				</div> -->
 			</div>
 			<div class="card-body">

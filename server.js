@@ -45,6 +45,7 @@ app.use(require("./router/adminRouter"));
 app.use(require("./router/userRouter"));
 app.use(require("./router/productRouter"));
 app.use(require("./router/contentRouter"));
+app.use(require("./router/orderRouter"));
 
 // Error handling middleware
 app.use((err, req, res, next) => {

@@ -106,7 +106,7 @@
                         <%console.log(disc_row._id , allpdt.discount)%>
                         <%if(disc_row._id .equals( allpdt.discount )) {%>
                             <% perc = disc_row.percentage %>
-                            <% disc = (allpdt.price_unit * (100 - per) * 0.01)  %>
+                            <% disc = (allpdt.price_unit * (100 - perc) * 0.01)  %>
                         <% } %>
                       <% })%>
                         <div class="col-sm-6 col-lg-4 mb-4" data-aos="fade-up">

@@ -36,22 +36,22 @@ contentRoute.get("/viewProduct/:id",userAuthent.isAuthenticated,contentControlle
 
 /****************All products handling************* */
 
-contentRoute.get("/newHandicrafts",contentController.getnewHandicrafts)
-contentRoute.get("/newAntique",contentController.getnewAntique)
-contentRoute.get("/newSpices",contentController.getnewSpices)
-contentRoute.get("/newApparels",contentController.getnewApparels)
+contentRoute.get("/newHandicrafts",userAuthent.isAuthenticated,contentController.getnewHandicrafts)
+contentRoute.get("/newAntique",userAuthent.isAuthenticated,contentController.getnewAntique)
+contentRoute.get("/newSpices",userAuthent.isAuthenticated,contentController.getnewSpices)
+contentRoute.get("/newApparels",userAuthent.isAuthenticated,contentController.getnewApparels)
 
-contentRoute.get("/mostSold",contentController.getmostSold)
-contentRoute.get("/lowtohigh",contentController.getLowtoHigh)
-contentRoute.get("/hightolow",contentController.getHightoLow)
+contentRoute.get("/mostSold",userAuthent.isAuthenticated,contentController.getmostSold)
+contentRoute.get("/lowtohigh",userAuthent.isAuthenticated,contentController.getLowtoHigh)
+contentRoute.get("/hightolow",userAuthent.isAuthenticated,contentController.getHightoLow)
 
-contentRoute.get("/toycategory",contentController.gettoyCategory)
-contentRoute.get("/ecofriendly",contentController.getecoFriendly)
-contentRoute.get("/giftcategory",contentController.getgiftCategory)
+contentRoute.get("/toycategory",userAuthent.isAuthenticated,contentController.gettoyCategory)
+contentRoute.get("/ecofriendly",userAuthent.isAuthenticated,contentController.getecoFriendly)
+contentRoute.get("/giftcategory",userAuthent.isAuthenticated,contentController.getgiftCategory)
 
-contentRoute.get("/brassmaterial",contentController.getbrassMaterial)
-contentRoute.get("/metalmaterial",contentController.getmetalMaterial)
-contentRoute.get("/woodmaterial",contentController.getwoodMaterial)
+contentRoute.get("/brassmaterial",userAuthent.isAuthenticated,contentController.getbrassMaterial)
+contentRoute.get("/metalmaterial",userAuthent.isAuthenticated,contentController.getmetalMaterial)
+contentRoute.get("/woodmaterial",userAuthent.isAuthenticated,contentController.getwoodMaterial)
 
 /*********price slider********** */
 contentRoute.get("/pricerange",contentController.getpriceRange)
@@ -63,6 +63,20 @@ contentRoute.get("/addtocart/:id/:mrp",contentController.addToCartTable)
 contentRoute.get("/addCart/:userid/:pdtid/:price",contentController.addQtyToCart)
 contentRoute.get("/subCart/:userid/:pdtid/:price",contentController.subQtyFromCart)
 contentRoute.get("/deleteCart/:userid/:pdtid",contentController.deleteFromCart)
+
+/****************add address *********************/
+contentRoute.post ("/getStateCountry",contentController.storeStateCountry)
+contentRoute.post("/addAddress/:userid/:amt",contentController.addNewAddress)
+contentRoute.get("/loadeditAddress/:addressid/:amt",userAuthent.isAuthenticated,contentController.loadEditAddress)
+contentRoute.post ("/editStateCountry",contentController.changeStateCountry)
+contentRoute.post("/editAddress/:userid/:amt",contentController.changeAddress)
+
+/*******set session for checkout**********/
+contentRoute.post("/updateSelectedAddress",contentController.selectedAddress)
+contentRoute.post("/updateSelectedMethod",contentController.selectedMethod)
+
+/**********************make cod payment********************* */
+contentRoute.post("/makeOrder/:userid/:amount/:list/:defAddr/:defPay",contentController.makeCODPayment)
 
 /****************wishlist and save for later******************/
 

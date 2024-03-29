@@ -1,0 +1,106 @@
+<%- include('../layout/adminHeader') %>
+<div class="row">    
+    <div class="col-12">
+      <div class="card my-4">
+        <div class="card-header p-0 position-relative  mt-n4 mx-3 z-index-2">
+          <div class="bg-gradient-primary shadow-primary border-radius-lg pt-2 pb-1 text-center">
+            <h6 class="text-white text-capitalize ps-3">Order Details</h6>
+          </div>
+        </div>
+        <div class="card-body px-0 pb-2">
+            <div class="table-responsive p-0">
+            <% if(orders != '') {%>
+                
+            <table class="table align-items-center mb-0">
+                <thead>
+                <tr>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">S.No</th>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Name</th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Delivery Address</th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Price</th>
+                    <th class="text-secondary opacity-7">Status</th>
+                    <th class="text-secondary opacity-7">Action</th>
+                    <th class="text-secondary opacity-7"></th>
+                </tr>
+                </thead>
+                <tbody>
+                <% orders.forEach((row,index)=>{%>
+                <tr>
+                    <td>
+                    <div class="d-flex px-2 py-1">
+                        <!-- <div>
+                        <img src="../assets/img/team-2.jpg" class="avatar avatar-sm me-3 border-radius-lg" alt="user1">
+                        </div> -->
+                        <div class="d-flex flex-column justify-content-center">
+                        <h6 class="mb-0 text-sm"><%= index+1 %></h6>
+                        <!-- <p class="text-xs text-secondary mb-0">john@creative-tim.com</p> -->
+                        </div>
+                    </div>
+                    </td>
+                    <%users.forEach((user,index)=>{%>
+                        <% if(row.user.equals(user._id)){%>                    
+                            <td>
+                            <p class="text-xs font-weight-bold mb-0" style="width:100px; overflow:hidden ;"><%= user.name %> </p>
+                            <!-- <p class="text-xs text-secondary mb-0">Organization</p> -->
+                            </td>
+                        <%}%>
+                    <%})%>
+                    <%address.forEach((adr,index)=>{%>
+                        <% if(row.address.equals(adr._id)){%>    
+                            <td class="align-middle  text-sm">                
+                                <p class="text-xs font-weight-bold mb-0"><%= adr.house %>,<%= adr.city %>,<%= adr.state %></p>
+                            </td>
+                        <%}%>
+                    <%})%>
+                    <td class="align-middle  text-sm" >
+                    <p class="text-xs font-weight-bold mb-0" style="width:150px; overflow:hidden ;"><%= row.payment_amount %> </p>
+                </td>
+                <td class="align-middle  text-sm">
+                    <% if (row.status === 'delivered'){ %>
+                        <span class="badge badge-sm bg-gradient-success">delivered</span>
+                    <% } else if(row.status === 'pending') { %> 
+                        <span class="badge badge-sm bg-gradient-warning">pending</span>                           
+                    <% } else if(row.status === 'cancelled') { %> 
+                        <span class="badge badge-sm bg-gradient-danger">cancelled</span> 
+                    <% } else if(row.status === 'return request') { %> 
+                        <span class="badge badge-sm bg-gradient-warning">return request</span>                    
+                    <% } else if(row.status === 'refund received') { %> 
+                        <span class="badge badge-sm bg-gradient-success">refund received</span>   
+                    <% } %>    
+                </td>
+
+                <td class="align-middle  text-sm">
+                    <% if (row.action === 'delivered'){ %>
+                        <span class="badge badge-sm bg-gradient-success">delivered</span>
+                    <% } else if(row.action === 'approve') { %> 
+                        <span class="badge badge-sm bg-gradient-warning">approve</span>                           
+                    <% } else if(row.action === 'order cancelled') { %> 
+                        <span class="badge badge-sm bg-gradient-danger">order cancelled</span> 
+                    <% } else if(row.action === 'approve return') { %> 
+                        <span class="badge badge-sm bg-gradient-warning">approve return</span>                    
+                    <% } else if(row.action === 'refund granted') { %> 
+                        <span class="badge badge-sm bg-gradient-success">refund granted</span>   
+                    <% } %>    
+                </td>
+                
+                    <td class="align-middle">
+                    <a href="/orderDetails/<%= row._id %>" class="text-secondary font-weight-bold text-xs" data-toggle="tooltip" data-original-title="Edit user">
+                    Show more
+                    </a>
+                    </td>
+                    
+                </tr>
+                <% }) %>
+                </tbody>
+            </table>
+
+            <% } else {%>
+            <h1 class="text-center text-secondary mt-5">No order placed yet!!</h1>
+        <% } %>
+        </div>
+        </div>
+    </div>
+</div>
+
+</div>
+<%- include('../layout/adminFooter') %>

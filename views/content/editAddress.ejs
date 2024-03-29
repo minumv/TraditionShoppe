@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title><%= title %></title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Mukta:300,400,700"> 
+    <link rel="stylesheet" href="/userasset/fonts/icomoon/style.css">
+
+    <link rel="stylesheet" href="/userasset/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/userasset/css/magnific-popup.css">
+    <link rel="stylesheet" href="/userasset/css/jquery-ui.css">
+    <link rel="stylesheet" href="/userasset/css/owl.carousel.min.css">
+    <link rel="stylesheet" href="/userasset/css/owl.theme.default.min.css">
+
+
+    <link rel="stylesheet" href="/userasset/css/aos.css">
+
+    <link rel="stylesheet" href="/userasset/css/style.css">
+    <link rel="stylesheet" href="/stylesheets/style-user.css" type="text/css">
+    <link rel="stylesheet" href="/stylesheets/style-modal.css" type="text/css">
+</head>
+<body>
+   <div class="container">
+    <%if(address){%>
+        <%address.forEach((addr,index)=>{%>
+    <form action="/editAddress/<%=addr._id%>/<%=amt%>" method="post">
+        <div class="address-body">
+            
+                    <div>
+                                    <select name="country" id="country">Country
+                                        <option value="<%= addr.country%>"><%= addr.country%></option>
+                                        <option value="Afghanisthan">Afghanisthan</option>
+                                        <option value="Australia">Australia</option>
+                                        <option value="Belgium">Belgium</option>
+                                        <option value="Bhutan">Bhutan</option>
+                                        <option value="Chili">Chili</option>
+                                        <option value="China">China</option>
+                                        <option value="Denmark">Denmark</option>                        
+                                        <option value="India">India</option>
+                                        <option value="Japan">Japan</option>
+                                        <option value="Kuwait">Kuwait</option>
+                                        <option value="Malaysia">Malaysia</option>
+                                        <option value="Nepal">Nepal</option>
+                                        <option value="New Zealand">New Zealand</option>
+                                        <option value="Oman">Oman</option>
+                                        <option value="Sri Lanka">Sri Lanka</option>
+                                        <option value="UAE">UAE</option>
+                                        <option value="USA">USA</option>
+                                        <option value="UK">UK</option>
+                                    </select>
+
+                    </div>
+                    <div>
+                        <input type="text" name="name"  placeholder="Fullname" value="<%= addr.name %>">
+                    </div>
+                    <div>
+                        <input type="text" name="mobile" placeholder="Mobile" value="<%= addr.mobile %>">
+                    </div>
+                    <div>
+                        <input type="text" name="pin"  placeholder="Pincode" value="<%= addr.pincode %>">
+                    </div>
+                    <div>
+                        <input type="text" name="house" placeholder="Flat, House no., Building, Company, Apartment" value="<%= addr.house %>">
+                    </div>
+                    <div>
+                        <input type="text" name="street" placeholder="Area, Street, Sector, Village" value="<%= addr.street %>">
+                    </div>               
+                    <div>
+                        <input type="text" name="landmark" placeholder="Landmark" value="<%= addr.landmark %>">
+                    </div>                
+                    <div>
+                        <input type="text" name="city" placeholder="Town/City" value="<%= addr.city %>">
+                    </div>
+                    <div>
+                    <select name="state" id="state">
+                        <option value="<%= addr.state%>"><%= addr.state%></option>
+                        <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+                        <option value="Assam">Assam</option>
+                        <option value="Delhi">Delhi</option>
+                        <option value="Gujarath">Gujarath</option>
+                        <option value="Karnataka">Karnataka</option>
+                        <option value="Kerala">Kerala</option>
+                        <option value="Maharashtra">Maharashtra</option>
+                        <option value="Telangana">Telangana</option>
+                        <option value="Tamilnadu">Tamilnadu</option>                   
+                        <option value="Uthar Pradesh">Uthar Pradesh</option>
+                        <option value="West Bengal">West Bengal</option>
+                        
+                    </select>
+                    </div>
+                    
+                
+                <div>
+                    <button type="submit" id="editAddress" formaction="/editAddress/<%=addr._id%>/<%=amt%>" class="btnmodal btn btn-lg bg-warning btn-lg w-25 mt-4 mb-0 me-2">Use this address</button>
+                </div>
+                
+        </div>
+    </form>
+    <%})%>
+    <%}%>
+    </div>
+     <script src="/userasset/js/jquery-3.3.1.min.js"></script>
+     <script src="/userasset/js/jquery-ui.js"></script>
+     <script src="/userasset/js/popper.min.js"></script>
+     <script src="/userasset/js/bootstrap.min.js"></script>
+     <script src="/userasset/js/owl.carousel.min.js"></script>
+     <script src="/userasset/js/jquery.magnific-popup.min.js"></script>
+     <script src="/userasset/js/aos.js"></script>
+     
+     <script src="/userasset/js/main.js"></script>
+     <script src="/js/scripts.js"></script>
+     <script src="/js/script-modal.js"></script>
+     <!-- <script src="/js/script.js"></script> -->
+       
+     </body>
+     </html>

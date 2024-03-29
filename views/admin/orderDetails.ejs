@@ -1,0 +1,112 @@
+<%- include('../layout/adminHeader') %>
+<div class="container">
+<%orders.forEach((odr)=>{%>
+        <div class="d-flex">
+            <div class="d-block">
+                <div class="d-block bottom-line">
+                    <p class="text-dark font-weight-bold">Order by:</p>
+                
+                <%users.forEach((usr,index)=>{%>
+                    
+                    <% if(usr._id.equals(odr.user)){%>
+                       
+                    <p class="ms-4"><%=usr.name%></p>
+                    
+                </div>
+                <div class="stat-box">
+                    <p><%=odr.status%></p>
+                </div>
+                <div>
+                    <p>Order date:</p>
+                    <p><%=odr.order_date%></p>
+                </div>
+                <div>
+                    <p>Delivery date:</p>
+                    <p><%=odr.delivery_date%></p>
+                </div>
+                <div class="but d-block bg-secondary text-white text-center font-weight-bold rounded">
+                   <div class=""> <p>Payment</p></div>
+                    <p><%=odr.payment%></p>
+                    <p>₹<%=odr. payment_amount%></p>
+                </div>
+
+            </div>
+            <div class="d-block ms-6 bottom-line ">
+                <p class="text-dark font-weight-bold">Delivery to:</p>
+                <span class="ms-4">
+                <%address.forEach((adr,index)=>{%>
+                    <%console.log("inside address")%>
+                    <% if(adr._id.equals(odr.address)){%>
+                        <p><%=adr.name%></p>
+                        <p><%=adr.mobile%></p>
+                        <p><%=adr.house%></p>
+                        <p><%=adr.street%></p>
+                        <p>Landmark:<%=adr.landmark%></p>
+                        <p><%=adr.state%></p>
+                        <p><%=adr.pincode%></p>
+                    <%}%>
+                <%})%>
+                </span>
+            </div>
+        </div>
+        <div class="">
+            <p class="text-dark font-weight-bolder fs-4">Product details</p>
+            <table class="table align-items-center mb-0">
+                <tbody>
+                <% cart.forEach((row,index)=>{%>
+                    <%if((row.user.equals(usr._id)) && (row.status == 'pending')){%>
+                        <%row.product_list.forEach((list)=>{%>
+                            <%products.forEach((pdt)=>{%>
+                                <%if(list.productId.equals(pdt._id)){%>
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex px-2 py-1">
+                                                <div>
+                                                <img src="../upload/<%=pdt.images[0]%>" class="avatar avatar-lg me-3 border-radius-lg" >
+                                                </div>                           
+                                            </div>
+                                        </td>
+                                      
+                                                <td>
+                                                    <div class="d-block">
+                                                        <p class="text-dark font-weight-bold"><%=pdt.product_name%></p>
+                                                        <p>₹<%=list.price%></p>
+                                                    </div>
+                                                </td>
+                                      
+                                        <td>
+                                            <div>
+                                                <p><%=list.quantity%></p>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div>
+                                                <p>₹<%=list.total%></p>
+                                            </div>
+                                        </td>
+
+                                    </tr>
+                                <%}%>
+                            <%})%>
+                        <%})%>
+                    <%}%>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td>Total</td>
+                        <td>
+                            <div>
+                                <p><%=row.total_amount%></p>
+                            </div>
+                        </td>
+                    </tr>
+                    <%})%>
+                </tbody>
+            
+        </div>
+   
+        <%}%>
+    <%})%>
+<%})%>
+</div>
+<%- include('../layout/adminFooter') %>

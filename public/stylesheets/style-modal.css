@@ -4,6 +4,7 @@
     box-sizing : border-box;
 }
 
+/*************modal for confirm********************/
 .modal {
     position: fixed;
     top: 50%;
@@ -19,7 +20,6 @@
     height:250px;
     max-width:80%;
 }
-
 .modal.active{
     transform: translate(-50%, -50%) scale(1);
 }
@@ -31,7 +31,7 @@
 }
 .closeModal{
     display:flex;
-    justify-content:right;
+    justify-content:space-between;
     align-items: center; 
    
 }
@@ -79,4 +79,18 @@
     padding: 10px;
     font-size: 13px;
     text-transform: capitalize;
+}
+
+/***********extra for address modal*****************/
+
+/***modal size***/
+.mod-ad{
+    width: 600px;
+    height:700px; 
+}
+/***inside modal body***/
+.address-body{
+    display:block;
+    justify-content: center;
+    align-items: center;
 }

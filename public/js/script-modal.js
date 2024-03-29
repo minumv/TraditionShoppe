@@ -1,4 +1,5 @@
 
+/***************confirm modal******************/
 
 document.getElementById('openModal').addEventListener('click', function() {
     document.getElementById('modal').style.display = 'block';
@@ -12,14 +13,24 @@ document.getElementById('closeModal').addEventListener('click', function() {
     document.getElementById('overlay').style.display = 'none';
 });
 
-document.getElementById('cancel').addEventListener('click', function() {
-    document.getElementById('modal').style.display = 'none';
-    document.getElementById('overlay').style.display = 'none';
-});
+// document.getElementById('cancel').addEventListener('click', function() {
+//     document.getElementById('modal').style.display = 'none';
+//     document.getElementById('overlay').style.display = 'none';
+// });
 document.getElementById('overlay').addEventListener('click', function() {
     document.getElementById('modal').style.display = 'none';
     document.getElementById('overlay').style.display = 'none';
 });
+
+document.getElementById('useAddress').addEventListener('click',function(){
+   
+   alert("successfully added this address!")
+})
+
+document.getElementById('payMethod').addEventListener('click',function(){
+   
+    alert("successfully added this payment method!")
+})
 
 /************ product display************ */
 function updateMainImage(imageUrl) {
@@ -170,3 +181,7 @@ function imageZoom(imgID, resultID) {
     //         }
     //     });
     // });
+
+
+    
+

@@ -192,6 +192,108 @@ $(document).ready(function () {
         });
     });
 
+   
+/**************add address from checkout page************** */
+$('#addAddress').click(function() {
+    // Get selected values from dropdowns
+    const stateValue = $('#state').val();
+    const countryValue = $('#country').val();       
+   console.log("state:"+stateValue);
+   console.log("country:"+countryValue);
 
+    // Send selected values to server
+    $.ajax({
+        url: '/getStateCountry', // Change this URL to match your server route
+        method: 'POST',
+        data: {
+            country: countryValue,
+            state: stateValue                
+        },
+        success: function(response) {
+            // Handle success response
+            console.log('Server response:', response);
+           // addressSubmission();
+        },
+        error: function(xhr, status, error) {
+            console.error('Error:', error);
+        }
+    });
+});
+
+  
+/**************edit address from checkout page************** */
+$('#editAddress').click(function() {
+    // Get selected values from dropdowns
+    const stateValue = $('#state').val();
+    const countryValue = $('#country').val();       
+   console.log("state:"+stateValue);
+   console.log("country:"+countryValue);
+
+    // Send selected values to server
+    $.ajax({
+        url: '/editStateCountry', // Change this URL to match your server route
+        method: 'POST',
+        data: {
+            country: countryValue,
+            state: stateValue                
+        },
+        success: function(response) {
+            // Handle success response
+            console.log('Server response:', response);
+          
+        },
+        error: function(xhr, status, error) {
+            console.error('Error:', error);
+        }
+    });
+});
+
+/***************saving checked radio button value******************/
+
+$('input[type="radio"][name="address"]').change(function() {
+    if ($(this).is(":checked")) {
+        // Get the value of the selected radio button
+        var selectedAddressId = $(this).val();
+        console.log("Selected Address ID:", selectedAddressId);
+        
+        // Make an AJAX request to send the selected address ID to the server
+        $.ajax({
+            url: '/updateSelectedAddress', // Specify your server endpoint
+            method: 'POST',
+            data: { addressid: selectedAddressId },
+            success: function(response) {
+                console.log('Server response:', response);
+                // Handle success response
+            },
+            error: function(xhr, status, error) {
+                console.error('Error:', error);
+                // Handle error
+            }
+        });
+    }
+});
+
+$('input[type="radio"][name="paymethods"]').change(function() {
+    if ($(this).is(":checked")) {
+        // Get the value of the selected radio button
+        var payMethodSeletced = $(this).val();
+        console.log("Selected pay method:", payMethodSeletced);
+        
+        // Make an AJAX request to send the selected address ID to the server
+        $.ajax({
+            url: '/updateSelectedMethod', // Specify your server endpoint
+            method: 'POST',
+            data: { paymethod: payMethodSeletced },
+            success: function(response) {
+                console.log('Server response:', response);
+                // Handle success response
+            },
+            error: function(xhr, status, error) {
+                console.error('Error:', error);
+                // Handle error
+            }
+        });
+    }
+});
 
 

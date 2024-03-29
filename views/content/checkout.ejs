@@ -1,7 +1,246 @@
-<%- include('../layout/userHeader') %>
- <div class="d-flex">
-    <div class="address"></div>
-    <div class="payment"></div>
-    <div class="checkout"></div>
- </div>
-<%- include('../layout/userFooter') %>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title><%= title %></title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Mukta:300,400,700"> 
+    <link rel="stylesheet" href="/userasset/fonts/icomoon/style.css">
+
+    <link rel="stylesheet" href="/userasset/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/userasset/css/magnific-popup.css">
+    <link rel="stylesheet" href="/userasset/css/jquery-ui.css">
+    <link rel="stylesheet" href="/userasset/css/owl.carousel.min.css">
+    <link rel="stylesheet" href="/userasset/css/owl.theme.default.min.css">
+
+
+    <link rel="stylesheet" href="/userasset/css/aos.css">
+
+    <link rel="stylesheet" href="/userasset/css/style.css">
+    <link rel="stylesheet" href="/stylesheets/style-user.css" type="text/css">
+    <link rel="stylesheet" href="/stylesheets/style-modal.css" type="text/css">
+    
+  </head>
+  <body>
+    <form  role="form" id="address-form" action="/addAddress/<%=userid%>/<%=amount%>" method="post">
+        <div class="check-header">
+           <div class="site-logo">
+            <a class="navbar-brand m-0" href="/home" target="_blank">
+              <img src="/userasset/images/logo.png" class="navbar-brand-img h-100" alt="main_logo">
+              <span class=" logo-span ms-1 font-weight-bold text-dark">TraditionShoppe</span>
+            </a>
+          </div>
+           <div> <p class="text-dark fs-3">Checkout</p></div>
+           <div><a href="/cart"><span class="icon icon-shopping_cart text-dark "></span></a></div>
+        </div>
+        <div class="row d-flex base-addrs">
+            <div class="col-md-4">
+                <div class="address boredr-shadow">                    
+                    <div class="bottom-line">
+                        <p class="p-head text-dark">Your Addresses</p>
+                    </div>
+                    <div class="d-block bottom-line">
+                        <!-- if user has address display here or display 'add address option' -->
+                        <!-- new user? -->
+                        <!-- <% console.log(amount)%> -->
+                        <%if(users){%>                          
+
+                            <% let addressid = ''%>
+                            <% users.forEach((user)=>{%>
+                                <% console.log(user.address)%>
+                                <%if(user.address.length === 0){%>
+                                    <a href="#" id="openModal" data-modal-target="#modal"><span class="icon icon-plus d-flex">&nbsp;<p>Add new address</p></span></a>
+                                <%} else {%>
+                                    <%user.address.forEach((adrs,index)=>{%>
+                                        <%address.forEach((val,index)=>{%>
+                                            <%if(adrs.equals(val._id)){%>                                               
+                                                <% addressid = val._id%>
+                                                <div class="addrs-box">
+                                                    <input type="radio" id="address<%= index %>" name="address" value="<%= val._id %>" <% if (index === 0) { %> checked <% } %> >
+                                                    <label for="address<%= index %>" class="text-dark"><%=val.name %>,<%=val.house %>,<span class="text-uppercase"><%=val.city %></span>,<span class="text-uppercase"><%=val.state %></span>,<%=val.pincode %>,<%=val.Country %>
+                                                    <a href="/loadeditAddress/<%=val._id%>/<%=amount%>">Edit address</a></label><br>
+                                                </div>
+                                            <%}%>
+                                        <%})%>
+                                    <%})%>
+                                    <% if (errorMessage.length > 0) { %>                
+                                        <p style="color : red;"><%- errorMessage %></p>                    
+                                    <% } %>                                    
+                                    <a href="#" id="openModal" data-modal-target="#modal"><span class="icon icon-plus d-flex">&nbsp;<p>Add new address</p></span></a>
+                                <%}%>
+                            <%})%>
+                      
+                            
+                    </div>
+                    <div class="d-flex justify-content-center m-3">
+                        <label id ="useAddress"  class="use-but mb-2 text-center text-dark font-weight-bold">Use this address</label>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="payment boredr-shadow d-block text-dark">
+                    <div class="bottom-line mb-0 p-0 ">
+                        <p class="p-head text-dark">Your available balance</p>                        
+                    </div>
+                    <div class="d-flex justify-content-around pt-2 ">
+                        <input type="text" name="bal" id="bal" class="rounded">
+                        <button class="but bg-light text-dark rounded">Apply</button>
+                    </div>
+                    <div class="bottom-line mt-3">
+                        <p class="p-head text-dark">Choose payment method</p>                        
+                    </div>
+                    <div class="d-block bottom-line p-3">
+                        <input type="radio" id="razorpay" name="paymethods" value="Razorpay" checked="true">
+                        <label for="razorpay">Razorpay</label><br>
+                        <% let defaultPayment = 'Razorpay' %>
+                        <input type="radio" id="cod" name="paymethods" value="COD">
+                        <label for="cod">Cash on Delivery/Pay on Delivery</label>   
+                        <p class="cod-rad">Cash, UPI and Cards accepted.</p>                         
+                    </div>
+                    <div class="d-flex justify-content-start p-4">
+                        <label id="payMethod" class="use-but text-center font-weight-bold" >Use this payment method</label>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="checkout boredr-shadow">
+                    <% user_cart.forEach((cart,index)=>{%>
+                    <div class="d-flex justify-content-center">                      
+                        <button id="payButton" type="submit" formaction="/makeOrder/<%=userid%>/<%=amount%>/<%=cart.product_list %>/<%=defaultAddr%>/<%=defaultPayment%>"  class="use-but font-weight-bold">Use this payment method</button>
+                    </div>
+                    <div class="bottom-line ">
+                        <p class="text-center text-dark">Choose a payment method to continue checking out.
+                            You will still have a chance to review and edit your order before it is final.</p>
+                    </div>
+                    <div class="d-block text-dark">
+                        <p class="bottom-line p-head text-dark">Order Summary</p>
+                        <div class="d-flex justify-content-between">
+                            <p>Items:</p>
+                            <p><%=cart.total_amount%></p>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <p>Delivery:</p>
+                            <p>--</p>
+                        </div>                        
+                       
+                        <div class="d-flex justify-content-between bottom-line">
+                            <p>Total:</p>
+                            <p> ₹<%=cart.total_amount%></p>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <p class="p-head">Order Total:</p>
+                            <p class="p-head"> ₹<%=cart.total_amount%></p>
+                        </div>
+                    </div>
+                    <%})%>   
+                </div>
+            </div>    
+           
+         </div>
+        
+       
+
+        
+         <!-- add address -->
+         <div class="modal mod-ad" id="modal">
+            <div class="closeModal">
+                <p>Enter a new delivery address</p>
+              <a id="closeModal"  data-close-button class="close-button">&times;<a>              
+            </div> 
+            <div>
+                <p>Add a new address</p>
+            </div>          
+            <div class="modal-body">
+             <div class="address-body">
+                <div>
+                    <select name="country" id="country">Country
+                        <option value="Not selected">Country</option>
+                        <option value="Afghanisthan">Afghanisthan</option>
+                        <option value="Australia">Australia</option>
+                        <option value="Belgium">Belgium</option>
+                        <option value="Bhutan">Bhutan</option>
+                        <option value="Chili">Chili</option>
+                        <option value="China">China</option>
+                        <option value="Denmark">Denmark</option>                        
+                        <option value="India">India</option>
+                        <option value="Japan">Japan</option>
+                        <option value="Kuwait">Kuwait</option>
+                        <option value="Malaysia">Malaysia</option>
+                        <option value="Nepal">Nepal</option>
+                        <option value="New Zealand">New Zealand</option>
+                        <option value="Oman">Oman</option>
+                        <option value="Sri Lanka">Sri Lanka</option>
+                        <option value="UAE">UAE</option>
+                        <option value="USA">USA</option>
+                        <option value="UK">UK</option>
+                    </select>
+
+                </div>
+                <div>
+                    <input type="text" name="name" id="" placeholder="Fullname">
+                </div>
+                <div>
+                    <input type="text" name="mobile" id="" placeholder="Mobile">
+                </div>
+                <div>
+                    <input type="text" name="pin" id="pin" placeholder="Pincode">
+                </div>
+                <div>
+                    <input type="text" name="house" id="" placeholder="Flat, House no., Building, Company, Apartment">
+                </div>
+                <div>
+                    <input type="text" name="street" id="" placeholder="Area, Street, Sector, Village">
+                </div>               
+                <div>
+                    <input type="text" name="landmark" id="" placeholder="Landmark">
+                </div>                
+                <div>
+                    <input type="text" name="city" id="" placeholder="Town/City">
+                </div>
+                <div>
+                  <select name="state" id="state">
+                    <option value="Not Selected">States</option>
+                    <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+                    <option value="Assam">Assam</option>
+                    <option value="Delhi">Delhi</option>
+                    <option value="Gujarath">Gujarath</option>
+                    <option value="Karnataka">Karnataka</option>
+                    <option value="Kerala">Kerala</option>
+                    <option value="Maharashtra">Maharashtra</option>
+                    <option value="Telangana">Telangana</option>
+                    <option value="Tamilnadu">Tamilnadu</option>                   
+                    <option value="Uthar Pradesh">Uthar Pradesh</option>
+                    <option value="West Bengal">West Bengal</option>
+                    
+                  </select>
+                </div>
+             </div>
+            </div>
+            <div class="modal-footer">
+              <!-- <a id="cancel" data-close-button class="btnmodal btn btn-lg bg-light btn-lg w-25 mt-4 mb-0 me-2">No, cancel</a> -->
+              <button type="submit" id="addAddress" formaction="/addAddress/<%=userid%>/<%=amount%>" class="btnmodal btn btn-lg bg-warning btn-lg w-25 mt-4 mb-0 me-2">Use this address</button>
+            </div>
+         </div> 
+    </form>
+
+    <%}%>
+
+ <div id="overlay"></div>
+
+
+ <script src="/userasset/js/jquery-3.3.1.min.js"></script>
+<script src="/userasset/js/jquery-ui.js"></script>
+<script src="/userasset/js/popper.min.js"></script>
+<script src="/userasset/js/bootstrap.min.js"></script>
+<script src="/userasset/js/owl.carousel.min.js"></script>
+<script src="/userasset/js/jquery.magnific-popup.min.js"></script>
+<script src="/userasset/js/aos.js"></script>
+
+<script src="/userasset/js/main.js"></script>
+<script src="/js/scripts.js"></script>
+<script src="/js/script-modal.js"></script>
+<!-- <script src="/js/script.js"></script> -->
+  
+</body>
+</html>

@@ -95,3 +95,16 @@ margin-left: 4px;
 }
 
 /**********************************/
+.stat-box{
+    width:150px;
+    height:60px;
+    background-color: rgb(14, 135, 216);
+    border-color: blue;
+    border-radius: 10px;
+    box-shadow: 0 2px 2px -2px rgba(0, 0, 0, 0.3); 
+    color:white;
+    font-size: 19px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
