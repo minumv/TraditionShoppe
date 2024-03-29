@@ -19,6 +19,12 @@ const cartSchema = new mongoose.Schema({
         require : true,
         default:0
     },
+    // status for further check at admin side and also to gey buy again list
+    status:{
+        type:String,
+        enum: ['listed','pending','purchased'],
+        require:true
+    },
    
     created : {
         type : Date,

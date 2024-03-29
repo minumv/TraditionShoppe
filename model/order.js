@@ -15,25 +15,36 @@ const orderSchema = new mongoose.Schema({
         ref: 'address',
         required : true
     },
+    // coupon : {
+    //     type : mongoose.Types.ObjectId,
+    //     ref: 'coupon',
+    //     require : true
+    // },
     payment : {
-        type : mongoose.Types.ObjectId,
-        ref: 'payment',
+        type :String,        
         required : true
     },
-    product_list : {
+    product_list :[{
         type : Array,
         require : true
-    },
-    shipping_charge : {
+    }],
+   
+    payment_amount : {
         type : Number,
         require : true
     },
-    total_amount : {
-        type : Number,
-        require : true
+    delivery_date:{
+        type : Date,
+        require : true,
     },
     status : {
         type : String,
+        enum: ['pending','cancelled','delivered','refund received','return request'],
+        require : true
+    },  
+    action : {
+        type : String,
+        enum: ['approve','order cancelled','delivered','refund granted','approve return',],
         require : true
     },
     created : {
