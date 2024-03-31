@@ -49,9 +49,9 @@
     
                 <div class="col-6 col-md-4 order-2 order-md-1 site-search-icon text-left d-flex">
                  
-                  <form action="/serachProduct" class="site-block-top-search">
-                    <input id="ser-bar" type="text" class="form-control border-1" onkeyup="getSearchValue()" placeholder="Search..">
-                    <a href="/serachProduct"><span class="icon icon-search2"></span></a>
+                  <form action="/searchProducts" class="site-block-top-search d-flex" method="get">
+                    <input  type="text" name="search" class="form-control border-1" >
+                    <a href="/searchProducts"><button type="submit">search</button></a>
                     
                   </form>
                 </div>
@@ -91,13 +91,13 @@
                     <% } else { %>
                       <ul>
                         <li>
-                          <a href="/cart" class="site-cart">
+                          <a href="/signin/userLogin" class="site-cart">
                             <span class="icon icon-shopping_cart"></span>
                             <span class="count">0</span>
                           </a>
                         </li>&nbsp;
                         <li>
-                          <a href="/wishlist" class="site-cart">
+                          <a href="/signin/userLogin" class="site-cart">
                             <span class="icon icon-heart-o"></span>
                             <span class="count">0</span>
                           </a>
@@ -114,23 +114,44 @@
           </div> 
           <nav class="site-navigation text-right text-md-center" role="navigation">
             <div class="container">
+              <% if(user){ %>
+                <% console.log(user) %>
               <ul class="site-menu js-clone-nav d-none d-md-block">
                 <li>
                   <a href="/home">Home</a>                
                 </li>                
                 <li><a href="/allproducts">All Products</a></li>
                 <li class="has-children">
-                  <a href="/category">Category</a>
+                  <a href="">Category</a>
                   <ul class="dropdown">
                     <li><a href="/handicrafts">Handicrafts</a></li>
-                    <li><a href="/decor">Decor</a></li>
+                    <li><a href="/antiques">Antique</a></li>
                     <li><a href="/spices">Spices</a></li>
                     <li><a href="/apparels">Apparels</a></li>
                   </ul>
                 </li>
-                <li><a href="/popular">Popular Products</a></li>
-                <li><a href="/sellers">Best Sellers</a></li>                
+                <li><a href="/todatDeals">Today Deals</a></li>
+                <li><a href="/allCoupons">Coupons</a></li>                
               </ul>
+              <% } else { %>
+                <ul class="site-menu js-clone-nav d-none d-md-block">
+                  <li>
+                    <a href="/signin/userLogin">Home</a>                
+                  </li>                
+                  <li><a href="/signin/userLogin">All Products</a></li>
+                  <li class="has-children">
+                    <a href="">Category</a>
+                    <ul class="dropdown">
+                      <li><a href="/signin/userLogin">Handicrafts</a></li>
+                      <li><a href="/signin/userLogin">Antique</a></li>
+                      <li><a href="/signin/userLogin">Spices</a></li>
+                      <li><a href="/signin/userLogin">Apparels</a></li>
+                    </ul>
+                  </li>
+                  <li><a href="/signin/userLogin">Today Deals</a></li>
+                  <li><a href="/signin/userLogin">Coupons</a></li>                
+                </ul>
+                <% } %>
             </div>
           </nav>
         </header>
