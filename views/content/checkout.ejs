@@ -107,7 +107,7 @@
                 <div class="checkout boredr-shadow">
                     <% user_cart.forEach((cart,index)=>{%>
                     <div class="d-flex justify-content-center">                      
-                        <button id="payButton" type="submit" formaction="/makeOrder/<%=userid%>/<%=amount%>/<%=cart.product_list %>/<%=defaultAddr%>/<%=defaultPayment%>"  class="use-but font-weight-bold">Use this payment method</button>
+                        <button id="payButton" type="submit" formaction="/makeOrder/<%=userid%>/<%=amount%>/<%=cart.product_list %>/<%=defaultPayment%>"  class="use-but font-weight-bold">Use this payment method</button>
                     </div>
                     <div class="bottom-line ">
                         <p class="text-center text-dark">Choose a payment method to continue checking out.

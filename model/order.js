@@ -37,9 +37,13 @@ const orderSchema = new mongoose.Schema({
         type : Date,
         require : true,
     },
+    return_date:{
+        type : Date,
+        require : true,
+    },
     status : {
         type : String,
-        enum: ['pending','cancelled','delivered','refund received','return request'],
+        enum: ['pending','cancel request','cancelled','delivered','refund received','return request'],
         require : true
     },  
     action : {

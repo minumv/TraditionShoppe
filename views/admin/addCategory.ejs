@@ -22,7 +22,14 @@
                         <div class="text-center d-flex justify-content-end">                         
                             <input type="submit"    class="btn btn-lg bg-gradient-primary btn-lg w-100 mt-4 mb-0 me-2">Add</button>
                          </div>
-                      
+                         <% if (errorMessage.length > 0) { %>  
+                                       
+                          <p style="color : red;"><%- errorMessage %></p>                    
+                      <% } %>
+                      <% if (successMessage.length > 0) { %>                
+                          <p style="color : green;"> <%- successMessage %> </p>                   
+                      <% } %>
+
                     </div>
                   
                 </div> 

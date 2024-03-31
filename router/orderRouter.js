@@ -12,9 +12,19 @@ orderRoute.use(bodyParser.json())
 orderRoute.use(bodyParser.urlencoded({extended:true}))
 
 
-/*********price slider********** */
+/*********admin order********** */
 orderRoute.get("/orderManage",orderController.loadOrder)
 orderRoute.get("/orderDetails/:orderid",orderController.viewOrderMore)
+
+
+orderRoute.post("/orderPending/:pdtid/:odrid/:userid/:qty",orderController.OrderApproved)
+
+orderRoute.post("/cancelRequest/:odrid",orderController.cancelOrder)
+orderRoute.post("/returnRequest/:odrid",orderController.returnOrder)
+
+orderRoute.post("/cancelapprove/:odrid",orderController.OrderCancelled)
+orderRoute.post("/returnapprove/:odrid",orderController.OrderReturned)
+
 
 
 

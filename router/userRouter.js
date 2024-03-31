@@ -7,6 +7,7 @@ userRoute.use(passport.initialize())
 userRoute.use(passport.session())
 
 const userController = require('../controller/userController')
+
 const userAuthent = require('../middleware/userAuthent')
 
 // const {otpValidator} = require('../middleware/validations')
@@ -81,6 +82,20 @@ userRoute.post('/resendOTP/:id/:email',userController.resendOTP)
 userRoute.get("/logout",userController.logoutFrom)
 
 
+/**************user profile*******************/
+
+
+userRoute.get("/userprofile",userAuthent.isAuthenticated,userController.loadProfile)
+// userRoute.get("/getProfile",userAuthent.isAuthenticated,userController.loadProfile)
+userRoute.get("/getOrder",userAuthent.isAuthenticated,userController.loadOrder)
+userRoute.get("/getAddress",userAuthent.isAuthenticated,userController.loadAddress)
+userRoute.get("/getWallet",userAuthent.isAuthenticated,userController.loadWallet)
+userRoute.get("/getList",userAuthent.isAuthenticated,userController.loadList)
+
+/************my order**************/
+// userRoute.get("/orderList",userAuthent.isAuthenticated,userController.loadorderList)
+userRoute.get("/buyAgain",userAuthent.isAuthenticated,userController.loadbuyList)
+userRoute.get("/cancelList",userAuthent.isAuthenticated,userController.loadcancelList)
 
 
 

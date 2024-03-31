@@ -26,15 +26,20 @@ contentRoute.get("/saveforlater",userAuthent.isAuthenticated,contentController.l
 contentRoute.get("/allproducts",userAuthent.isAuthenticated,contentController.loadAllProducts)
 contentRoute.get("/searchProducts",userAuthent.isAuthenticated,contentController.loadSearchProducts)
 contentRoute.get("/viewProduct/:id",userAuthent.isAuthenticated,contentController.loadProductDetail)
-// userRoute.get("/handicratfs",userController.loadHandicrafts)
-// userRoute.get("/decor",userController.loadDecor)
-// userRoute.get("/spices",userController.loadSpices)
-// userRoute.get("/apparels",userController.loadApparels)
-// userRoute.get("/sellers",userController.loadSellerProducts)
-// userRoute.get("/popular",userController.loadPopular)
+
+// contentRoute.get("/handicratfs",userAuthent.isAuthenticated,contentController.loadHandicrafts)
+// contentRoute.get("/antiques",userAuthent.isAuthenticated,contentController.loadAntiques)
+// contentRoute.get("/spices",userAuthent.isAuthenticated,contentController.loadSpices)
+// contentRoute.get("/apparels",userAuthent.isAuthenticated,contentController.loadApparels)
+
+// /****************All products handling************* */
+
+// contentRoute.get("/bestSellers",userAuthent.isAuthenticated,contentController.loadSellerProducts)
+// contentRoute.get("/popularProducts",userAuthent.isAuthenticated,contentController.loadPopular)
+contentRoute.get("/newArrivals",userAuthent.isAuthenticated,contentController.loadNew)
 
 
-/****************All products handling************* */
+
 
 contentRoute.get("/newHandicrafts",userAuthent.isAuthenticated,contentController.getnewHandicrafts)
 contentRoute.get("/newAntique",userAuthent.isAuthenticated,contentController.getnewAntique)
@@ -44,6 +49,9 @@ contentRoute.get("/newApparels",userAuthent.isAuthenticated,contentController.ge
 contentRoute.get("/mostSold",userAuthent.isAuthenticated,contentController.getmostSold)
 contentRoute.get("/lowtohigh",userAuthent.isAuthenticated,contentController.getLowtoHigh)
 contentRoute.get("/hightolow",userAuthent.isAuthenticated,contentController.getHightoLow)
+contentRoute.get("/ascending",userAuthent.isAuthenticated,contentController.getascending)
+contentRoute.get("/descending",userAuthent.isAuthenticated,contentController.getdescending)
+
 
 contentRoute.get("/toycategory",userAuthent.isAuthenticated,contentController.gettoyCategory)
 contentRoute.get("/ecofriendly",userAuthent.isAuthenticated,contentController.getecoFriendly)
@@ -54,9 +62,10 @@ contentRoute.get("/metalmaterial",userAuthent.isAuthenticated,contentController.
 contentRoute.get("/woodmaterial",userAuthent.isAuthenticated,contentController.getwoodMaterial)
 
 /*********price slider********** */
-contentRoute.get("/pricerange",contentController.getpriceRange)
-contentRoute.post("/setpricerange",contentController.setpriceRange)
-
+contentRoute.get("/lowCost",userAuthent.isAuthenticated,contentController.getlowcost)
+contentRoute.get("/averageCost",userAuthent.isAuthenticated,contentController.getaverage)
+contentRoute.get("/costly",userAuthent.isAuthenticated,contentController.getcostly)
+contentRoute.get("/highcostly",userAuthent.isAuthenticated,contentController.gethighcostly)
 
 /****************to cart table*********************/
 contentRoute.get("/addtocart/:id/:mrp",contentController.addToCartTable)
@@ -76,7 +85,7 @@ contentRoute.post("/updateSelectedAddress",contentController.selectedAddress)
 contentRoute.post("/updateSelectedMethod",contentController.selectedMethod)
 
 /**********************make cod payment********************* */
-contentRoute.post("/makeOrder/:userid/:amount/:list/:defAddr/:defPay",contentController.makeCODPayment)
+contentRoute.post("/makeOrder/:userid/:amount/:list/:defPay",contentController.makeCODPayment)
 
 /****************wishlist and save for later******************/
 

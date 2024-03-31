@@ -328,23 +328,36 @@ const loadNewCategory = async(req,res)=>{
 const addNewCategory = async(req,res)=>{
     try{
         
-        console.log(req.body.name,req.body.description);
-            const categQuery = new Category({
-            category_name: req.body.name,
-            description : req.body.description,
-            status:true                
-        })
-        const categData = await categQuery.save();
+        const name =  req.body.name
+        const descr = req.body.description
 
-       if(categData){
-            console.log('successful');
-            //  req.flash("successMessage", "Product added successfully..");
-             res.redirect('/admin/category')
+        const categ = await Category.find({category_name:name}).exec()
+
+        if(!categ){
+                console.log(req.body.name,req.body.description);
+                const categQuery = new Category({
+                category_name:name,
+                description : descr,
+                status:true                
+            })
+            const categData = await categQuery.save();
+
+        if(categData){
+                console.log('successful');
+                 req.flash("successMessage", "Category added successfully..");
+                res.redirect('/admin/category')
+            } else {
+                console.log('failed');
+                 req.flash("errorMessage", "Category registration failed.. Try again!!");
+                res.redirect("/newCategory");
+            } 
         } else {
             console.log('failed');
-            //  req.flash("errorMessage", "Product registration failed.. Try again!!");
-             res.redirect("/newCategory");
-        }  
+                 req.flash("errorMessage", "Category exist..Try new one!!");
+                res.redirect("/newCategory");
+        }
+
+        
     }
     catch(err){
         console.log(err.message);

@@ -1,6 +1,24 @@
 <%- include('../layout/adminHeader') %>
 
 <div class="container-fluid py-4">
+  <div class="d-block">
+    <div class="d-flex">
+    <div class="order border p-4 rounded mb-4">  
+      Products          
+    </div>
+    <div class="order border p-4 rounded mb-4">
+      Active Products
+    </div>
+    <div class="order border p-4 rounded mb-4">
+      Listed Products
+    </div>
+    <div class="order border p-4 rounded mb-4">
+      Out of stocks
+    </div>
+</div>
+
+
+
   <form action="/newProducts" method="get">
     <input type = 'submit' value = 'Add Products' class="btn bg-gradient-info" >
   </form>

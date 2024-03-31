@@ -14,7 +14,7 @@
             <table class="table align-items-center mb-0">
                 <thead>
                 <tr>
-                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">S.No</th>
+                    <!-- <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">S.No</th> -->
                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Name</th>
                     <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Delivery Address</th>
                     <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Price</th>
@@ -26,25 +26,14 @@
                 <tbody>
                 <% orders.forEach((row,index)=>{%>
                 <tr>
-                    <td>
-                    <div class="d-flex px-2 py-1">
-                        <!-- <div>
-                        <img src="../assets/img/team-2.jpg" class="avatar avatar-sm me-3 border-radius-lg" alt="user1">
-                        </div> -->
-                        <div class="d-flex flex-column justify-content-center">
-                        <h6 class="mb-0 text-sm"><%= index+1 %></h6>
-                        <!-- <p class="text-xs text-secondary mb-0">john@creative-tim.com</p> -->
-                        </div>
-                    </div>
-                    </td>
+                    
                     <%users.forEach((user,index)=>{%>
                         <% if(row.user.equals(user._id)){%>                    
                             <td>
                             <p class="text-xs font-weight-bold mb-0" style="width:100px; overflow:hidden ;"><%= user.name %> </p>
                             <!-- <p class="text-xs text-secondary mb-0">Organization</p> -->
                             </td>
-                        <%}%>
-                    <%})%>
+                        
                     <%address.forEach((adr,index)=>{%>
                         <% if(row.address.equals(adr._id)){%>    
                             <td class="align-middle  text-sm">                
@@ -59,7 +48,9 @@
                     <% if (row.status === 'delivered'){ %>
                         <span class="badge badge-sm bg-gradient-success">delivered</span>
                     <% } else if(row.status === 'pending') { %> 
-                        <span class="badge badge-sm bg-gradient-warning">pending</span>                           
+                        <span class="badge badge-sm bg-gradient-warning">pending</span> 
+                        <% } else if(row.status === 'cancel request') { %> 
+                            <span class="badge badge-sm bg-gradient-warning">cancel request</span>                           
                     <% } else if(row.status === 'cancelled') { %> 
                         <span class="badge badge-sm bg-gradient-danger">cancelled</span> 
                     <% } else if(row.status === 'return request') { %> 
@@ -68,18 +59,33 @@
                         <span class="badge badge-sm bg-gradient-success">refund received</span>   
                     <% } %>    
                 </td>
-
+               
                 <td class="align-middle  text-sm">
                     <% if (row.action === 'delivered'){ %>
                         <span class="badge badge-sm bg-gradient-success">delivered</span>
                     <% } else if(row.action === 'approve') { %> 
-                        <span class="badge badge-sm bg-gradient-warning">approve</span>                           
-                    <% } else if(row.action === 'order cancelled') { %> 
-                        <span class="badge badge-sm bg-gradient-danger">order cancelled</span> 
+                        <% cart.forEach((rows,index)=>{%>
+                            <%if((rows.user.equals(user._id)) && (rows.status == 'pending')){%>
+                                <%rows.product_list.forEach((list)=>{%>
+                                    <%products.forEach((pdt)=>{%>
+                                        <%if(list.productId.equals(pdt._id)){%>
+
+
+
+                        <form action="/orderPending/<%=pdt._id%>/<%=row._id%>/<%=user._id%>/<%=list.quantity%>" method="post"><button  type="submit" class="badge badge-sm bg-gradient-warning">approve</button>  </form>                      
+                   
+                        <%}%>
+                        <%})%>
+                    <%})%>
+                <%}%>
+                <%})%> 
+                   
+                        <% } else if(row.action === 'order cancelled') { %> 
+                        <form action="/cancelapprove/<%=row._id%>" method="post"><button type="submit" class="badge badge-sm bg-gradient-danger">order cancelled</button> </form>
                     <% } else if(row.action === 'approve return') { %> 
-                        <span class="badge badge-sm bg-gradient-warning">approve return</span>                    
+                        <form action="/returnapprove/<%=row._id%>" method="post"><button  type="submit" class="badge badge-sm bg-gradient-warning">approve return</button></form>                  
                     <% } else if(row.action === 'refund granted') { %> 
-                        <span class="badge badge-sm bg-gradient-success">refund granted</span>   
+                       <span class="badge badge-sm bg-gradient-success">refund granted</span>  
                     <% } %>    
                 </td>
                 
@@ -90,6 +96,8 @@
                     </td>
                     
                 </tr>
+                <%}%>
+                    <%})%>
                 <% }) %>
                 </tbody>
             </table>

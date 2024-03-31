@@ -10,6 +10,10 @@ const Seller = require('../model/seller')
 const Discount = require('../model/discount')
 const Cart = require('../model/cart')
 const List = require('../model/wishlist')
+const Order = require('../model/order')
+const Address = require('../model/address')
+
+
 
 //email handler
 const nodemailer = require('nodemailer')
@@ -451,30 +455,9 @@ const loadHome = async (req,res)=>{
         const sellers = await Seller.find({status:{$ne:'inactive'}}).exec()
         const discounts = await Discount.find({status:true}).exec()
         
-        // console.log( productQuery);
-        // const [products, categories, sellers, discounts] = await Promise.all([productQuery, categoryQuery, sellerQuery, discountQuery]);
-        const users = await User.findOne({email:email},{_id:1}).exec()
-        console.log("user : "+users)
-        const user_cart = await Cart.findOne({user:users}).exec()
-        console.log("cart : "+user_cart)
-        let qtyCount = 0;
-        let listCount = 0;
-        if(user_cart){
-            console.log("inside cart");
-            console.log( user_cart.total_amount);
-            user_cart.product_list.forEach(product => { 
-                console.log(product.quantity);       
-                qtyCount += product.quantity; })
-        } 
-        const user_list = await List.findOne({user:users}).exec()
-        if(user_list){            
-            
-            listCount = user_list.product_list.length;
-        } 
-        // else {
-        //     qtyCount=0;
-        // }
-        console.log("qty"+ qtyCount);
+        let qtyCount = await getQtyCount(req,res);
+        let listCount = await getListCount(req,res);
+   
         res.render('user/home',{
             title: "Home | TraditionShoppe", 
             user : email, 
@@ -507,25 +490,308 @@ const logoutFrom = async(req,res)=>{
     }
 }
 
+/******************qty and list count*********************/
+
+const getQtyCount = async(req,res)=>{
+    try{
+
+        let qtyCount = 0;
+        const users = await User.findOne({email:req.session.user},{_id:1}).exec()
+        console.log("user cart: "+users)
+        const user_cart = await Cart.findOne({user:users,status:"listed"}).exec()
+        console.log("cart : "+user_cart)
+        
+        if(user_cart){
+            // console.log("inside cart");
+            // console.log( user_cart.total_amount);
+            user_cart.product_list.forEach(product => { 
+                console.log(product.quantity);       
+                qtyCount += product.quantity; })
+        }
+        return qtyCount;
+    }
+    catch(err){
+        console.log(err.message);
+    }
+}
+
+const getListCount = async(req,res)=>{
+    try{
+        let listCount = 0;
+        const users = await User.findOne({email:req.session.user},{_id:1}).exec()
+        console.log("user list : "+users)
+        const user_list = await List.findOne({user:users}).exec()
+
+        if(user_list){           
+            
+            listCount = user_list.product_list.length;
+        }
+        return listCount;
+    }
+    catch(err){
+        console.log(err.message);
+    }
+}
+
+
+/********************profile handling**************************/
+
+const loadProfile = async (req,res)=>{
+    try{
+
+        let qtyCount = await getQtyCount(req,res);
+        let listCount = await getListCount(req,res);
+        
+        res.render('profile/userProfile',{
+            title:"My account | TraditionShoppe",
+            user : req.session.user,
+            qtyCount:qtyCount,
+            listCount:listCount,
+            page:'Your Profile',
+            // products:products,
+            // categories:categories,
+            // sellers:sellers,
+            // discounts:discounts,          
+            errorMessage:req.flash('errorMessage'),
+            successMessage:req.flash('successMessage')
+
+        })
+    }
+    catch(err){
+        console.log(err.message);
+    }
+}
+
+/*************** handle my order********************/
+const loadOrder = async (req,res)=>{
+    try{
+
+        const email = req.session.user
+        const users = await User.find({email:email}).exec()        
+        const orders = await Order.find().exec()       
+        const cart  = await Cart.find().exec()       
+        const products = await Products.find({ isListing:true }).exec()
+        const address = await Address.find().exec()
+
+        let qtyCount = await getQtyCount(req,res);
+        let listCount = await getListCount(req,res);
+        
+        res.render('profile/userOrder',{
+            title:"My Order | TraditionShoppe",
+            user : req.session.user,
+            page:'Your Orders',
+            qtyCount:qtyCount,
+            listCount:listCount,
+            products:products,
+            users:users,
+            orders:orders,
+            cart:cart,   
+            address:address,        
+            errorMessage:req.flash('errorMessage'),
+            successMessage:req.flash('successMessage')
+
+        })
+    }
+    catch(err){
+        console.log(err.message);
+    }
+}
+
+
+
+const loadbuyList = async (req,res)=>{
+    try{
+
+        const email = req.session.user
+        const users = await User.find({email:email}).exec()        
+        const orders = await Order.find().exec()       
+        const cart  = await Cart.find().exec()       
+        const products = await Products.find({ isListing:true }).exec()
+        const address = await Address.find().exec()
+
+        let qtyCount = await getQtyCount(req,res);
+        let listCount = await getListCount(req,res);
+        
+        res.render('profile/userBuyList',{
+            title:"My Order | TraditionShoppe",
+            user : req.session.user,
+            page:'Your Orders',
+            qtyCount:qtyCount,
+            listCount:listCount,
+            products:products,
+            users:users,
+            orders:orders,
+            cart:cart,   
+            address:address,        
+            errorMessage:req.flash('errorMessage'),
+            successMessage:req.flash('successMessage')
+
+        })
+    }
+    catch(err){
+        console.log(err.message);
+    }
+}
+
+/*   load cancellist */
+
+const loadcancelList = async (req,res)=>{
+    try{
+
+        const email = req.session.user
+        const users = await User.find({email:email}).exec()        
+        const orders = await Order.find().exec()       
+        const cart  = await Cart.find().exec()       
+        const products = await Products.find({ isListing:true }).exec()
+        const address = await Address.find().exec()
+
+        let qtyCount = await getQtyCount(req,res);
+        let listCount = await getListCount(req,res);
+        
+        res.render('profile/userCancelList',{
+            title:"My Order | TraditionShoppe",
+            user : req.session.user,
+            page:'Your Orders',
+            qtyCount:qtyCount,
+            listCount:listCount,
+            products:products,
+            users:users,
+            orders:orders,
+            cart:cart,   
+            address:address,        
+            errorMessage:req.flash('errorMessage'),
+            successMessage:req.flash('successMessage')
+
+        })
+    }
+    catch(err){
+        console.log(err.message);
+    }
+}
+
+/**************handle my address******************/
+const loadAddress = async (req,res)=>{
+    try{
+
+        let qtyCount = await getQtyCount(req,res);
+        let listCount = await getListCount(req,res);
+        
+        res.render('profile/userAddress',{
+            title:"My Address | TraditionShoppe",
+            user : req.session.user,
+            page:'Your Address',
+            qtyCount:qtyCount,
+            listCount:listCount,
+            // products:products,
+            // categories:categories,
+            // sellers:sellers,
+            // discounts:discounts,          
+            errorMessage:req.flash('errorMessage'),
+            successMessage:req.flash('successMessage')
+
+        })
+    }
+    catch(err){
+        console.log(err.message);
+    }
+}
+
+const loadWallet = async (req,res)=>{
+    try{
+
+        let qtyCount = await getQtyCount(req,res);
+        let listCount = await getListCount(req,res);
+        
+        res.render('profile/userWallet',{
+            title:"My account | TraditionShoppe",
+            user : req.session.user,
+            page:'Your Wallet',
+            qtyCount:qtyCount,
+            listCount:listCount,
+            // products:products,
+            // categories:categories,
+            // sellers:sellers,
+            // discounts:discounts,          
+            errorMessage:req.flash('errorMessage'),
+            successMessage:req.flash('successMessage')
+
+        })
+    }
+    catch(err){
+        console.log(err.message);
+    }
+}
+
+const loadList = async (req,res)=>{
+    try{
+
+        let qtyCount = await getQtyCount(req,res);
+        let listCount = await getListCount(req,res);
+        
+        res.render('profile/userWishlist',{
+            title:"My Wishlist | TraditionShoppe",
+            user : req.session.user,
+            page:'Your Wishlist',
+            qtyCount:qtyCount,
+            listCount:listCount,
+            // products:products,
+            // categories:categories,
+            // sellers:sellers,
+            // discounts:discounts,          
+            errorMessage:req.flash('errorMessage'),
+            successMessage:req.flash('successMessage')
+
+        })
+    }
+    catch(err){
+        console.log(err.message);
+    }
+}
+
+
+
+
+
+
 module.exports = {
     loadLogin,
     verifyLogin,
+
     successGoogleLogin,
     failureGoogleLogin,
+
     facebookSignin,
+
     loadMobile,
     loadChangePassword,
     loadSignup,
     loadOtp,
+
     loadHome,
-    loadIndex,    
+    loadIndex,
+
     customerSignup,
+
     sendOtpEmail,
     loadverifyOTPMail,
     verifyOTPMail,
     loadOTPSuccess,
     resendOTP,
+
     logoutFrom,
+
+    loadProfile,
+    loadOrder,
+    loadAddress,
+    loadWallet,
+    loadList,  
+
+   
+    loadbuyList,
+    loadcancelList,
+
+    getQtyCount,
+    getListCount
    
 
     // successLogin

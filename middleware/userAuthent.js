@@ -1,11 +1,4 @@
 
-// http://localhost:4000/auth/google/callback
-//c6456795093798065 tracking number
-
-
-
-// Middleware to check if the user is logged in
-
 const isAuthenticated = async (req, res, next)=>{
     try {
       if (req.session && req.session.user) {
@@ -60,9 +53,10 @@ const isAuthenticated = async (req, res, next)=>{
     
   } 
 
+ 
     module.exports = {
       isAuthenticated,
       isLoggedOut,
-      isAdminLogged
-    }
+      isAdminLogged,
+     }
 

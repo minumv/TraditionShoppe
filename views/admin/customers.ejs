@@ -1,14 +1,33 @@
 <%- include('../layout/adminHeader') %>
 
 <div class="container-fluid py-4">
+
+  <div class="d-block">
+    <div class="d-flex">
+    <div class="order border p-4 rounded mb-4">  
+      User          
+    </div>
+    <div class="order border p-4 rounded mb-4">
+      Verified Users
+    </div>
+    <div class="order border p-4 rounded mb-4">
+      Blocked Users
+    </div>
+</div>
+
     <div class="row">     
       <div class="col-12">
-        <div class="card my-4">
+        <div class="card my-4">     
+
+
           <div class="card-header p-0 position-relative z-index-2">
             <div class="bg-gradient-primary shadow-primary border-radius-lg pt-2 pb-1">
               <h6 class="text-white text-capitalize ps-3">User Details</h6>
             </div>
           </div>
+
+         
+
           <div class="card-body px-0 pb-2">
             <div class="table-responsive p-0">
                 <% if(users != '') {%>
