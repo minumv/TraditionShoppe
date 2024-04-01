@@ -56,6 +56,11 @@
                                     </div>
                                 </div>
                             </li>
+                            <% if (errorMessage.length > 0) { %>   
+                                <%console.log(errorMessage)%>             
+                                <p style="color : red;"><%- errorMessage %></p>                    
+                            <% } %>
+                          
                             <% } %>
                             <% }) %>
                             <% }) %>

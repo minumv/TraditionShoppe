@@ -17,9 +17,9 @@ const PORT = process.env.PORT || 4000;
 // Session handling
 app.use(session({
     secret: process.env.SESSION_SECRET || 'your-secret-key',    
-    resave: false,
+    resave: true,
     saveUninitialized: true,
-    cookie: { maxAge: 3600000 }
+   // cookie: { maxAge: 3600000 }
 }));
 
 // Middleware
@@ -31,14 +31,14 @@ app.use(nocache()); // No cache
 app.use(flash()); // Flash messages
 app.set('view engine', 'ejs'); // View engine setup
 
-// Middleware for flash messages
-app.use((req, res, next) => {
-    res.locals.message = req.session.message;
-    res.locals.successMessage = req.flash('successMessage');
-    res.locals.errorMessage = req.flash('errorMessage');
-    delete req.session.message;
-    next();
-});
+//Middleware for flash messages
+// app.use((req, res, next) => {
+//     res.locals.message = req.session.message;
+//     res.locals.successMessage = req.flash('successMessage');
+//     res.locals.errorMessage = req.flash('errorMessage');
+//     delete req.session.message;
+//     next();
+// });
 
 // Routes
 app.use(require("./router/adminRouter"));
