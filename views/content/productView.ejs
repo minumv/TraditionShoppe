@@ -70,32 +70,32 @@
             <div class="wish-save d-flex">
                 <a class = "link-wish"href="/addtowishlist/<%= pdt._id %>"><span class="icon icon-heart-o">&nbsp;Add to wishlist</span></a>&ensp;&ensp;&ensp;&nbsp;
                 <a class= "link-wish" href="/saveforlater"><span class="icon icon-save">&nbsp;Save for later</span></a>
-            </div>
-            <% if (errorMessage.length > 0) { %>                
-                <p style="color : red;"><%- errorMessage %></p>                    
-            <% } %>
-            <% if (successMessage.length > 0) { %>                
-                <p style="color : green;"> <%- successMessage %> </p>                   
-            <% } %>
+            </div>           
             <br>          
             <div class="nav-but-div">
-                <a href="/addtocart/<%= pdt._id %>/<%= mrp %>"><button class="btn btn-lg bg-success text-white nav-but" >Add to Cart</button></a>&ensp;
-                <a href="/checkout"><button class="btn btn-lg bg-success text-white nav-but" >Buy Now</button></a>
+                <a href="/addtocart/<%= pdt._id %>/<%= mrp %>"><button class="btn btn-lg text-white nav-but purp-back" >Add to Cart</button></a>&ensp;
+                <a href="/checkout"><button class="btn btn-lg text-white nav-but purp-back" >Buy Now</button></a>
 
             </div>
+            <% if (errorMessage.length > 0) { %>                
+              <div class="alert alert-danger" role="alert"> <%- errorMessage %>  </div>                  
+            <% } %>
+            <% if (successMessage.length > 0) { %>                
+              <div class="alert alert-success" role="alert"> <%- successMessage %>  </div>                    
+            <% } %>
             <div class ="line-div"></div>
         </div>
     </div>
     <div class="container">
         <div class="row">
             <div class="col-md-12">
-              <div class="site-section site-blocks-2">
+              <div class="site-section block-3 site-blocks-2 bg-light">
                   <div class="row justify-content-center text-center mb-5">
                     <div class="col-md-7 site-section-heading pt-4">
                       <h2>Related Products</h2>
                     </div>
                   </div>
-                  <div class="row">
+                  <div class="row loop-div">
                     <div class="col-md-12">
                     <div class="nonloop-block-3 owl-carousel">
                       <% let disc = 0; %>

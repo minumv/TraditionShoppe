@@ -56,10 +56,7 @@
                                     </div>
                                 </div>
                             </li>
-                            <% if (errorMessage.length > 0) { %>   
-                                <%console.log(errorMessage)%>             
-                                <p style="color : red;"><%- errorMessage %></p>                    
-                            <% } %>
+                           
                           
                             <% } %>
                             <% }) %>
@@ -68,6 +65,10 @@
                             <!-- <% console.log("amount: "+ amount) %>     -->
                             <% let savings = parseFloat(mrpTotal - amount )%>
                             <!-- <% console.log("savings: "+ savings) %>     -->
+                            <% if (errorMessage.length > 0) { %>   
+                                <%console.log(errorMessage)%>             
+                               <div class="alert alert-danger" role="alert"> <%- errorMessage %>  </div>                
+                            <% } %>
                            
                         <li>
                             <div class="cart-footer">
