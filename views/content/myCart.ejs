@@ -95,14 +95,25 @@
                 </div>
             </div>
             <% } else if(!user_cart || user_cart.product_list == '') {%>
-                <div class="block">
-                    <div class="cart-empty">
-                        <p>Your TraditionShoppe Cart is empty.</p>
+                <div class="container">
+
+                    <div class="block">
+                        <div class="cart-empty d-block text-center">
+                            <p class="p-con-head">Shopping Cart</p>
+                            <div class="d-flex justify-content-center"> 
+                                <a href="/home">Home</a> <span class="mx-2 mb-0">/</span> <p class="text-black">Shopping Cart</p>                          
+                            </div>
+                            <img width="190" height="150" src="..\upload\empty-cart.png" alt="shopping-cart"/>
+                            <p class="p-con-subhead">Your Cart is currently empty!</p>
+                            <p>You have no items in your shopping cart.</p>
+                            <p class="mt-0">Let's go buy something</p>
+                            <a href="/allproducts"><span class="con-but">Continue Shopping</span> </a>
+                        </div>
+                        
                     </div>
-                    <div>
-                        <p>Check your Saved for later items below or <a href="/allproducts"><span>continue shopping.</span> </a></p>
-                    </div>
+
                 </div>
+                
                
                 
                 <%}%>
