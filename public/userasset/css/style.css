@@ -791,7 +791,7 @@ a {
     left: 0;
     font-size: 20px;
     line-height: 1;
-    color: #0afb77; }
+    color: #4F0341; }
   .block-5 ul li.address:before {
     content: "\e8b4"; }
   .block-5 ul li.email:before {
@@ -959,3 +959,17 @@ a {
   .purp-back{
     background-color: #4F0341;
   }
+
+  /*footer*/
+  .left-box .middle-box .right-box{
+    padding:10px;
+    margin: 10px;
+  }
+  .first-col .second-col third-col{
+    
+  }
+
+  .foot-email{
+    height:60px;
+    width:350px;
+}
