@@ -49,7 +49,7 @@
                             <% let addressid = ''%>
                             <% users.forEach((user)=>{%>
                                 <% console.log(user.address)%>
-                                <%if(user.address.length === 0){%>
+                                <%if((!user.address)||(user.address.length === 0)){%>
                                     <a href="#" id="openModal" data-modal-target="#modal"><span class="icon icon-plus d-flex">&nbsp;<p>Add new address</p></span></a>
                                 <%} else {%>
                                     <%user.address.forEach((adrs,index)=>{%>
@@ -240,7 +240,52 @@
 <script src="/userasset/js/main.js"></script>
 <script src="/js/scripts.js"></script>
 <script src="/js/script-modal.js"></script>
-<!-- <script src="/js/script.js"></script> -->
-  
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <!-- <script>
+    $("payButton").click(function(){
+        $ajax({
+            url:'/makeOrder/:userid/:amount/:list/:defPay',
+            method:'post',
+            data: $(address-form).serialize(),
+            success:function(res){
+                if(res.success){
+                    var options = {
+                        "key": "" +res.key_id+ "", // Enter the Key ID generated from the Dashboard
+                        "amount": "" +res.amount+ "", // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
+                        "currency": "INR",
+                        "name": ""+res.product_name+"",
+                        "description": "Test Transaction",
+                        "image": "/userasset/images/logo.png",
+                        "order_id": "" +res.order_id+ "", //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
+                        "handler": function(res){
+                            alert("Payment success!")
+                            window.open("content/PaymentSuccess","_self")
+                        },
+                        "prefill": {
+                            "name": ""+res.name+"",
+                            "email": ""+res.email+"",
+                            "contact":""+res.contact+""
+                        },
+                        "notes": {
+                            "address": "Razorpay Corporate Office"
+                        },
+                        "theme": {
+                            "color": "#4F0341"
+                        }
+                    };
+                    var rzp1 = new Razorpay(options);
+                    document.getElementById('rzp-button1').onclick = function(e){
+                        rzp1.open();
+                        e.preventDefault();
+                    }
+                } else {
+                    alert(res.msg)
+                }
+
+            }
+        })
+    })
+  </script> -->
 </body>
 </html>

@@ -6,11 +6,12 @@
       </div>
     </div>
   </div>
+<%users.forEach((usr)=>{%>  
 
 <div class="d-flex">
     <div class=" mb-5 mb-md-0 d-flex">
         <div class="border p-4 rounded pt-5 nav-left">
-          <h3 class="mb-3 h6 text-uppercase text text-center d-block nav-head"> My Account</h3>
+          <h2 class="mb-3 h6 text-capitalize text text-center d-block nav-head"> Hello, <%=usr.name%></h2>
           <ul class="list-unstyled mb-0">
               <!-- <li class="my-4"><a href="/userProfile" class="d-flex"> <span class="icon icon-person text-dark ">&nbsp;My Profile</span></a></li> -->
               <li class="my-4"><a href="/getOrder" class="d-flex"><span class="icon icon-shopping_cart text-center nav-but">&nbsp;My Orders</span> </a></li>
@@ -20,3 +21,4 @@
           </ul>
         </div> 
     </div>
+    <%})%>

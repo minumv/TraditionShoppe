@@ -7,12 +7,12 @@ const orderSchema = new mongoose.Schema({
     },
     user : {
         type : mongoose.Types.ObjectId,
-        ref: 'user',
+        ref: 'User',
         required : true
     },
     address : {
         type : mongoose.Types.ObjectId,
-        ref: 'address',
+        ref: 'Address',
         required : true
     },
     // coupon : {
@@ -24,10 +24,14 @@ const orderSchema = new mongoose.Schema({
         type :String,        
         required : true
     },
-    product_list :[{
-        type : Array,
-        require : true
-    }],
+     product_list :  [
+        {
+          productId: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
+          quantity: { type: Number, required: true, min: 1 },
+          price: { type: Number, required: true },
+          total: { type: Number, required: true },
+        },
+    ], 
    
     payment_amount : {
         type : Number,

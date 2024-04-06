@@ -11,6 +11,14 @@ const Address = require('../model/address')
 const Order = require('../model/order')
 const bcrypt = require('bcrypt')
 
+const Razorpay = require('razorpay')
+const { RAZORPAY_ID_KEY, RAZORPAY_SECRET_KEY } = process.env
+
+const razorpayInstance = new Razorpay({
+    key_id : RAZORPAY_ID_KEY,
+    key_secret : RAZORPAY_SECRET_KEY
+})
+
 
 /***************All products handling****************** */
 
@@ -1414,12 +1422,32 @@ const makeCODPayment = async(req,res)=>{
          let qtyCount = await getQtyCount(req,res)
          let listCount = await getListCount(req,res)
 
+         if (pdtlist && typeof pdtlist === 'object') {
+            console.log("checking");
+            console.log("pdtlist.productId", pdtlist.productId);
+            console.log("pdtlist.quantity", pdtlist.quantity);
+            console.log("pdtlist.price", pdtlist.price);
+            console.log("pdtlist.total", pdtlist.total);
+            console.log("pdtlist._id", pdtlist._id);
+        }
+        
+        // console.log("pdtlist.id",pdtlist.productId);
+         const productArray = [{
+            productId: pdtlist.productId,
+            quantity: pdtlist.quantity,
+            price: pdtlist.price,
+            total: pdtlist.total,
+            _id: pdtlist._id
+          }];
+        //    // const product_list = Array.isArray(pdtlist) ? pdtlist : [pdtlist];
+        //    console.log(productArray, typeof(productArray))
+
          const order = new Order({
             order_date : currentDate,
             user: userid,
             address:addressid,
             payment : paymethod,
-            product_list:pdtlist,
+            product_list: productArray,
             payment_amount:amount,
             delivery_date:deliveryDate,
             return_date:returnDate,
@@ -1428,7 +1456,7 @@ const makeCODPayment = async(req,res)=>{
 
          })
          const orderData = await order.save()
-         if(orderData){
+         if(orderData.payment === 'COD'){
             console.log('successfull');
 
             // await Cart.deleteOne(
@@ -1445,7 +1473,38 @@ const makeCODPayment = async(req,res)=>{
                 errorMessage : req.flash('errorMessage'),
                 successMesssage : req.flash('successMessage')
             })
-         }  else {
+         }  else if(orderData.payment === 'Razorpay') {
+
+            const userDet = await Order.find({_id:orderData._id}).populate('user').exec();
+            console.log("details user : ",userDet)
+            const productDet = await Order.find({_id:orderData._id}).populate({ path: 'product_list.productId', model: 'Product' }).exec();            
+            console.log("product user : ",productDet)
+            // const amt = amount * 100
+            // const options = {
+            //     amount : amt,
+            //     currency : 'INR',
+            //     receipt : "RCPT"+orderData._id
+            // }
+            // razorpayInstance.orders.create(options,(err,order)=>{
+            //     if(!err){
+            //         res.status(200).send({
+            //             success : true,
+            //             msg : "Order Placed",
+            //             order_id : order.id,
+            //             amount : amount,
+            //             key_id : RAZORPAY_ID_KEY,
+            //             product_name : ,
+            //             description : ,
+            //             contact : "",
+            //             name : "",
+            //             email : " "
+            //         })
+            //     } else {
+                //         res.status(400).send({success : false ,msg : 'Something went wrong!'})
+                //    }
+            // })
+
+         } else{
             console.log('failed');
              req.flash("errorMessage", "Payment failed.. Try again!!");
              res.redirect(`/checkout/${userid}/${amount}`)

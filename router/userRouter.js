@@ -97,9 +97,13 @@ userRoute.get("/getList",userAuthent.isAuthenticated,userController.loadList)
 userRoute.get("/buyAgain",userAuthent.isAuthenticated,userController.loadbuyList)
 userRoute.get("/cancelList",userAuthent.isAuthenticated,userController.loadcancelList)
 
+/************my order by date**************/
 
-
-
+userRoute.get("/orderlast30",userAuthent.isAuthenticated,userController.loadbuyLast30)
+userRoute.get("/order2023",userAuthent.isAuthenticated,userController.load2023)
+// userRoute.get("/order2022",userAuthent.isAuthenticated,userController.load2022)
+// userRoute.get("/order2021",userAuthent.isAuthenticated,userController.load2021)
+// userRoute.get("/oldorders",userAuthent.isAuthenticated,userController.loadold)
 
 
 module.exports =  userRoute//router

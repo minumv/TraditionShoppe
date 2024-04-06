@@ -538,7 +538,8 @@ const getListCount = async(req,res)=>{
 
 const loadProfile = async (req,res)=>{
     try{
-
+        const email = req.session.user
+        const users = await User.find({email:email}).exec()    
         let qtyCount = await getQtyCount(req,res);
         let listCount = await getListCount(req,res);
         
@@ -548,6 +549,7 @@ const loadProfile = async (req,res)=>{
             qtyCount:qtyCount,
             listCount:listCount,
             page:'Your Profile',
+            users:users,
             // products:products,
             // categories:categories,
             // sellers:sellers,
@@ -597,7 +599,100 @@ const loadOrder = async (req,res)=>{
     }
 }
 
+const loadbuyLast30 = async(req,res)=>{
 
+    
+
+    const email = req.session.user
+    const users = await User.find({email:email}).exec()        
+    const orders = await Order.find({$expr: {
+        $gt: [
+           "$order_date",
+           {
+              $dateSubtract: {
+                 startDate: { $dateTrunc: { date: "$$NOW", unit: "day" } },
+                 unit: "day",
+                 amount: 30
+              }
+           }
+        ]
+     }}).exec()  
+     
+     console.log(orders);
+    const cart  = await Cart.find().exec()       
+    const products = await Products.find({ isListing:true }).exec()
+    const address = await Address.find().exec()
+
+
+
+        let qtyCount = await getQtyCount(req,res);
+        let listCount = await getListCount(req,res);
+        
+        res.render('profile/userOrder',{
+            title:"My Order | TraditionShoppe",
+            user : req.session.user,
+            page:'Your Orders',
+            qtyCount:qtyCount,
+            listCount:listCount,
+            products:products,
+            users:users,
+            orders:orders,
+            cart:cart,   
+            address:address,        
+            errorMessage:req.flash('errorMessage'),
+            successMessage:req.flash('successMessage')
+
+        })
+}
+
+const load2023 = async(req,res)=>{
+    try{
+        
+           
+        // const orders = await Order.find({
+        //     $expr: {
+        //         $and: [
+        //           { $gte: [{ $year: "$order_date" }, 2023] },
+        //           { $lt: [{ $year: "$order_date" }, 2024] } // Exclude 2024
+        //         ]
+        //       }
+        //     }).exec()  
+         
+        //  console.log(orders);
+
+        const email = req.session.user
+        console.log("email :",email);
+
+        const user = await User.findOne({email}).exec()
+        console.log("user :",user);
+        const orders = await Order.find().populate('user').populate({ path: 'product_list.productId', model: 'Product' }).exec();
+       
+          console.log("order detail:",orders.user.name)
+
+
+        res.render('profile/userOrderList',{
+            title:"My Order | TraditionShoppe",
+            user : req.session.user,
+            page:'Your Orders',
+            qtyCount:qtyCount,
+            listCount:listCount,
+            // products:products,
+            // users:users,
+            orders:orders,
+            // cart:cart,   
+            // address:address,        
+            errorMessage:req.flash('errorMessage'),
+            successMessage:req.flash('successMessage')
+
+        })
+    }
+    catch(err){
+        console.log(err.message);
+    }
+}
+
+
+/******************************** */
 
 const loadbuyList = async (req,res)=>{
     try{
@@ -789,6 +884,12 @@ module.exports = {
    
     loadbuyList,
     loadcancelList,
+
+    loadbuyLast30,
+    load2023,
+    // load2022,
+    // load2021,
+    // loadold,
 
     getQtyCount,
     getListCount

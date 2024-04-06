@@ -3,7 +3,7 @@ const mongoose = require('mongoose')
 const wishlistSchema = new mongoose.Schema({
     user : {
         type : mongoose.Types.ObjectId,
-        ref: 'user',
+        ref: 'User',
         require : true 
     },
     product_list : {

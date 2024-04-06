@@ -17,8 +17,8 @@ const PORT = process.env.PORT || 4000;
 // Session handling
 app.use(session({
     secret: process.env.SESSION_SECRET || 'your-secret-key',    
-    resave: true,
-    saveUninitialized: true,
+    resave: false,
+    saveUninitialized: false,
    // cookie: { maxAge: 3600000 }
 }));
 

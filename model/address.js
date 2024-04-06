@@ -3,7 +3,7 @@ const mongoose = require('mongoose')
 const addressSchema = new mongoose.Schema({
     user_id: {
         type : mongoose.Types.ObjectId,
-        ref: 'user',
+        ref: 'User',
         required : true
     },
     name : {

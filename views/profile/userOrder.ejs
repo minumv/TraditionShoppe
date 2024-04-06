@@ -13,6 +13,22 @@
                 <a href="/cancellist"><p class="bottom-line border-bottom border-success  mx-4 p-0">Cancelled Orders</p></a>         
             </div>
         </div>
+
+        <div>
+            <div class="dropdown mr-1 ml-md-auto">
+                <button type="button" class="btn btn-secondary btn-sm dropdown-toggle" id="dropdownMenuOffset" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  Order by date
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuOffset">
+                  <a class="dropdown-item" href="/orderlast30">Last 30 days</a>
+                  <a class="dropdown-item" href="/order2023">2023</a>
+                  <a class="dropdown-item" href="/order2022">2022</a>
+                  <a class="dropdown-item" href="/order2021">2021</a>
+                  <a class="dropdown-item" href="/oldorders">older</a>
+                </div>
+        </div>
+
+
         <div>
             <p class="text-dark text-uppercase">My Recent Orders</p>
         </div>
@@ -56,7 +72,7 @@
                </div>
               
                 <% cart.forEach((row,index)=>{%>
-                    <%if((row.user.equals(usr._id)) && (row.status !== 'listed')){%>
+                    <%if((row.user.equals(odr.user)) && (row.status !== 'listed')){%>
                         <%row.product_list.forEach((list)=>{%>
                             <%products.forEach((pdt)=>{%>
                                 <%if(list.productId.equals(pdt._id)){%>

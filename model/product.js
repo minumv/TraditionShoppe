@@ -7,12 +7,12 @@ const productSchema = new mongoose.Schema({
     },
     category : {
         type : mongoose.Types.ObjectId,
-        ref: 'category',
+        ref: 'Category',
         require: true
     },
     seller : {
         type : mongoose.Types.ObjectId,
-        ref: 'seller',
+        ref: 'Seller',
         require : true
     },
     description:{
@@ -29,7 +29,7 @@ const productSchema = new mongoose.Schema({
     },
     discount: {
         type : mongoose.Types.ObjectId,
-        ref: 'discount',
+        ref: 'Discount',
         require : true
     },
     material : {
