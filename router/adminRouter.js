@@ -30,7 +30,26 @@ adminRoute.post("/delete/:id",adminController.deleteCustomer)
 
 
 // adminRoute.get("/admin/orders",adminController.loadOrders) 
-// adminRoute.get("/admin/coupon",adminController.loadCoupon) 
+
+/****************add coupon *********************/
+adminRoute.get("/getCoupon",adminController.loadCouponPage) 
+adminRoute.get("/newCoupon",adminController.addCoupon) 
+adminRoute.post("/newCoupon",adminController.addCouponDetails)
+adminRoute.get("/getUpdate/:id",adminController.getUpdatePage) 
+adminRoute.post("/updateCoupon/:id",adminController.updateCouponDetails)
+adminRoute.post("/deleteCoupon/:id",adminController.deleteCouponDetails)
+
+/****************add offer *********************/
+
+adminRoute.get("/getOffer",adminController.loadOfferPage) 
+adminRoute.get("/newOffer",adminController.addOffer)
+adminRoute.post("/getOfferType",adminController.storeOfferType) 
+adminRoute.post("/newOffer",adminController.addOfferDetails)
+adminRoute.get("/getUpdateOffer/:id",adminController.getUpdateOfferPage)
+adminRoute.post("/updateOfferType",adminController.changeOfferType) 
+adminRoute.post("/updateOffer/:id",adminController.updateOfferDetails)
+adminRoute.post("/deleteOffer/:id",adminController.deleteOfferDetails)
+
 // adminRoute.get("/admin/banner",adminController.loadBanner)  
 // adminRoute.get("/admin/salesreport",adminController.loadSales) 
 // adminRoute.get("/admin/settings",adminController.loadSettings) 

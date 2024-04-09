@@ -1,0 +1,86 @@
+<%- include('../layout/adminHeader') %>
+<section>   
+      <div class="container">
+        <%coupon.forEach((cpn)=>{%>
+        <form role="form" id="coupon-form" action="/updateCoupon/<%= cpn._id %>" method="post">    
+        <div class="row ">                    
+            <div class="col-6">
+                <div class="card card-plain">
+                    <div class="card-header">
+                      <h4 class="font-weight-bolder">Update Coupon</h4>
+                      <!-- <p class="mb-0">Enter your email and password to register</p> -->
+                    </div>
+                    
+                   
+                    <div class="card-body">             
+                      <div class="input-group input-group-outline mb-3">
+                         <input type="text" name="coupon" class="form-control" value="<%= cpn.coupon_code %>">
+                      </div>
+                                        
+                      <div class="input-group input-group-outline mb-3">                  
+                        <input type="text" name="discount_per" class="form-control" value="<%= cpn.discount_per %>">
+                      </div>
+                      <% let originalDate = new Date(cpn.start_date) %>
+                      <% let formattedDatecpn = `${originalDate.getDate().toString().padStart(2, '0')}-${(originalDate.getMonth() + 1).toString().padStart(2, '0')}-${originalDate.getFullYear()}`; %>
+                      <% let crrtDatecpn = new Date(formattedDatecpn)%>                
+                      
+                      <div class="input-group input-group-outline mb-3">                   
+                          <input type="date" name="start" class="form-control" value="<%=formattedDatecpn%>">
+                      </div>
+                      <%  originalDate = new Date(cpn.expire_date) %>                    
+                      <% formattedDatecpn = `${originalDate.getDate().toString().padStart(2, '0')}-${(originalDate.getMonth() + 1).toString().padStart(2, '0')}-${originalDate.getFullYear()}`; %>
+                      <% crrtDatecpn = new Date(formattedDatecpn)%>   
+                      <div class="input-group input-group-outline mb-3">                   
+                          <input type="date" name="end" class="form-control" value="<%=formattedDatecpn%>">
+                      </div>
+                       <div class="input-group input-group-outline mb-3">                   
+                           <input type="text" name="min_purch" class="form-control" value="<%= cpn.minimum_purchase %>">
+                       </div>
+                       <div class="input-group input-group-outline mb-3">                   
+                          <input type="text" name="max_amt" class="form-control" value="<%= cpn.maximum_discount_amt %>">
+                       </div>       
+                       
+                      </div>
+                      
+                    </div>
+                        
+                        <div class="text-center d-flex justify-content-end">                         
+                            <input type="submit" id="editcpnButton" value="Update" formaction="/updateCoupon/<%= cpn._id %>"  class="btn btn-lg bg-gradient-primary btn-lg w-100 mt-4 mb-0 me-2">
+                            <a href="#" id="openModal"  data-modal-target="#modal" class="btn btn-lg bg-gradient-primary btn-lg w-100 mt-4 mb-0 me-2">delete</a>
+                            <!-- <input type="submit" id="deletecpnButton" value="Delete" formaction="/deleteCoupon/<%= cpn._id %>"   class="btn btn-lg bg-gradient-primary btn-lg w-100 mt-4 mb-0 me-2"> -->
+                        </div>
+                      
+                    </div>
+                    <% if (errorMessage.length > 0) { %>                
+                      <div class="alert alert-danger" role="alert"> <%- errorMessage %>  </div>                  
+                  <% } %>
+                    <% if (successMessage.length > 0) { %>                
+                      <div class="alert alert-success" role="alert"> <%- successMessage %>  </div>                    
+                    <% } %>
+                </div> 
+            </div> 
+            <div class="modal" id="modal">
+                <div class="closeModal">
+                  <a id="closeModal"  data-close-button class="close-button">&times;<a>              
+                </div>
+                <div class="trash-icon">
+                  <span ><i class="fas fa-trash"></i></span>
+                </div>
+                <div class="modal-body">
+                  Are you sure you want to delete this coupon?
+                </div>
+                <div class="modal-footer">
+                  <a id="cancel" data-close-button class="btnmodal btn btn-lg bg-light btn-lg w-25 mt-4 mb-0 me-2">No, cancel</a>
+                  <button type="submit" formaction="/deleteCoupon/<%= cpn._id %>" class="btnmodal btn btn-lg bg-gradient-primary btn-lg w-25 mt-4 mb-0 me-2">Yes, I'm sure</button>
+                </div>
+             </div> 
+           
+
+        </form>        
+       </div>
+       <div id="overlay"></div>
+       <%})%>   
+  </section>
+
+
+  <%- include('../layout/adminFooter') %>
