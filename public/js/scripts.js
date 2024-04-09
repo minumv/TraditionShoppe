@@ -296,4 +296,53 @@ $('input[type="radio"][name="paymethods"]').change(function() {
     }
 });
 
+/****************offer type add******************/
+$('#addOfferButton').click(function() {
+    // Get selected values from dropdowns
+    const offerType = $('#offertype').val();         
+   console.log("offer:"+offerType);
+  
+
+    // Send selected values to server
+    $.ajax({
+        url: '/getOfferType', // Change this URL to match your server route
+        method: 'POST',
+        data: {
+            offer_type: offerType            
+        },
+        success: function(response) {
+            // Handle success response
+            console.log('Server response:', response);
+           // addressSubmission();
+        },
+        error: function(xhr, status, error) {
+            console.error('Error:', error);
+        }
+    });
+});
+
+/****************offer type change******************/
+$('#changeOfferButton').click(function() {
+    // Get selected values from dropdowns
+    const offerType = $('#offertype').val();         
+    console.log("offer:"+offerType);
+   
+ 
+     // Send selected values to server
+     $.ajax({
+         url: '/updateOfferType', // Change this URL to match your server route
+         method: 'POST',
+         data: {
+             offer_type: offerType            
+         },
+         success: function(response) {
+             // Handle success response
+             console.log('Server response:', response);
+            // addressSubmission();
+         },
+         error: function(xhr, status, error) {
+             console.error('Error:', error);
+         }
+     });
+});
 

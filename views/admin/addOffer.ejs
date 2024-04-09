@@ -1,0 +1,59 @@
+<%- include('../layout/adminHeader') %>
+<section>   
+      <div class="container">
+        <form role="form"  action="/newOffer" method="post">    
+        <div class="row ">                    
+            <div class="col-6">
+                <div class="card card-plain">
+                    <div class="card-header">
+                      <h4 class="font-weight-bolder">Add New Offer</h4>
+                      <!-- <p class="mb-0">Enter your email and password to register</p> -->
+                    </div>
+
+                    <div class="card-body">             
+                      <div class="input-group input-group-outline mb-3">
+                         <input type="text" name="name" class="form-control" placeholder="Enter Offer Name">
+                      </div> 
+                      <div class="input-group input-group-outline mb-3">
+                      <div class="dropdown mx-3">
+                        <select id="offertype" class="form-control">
+                          <option value="No Type">Select Type</option>
+                          <option value="Product Offer">Product Offer</option>
+                          <option value="Category Offer">Category Offer</option>
+                          <option value="Referral Offer">Referral Offer</option>
+                            <option value="Today Deals Offer">Today Deals Offer</option>
+                            <option value="Seller Offer">Seller Offer</option>                        
+                            
+                        </select></div> 
+                    </div>                   
+                      <div class="input-group input-group-outline mb-3">
+                        <input type="text" name="percentage" class="form-control" placeholder="Enter Discount Percentage">
+                     </div>   
+                     <div class="input-group input-group-outline mb-3">
+                        <input type="date" name="start" class="form-control" placeholder="Select Start Date dd-mm-yyyy">
+                     </div>   
+                     <div class="input-group input-group-outline mb-3">
+                        <input type="date" name="end" class="form-control" placeholder="Select End Date dd-mm-yyyy">
+                     </div>                                         
+                                           
+                        <div class="text-center d-flex justify-content-end">                         
+                            <input type="submit" id="addOfferButton"    class="btn btn-lg bg-gradient-primary btn-lg w-100 mt-4 mb-0 me-2">Add</button>
+                         </div>
+                         <% if (errorMessage.length > 0) { %>                
+                            <div class="alert alert-danger" role="alert"> <%- errorMessage %>  </div>                  
+                        <% } %>
+                          <% if (successMessage.length > 0) { %>                
+                            <div class="alert alert-success" role="alert"> <%- successMessage %>  </div>                    
+                          <% } %>
+
+                    </div>
+                  
+                </div> 
+            </div>             
+          </div> 
+        </form>        
+       </div>   
+  </section>
+
+
+  <%- include('../layout/adminFooter') %>

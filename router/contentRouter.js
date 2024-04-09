@@ -85,7 +85,11 @@ contentRoute.post("/updateSelectedAddress",contentController.selectedAddress)
 contentRoute.post("/updateSelectedMethod",contentController.selectedMethod)
 
 /**********************make cod payment********************* */
-contentRoute.post("/makeOrder/:userid/:amount/:list/:defPay",contentController.makeCODPayment)
+contentRoute.post("/makeOrder/:userid/:defPay",contentController.makeCODPayment)
+contentRoute.post('/verify-payment',contentController.verifyPayment)
+
+
+
 
 /****************wishlist and save for later******************/
 

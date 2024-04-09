@@ -25,7 +25,7 @@
     "nodemailer": "^6.9.11",
     "passport": "^0.7.0",
     "passport-google-oauth2": "^0.2.0",
-    "razorpay": "^1.6.38",
+    "razorpay": "^1.7.1",
     "sharp": "^0.33.2"
   },
   "devDependencies": {

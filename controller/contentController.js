@@ -11,10 +11,11 @@ const Address = require('../model/address')
 const Order = require('../model/order')
 const bcrypt = require('bcrypt')
 
-const Razorpay = require('razorpay')
+const RazorpayObj = require('razorpay');
+const { resolveContent } = require("nodemailer/lib/shared");
 const { RAZORPAY_ID_KEY, RAZORPAY_SECRET_KEY } = process.env
 
-const razorpayInstance = new Razorpay({
+const razorpayInstance = new RazorpayObj({
     key_id : RAZORPAY_ID_KEY,
     key_secret : RAZORPAY_SECRET_KEY
 })
@@ -883,7 +884,7 @@ const addToCartTable = async(req,res)=>{
        // const product = await Products.findOne({_id:pdt_id}).exec();
        const stock = await Products.findOne({_id:pdt_id},{stock:1}).exec()
         const user_id = await User.findOne({email:user},{_id:1}).exec()
-        const user_cart = await Cart.findOne({user:user_id}).exec()
+        const user_cart = await Cart.findOne({user:user_id,status:"listed"}).exec()
         // console.log("pdtid: "+pdt_id)
         // console.log("userid: "+user_id)
         // console.log("price: "+price)
@@ -913,18 +914,21 @@ const addToCartTable = async(req,res)=>{
 
                 }
         if (user_cart){
+            console.log(user_cart.status);
+          
+                console.log("inside listed");
             user_cart.product_list.forEach(product => {
                 if( product.productId == pdt_id ){
                     pdt_check = true;
                     qty = product.quantity;                           
-
+                    console.log("check pdt");
                 }})
 
                 amount = parseFloat(user_cart.total_amount); 
 
               
             if(pdt_check){
-                // console.log("user and pdt exist")
+                console.log("user and pdt exist, update qty and price")
                 await Cart.updateOne( { 
                     user: user_id,
                     "product_list.productId": pdt_id 
@@ -942,7 +946,7 @@ const addToCartTable = async(req,res)=>{
                 req.flash("successMessage", "Product is successfully updated to cart...");
                 res.redirect(`/viewProduct/${pdt_id}`)
             } else {
-                console.log("user exist pdt not")
+                console.log("user exist pdt not, push new pdts into pdtlist array")
                 await Cart.updateOne({_id:user_cart.id},
                     { $push: { 'product_list':{productId :pdt_id ,quantity:1,price:price,total:price}} , $inc: { total_amount: parseFloat(price) }},
                     {$set:{status:"listed"}})  
@@ -952,6 +956,7 @@ const addToCartTable = async(req,res)=>{
                 res.redirect(`/viewProduct/${pdt_id}`)
 
             }
+    
         } 
     }else{
         req.flash("errorMessage", "Out of the stock!!");
@@ -1187,7 +1192,7 @@ const loadCheckout = async(req,res)=>{
         const amount = req.params.amount;
 
         const users = await User.find({_id:userid}).exec()
-        const user_cart = await Cart.find({user:userid}).exec()
+        const user_cart = await Cart.find({user:userid,status:"listed"}).exec()
 
         const address = await Address.find({user_id:userid}).exec()
        // console.log(address[0]._id);
@@ -1395,60 +1400,40 @@ const selectedMethod = async(req,res)=>{
 const makeCODPayment = async(req,res)=>{
     try{
         const userid = req.params.userid
-        const amount = req.params.amount
-        const pdtlist = req.params.list
+        //const amount = req.params.amount
+       // const pdtlist = req.params.list
        
         const pay = req.params.defPay
 
         const address = await Address.find({user_id:userid}).exec()
         const adr = address[0]._id
 
+        const cartDet = await Cart.findOne({user:userid,status:'listed'}).populate('user').exec()
+        console.log("productlist for oredr",cartDet)
+        const productDet = await Products.findOne({_id:cartDet.product_list[0].productId}).exec()
+       
+      
+        console.log(productDet.product_name);
+     
         const addressid = req.session.deliverAddress ||  adr
         const paymethod = req.session.paymethod || pay
 
         const currentDate = moment().format('ddd MMM DD YYYY');
         const deliveryDate = moment().add(7,'days').format('ddd MMM DD YYYY')
         const returnDate = moment().add(12,'days').format('ddd MMM DD YYYY')
-        // console.log(currentDate);
-        // console.log(deliveryDate);
-
-
-         console.log("userid: "+userid);
-         console.log("amount: "+amount);
-         console.log("pdt list: "+pdtlist);
-         console.log("addressid: "+addressid);
-         console.log("pay: "+paymethod);
+    
 
          let qtyCount = await getQtyCount(req,res)
-         let listCount = await getListCount(req,res)
-
-         if (pdtlist && typeof pdtlist === 'object') {
-            console.log("checking");
-            console.log("pdtlist.productId", pdtlist.productId);
-            console.log("pdtlist.quantity", pdtlist.quantity);
-            console.log("pdtlist.price", pdtlist.price);
-            console.log("pdtlist.total", pdtlist.total);
-            console.log("pdtlist._id", pdtlist._id);
-        }
+         let listCount = await getListCount(req,res)       
         
-        // console.log("pdtlist.id",pdtlist.productId);
-         const productArray = [{
-            productId: pdtlist.productId,
-            quantity: pdtlist.quantity,
-            price: pdtlist.price,
-            total: pdtlist.total,
-            _id: pdtlist._id
-          }];
-        //    // const product_list = Array.isArray(pdtlist) ? pdtlist : [pdtlist];
-        //    console.log(productArray, typeof(productArray))
 
          const order = new Order({
             order_date : currentDate,
             user: userid,
             address:addressid,
             payment : paymethod,
-            product_list: productArray,
-            payment_amount:amount,
+            product_list: cartDet.product_list,
+            payment_amount:cartDet.total_amount,
             delivery_date:deliveryDate,
             return_date:returnDate,
             status:'pending',
@@ -1456,6 +1441,7 @@ const makeCODPayment = async(req,res)=>{
 
          })
          const orderData = await order.save()
+         console.log(orderData);
          if(orderData.payment === 'COD'){
             console.log('successfull');
 
@@ -1463,7 +1449,7 @@ const makeCODPayment = async(req,res)=>{
             //     { user: userid })
 
             await Cart.updateOne(
-                { user: userid },{$set:{status:"pending"}})
+                { user: userid,status:"listed" },{$set:{status:"pending"}})
 
             res.render('content/PaymentSuccess',{
                 title: "Successful Payment - TraditionShoppe",
@@ -1473,36 +1459,37 @@ const makeCODPayment = async(req,res)=>{
                 errorMessage : req.flash('errorMessage'),
                 successMesssage : req.flash('successMessage')
             })
+            
          }  else if(orderData.payment === 'Razorpay') {
 
-            const userDet = await Order.find({_id:orderData._id}).populate('user').exec();
-            console.log("details user : ",userDet)
-            const productDet = await Order.find({_id:orderData._id}).populate({ path: 'product_list.productId', model: 'Product' }).exec();            
-            console.log("product user : ",productDet)
-            // const amt = amount * 100
-            // const options = {
-            //     amount : amt,
-            //     currency : 'INR',
-            //     receipt : "RCPT"+orderData._id
-            // }
-            // razorpayInstance.orders.create(options,(err,order)=>{
-            //     if(!err){
-            //         res.status(200).send({
-            //             success : true,
-            //             msg : "Order Placed",
-            //             order_id : order.id,
-            //             amount : amount,
-            //             key_id : RAZORPAY_ID_KEY,
-            //             product_name : ,
-            //             description : ,
-            //             contact : "",
-            //             name : "",
-            //             email : " "
-            //         })
-            //     } else {
-                //         res.status(400).send({success : false ,msg : 'Something went wrong!'})
-                //    }
-            // })
+           
+            const amt = cartDet.total_amount * 100
+            const options = {
+                amount : amt,
+                currency : 'INR',
+                receipt : "RCPT"+orderData._id
+            }
+            razorpayInstance.orders.create(options,(err,order)=>{
+                if(!err){
+                    res.json({
+                        success : true,
+                        msg : "Order Placed",
+                        order_id : order.id,
+                        amount : amt,
+                        key_id : RAZORPAY_ID_KEY,
+                        product_name : productDet.product_name ,
+                        description : "Test Transaction",
+                        contact : cartDet.user.phone,
+                        name : cartDet.user.name,
+                        email : cartDet.user.email,
+                        order:order
+                    })
+                   
+                } else {
+                    console.error(err)
+                        res.status(400).send({success : false ,msg : 'Something went wrong!'})
+                   }
+            })
 
          } else{
             console.log('failed');
@@ -1516,7 +1503,27 @@ const makeCODPayment = async(req,res)=>{
     }
 }
 
+const verifyPayment = async (req, res) => {
+    //const email = req.session.user;
 
+    const { payment, razorOrder } = req.body;
+    const crypto = require("crypto");
+    var hmac = crypto.createHmac("sha256",RAZORPAY_SECRET_KEY);
+    hmac.update(razorOrder.id + "|" + payment.razorpay_payment_id);
+    hmac = hmac.digest("hex");
+    if (hmac == payment.razorpay_signature) {
+      req.session.count = 0;
+      req.session.coupenId = null;
+      const uniqueOrderId = req.session.uniqueOrderId;
+      const cheek = await Order.updateOne(
+        { _id: uniqueOrderId },
+        { $set: { orderPaymentStatus: "completed" } }
+      );
+      res.status(200).json({ status: true });
+    } else {
+      res.json({ status: false });
+    }
+  }
 
 /*********load wishlist*********/
 const loadWishlist = async(req,res)=>{
@@ -1606,6 +1613,7 @@ module.exports = {
     selectedAddress,
 
     makeCODPayment,
+    verifyPayment,
 
     addToWishlist,
     addToSave,

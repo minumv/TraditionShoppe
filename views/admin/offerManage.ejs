@@ -1,0 +1,108 @@
+<%- include('../layout/adminHeader') %>
+
+<!-- <div class="container-fluid py-4">
+
+  <div class="d-block">
+    <div class="d-flex">
+    <div class="order border p-4 rounded mb-4">  
+      User          
+    </div>
+    <div class="order border p-4 rounded mb-4">
+      Verified Users
+    </div>
+    <div class="order border p-4 rounded mb-4">
+      Blocked Users
+    </div>
+</div> -->
+
+<form action="/newOffer" method="get">
+    <input type = 'submit' value = 'Add Offer' class="btn bg-gradient-info" >
+  </form>
+
+    <div class="row">     
+      <div class="col-12">
+        <div class="card my-4">     
+
+
+          <div class="card-header p-0 position-relative z-index-2">
+            <div class="bg-gradient-primary shadow-primary border-radius-lg pt-2 pb-1">
+              <h6 class="text-white text-capitalize ps-3">Offer Details</h6>
+            </div>
+          </div>
+
+         
+
+          <div class="card-body px-0 pb-2">
+            <div class="table-responsive p-0">
+                <% if(offer != '') {%>
+              <table class="table align-items-center mb-0">               
+                <thead>
+                  <tr>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Offer Name</th>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Offer Type</th>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Discount</th>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Start</th>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">End</th>                    
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
+                    <th class="text-secondary opacity-7"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                    <% offer.forEach((row,index)=>{%>
+                  <tr>
+                    <td>
+                      <div class="d-flex px-2 py-1">
+                        <!-- <div>
+                          <img src="../assets/img/team-2.jpg" class="avatar avatar-sm me-3 border-radius-lg" alt="user1">
+                        </div> -->
+                        <div class="d-flex flex-column justify-content-center">
+                          <h6 class="mb-0 text-sm"><%= row.offer_name %></h6>
+                          <!-- <p class="text-xs text-secondary mb-0">john@creative-tim.com</p> -->
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                        <p class="text-xs font-weight-bold mb-0"><%= row.offer_type %></p>                       
+                      </td>
+                    <td>
+                      <p class="text-xs font-weight-bold mb-0"><%= row.discount_per %></p>
+                    </td>
+                    <td class="align-middle  text-sm">
+                        <% let originalDate = new Date(row.start_date) %>
+                        <% let formattedDate = `${originalDate.getDate().toString().padStart(2, '0')}-${(originalDate.getMonth() + 1).toString().padStart(2, '0')}-${originalDate.getFullYear()}`; %>
+                        <p class="text-xs font-weight-bold mb-0"><%=formattedDate %></p>
+                    </td>
+                    <td class="align-middle  text-sm">
+                        <% originalDate = new Date(row.expire_date) %>
+                        <% formattedDate = `${originalDate.getDate().toString().padStart(2, '0')}-${(originalDate.getMonth() + 1).toString().padStart(2, '0')}-${originalDate.getFullYear()}`; %>
+                        <p class="text-xs font-weight-bold mb-0"><%=formattedDate %></p>
+                    </td>
+                    
+                    <td class="align-middle">
+                        <% if (row.status === true){ %>
+                            <span class="badge badge-sm bg-gradient-success">Active</span>
+                        <% } else if(row.status === false) { %> 
+                            <span class="badge badge-sm bg-gradient-secondary">Inactive</span>                           
+                        <% }%>                              
+                    
+                    </td>
+                    <td class="align-middle">
+                      <a href="/getUpdateOffer/<%= row._id %>" class="text-secondary font-weight-bold text-xs" data-toggle="tooltip" data-original-title="View Offer">
+                       Show more
+                      </a>
+                    </td>
+                    
+                  </tr>
+                  <% }) %>
+                </tbody>
+            </table>
+            <% } else {%>
+                <h1 class="text-center text-danger mt-5">No offers found in the database</h1>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <%- include('../layout/adminFooter') %>
