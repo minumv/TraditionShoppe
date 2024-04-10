@@ -206,12 +206,21 @@
                         <p class="bottom-line p-head text-dark">Order Summary</p>
                         <div class="d-flex justify-content-between">
                             <p>Items:</p>
-                            <p><%=cart.total_amount%></p>
+                            <%let total = cart.total_amount + oframt +cpnamt%>
+                            <p><%=total%></p>
                         </div>
                         <div class="d-flex justify-content-between">
                             <p>Delivery:</p>
                             <p>--</p>
-                        </div>                        
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <p>Offer:</p>
+                            <p>₹<%=oframt%></p>
+                        </div>  
+                        <div class="d-flex justify-content-between">
+                            <p>Coupon:</p>
+                            <p>₹<%=cpnamt%></p>
+                        </div>                          
                        
                         <div class="d-flex justify-content-between bottom-line">
                             <p>Total:</p>

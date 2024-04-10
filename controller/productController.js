@@ -15,7 +15,7 @@ const bcrypt = require('bcrypt')
   // load products page
   const loadProducts = async(req,res)=>{
     try{
-        const productQuery = Products.find().exec()
+        const productQuery = Products.find().sort({'created':-1}).exec()
         const categoryQuery = Category.find({status:true}).exec()
         const sellerQuery = Seller.find({status:true}).exec()
         const discountQuery = Discount.find({status:true}).exec()

@@ -648,39 +648,36 @@ const loadbuyLast30 = async(req,res)=>{
 const load2023 = async(req,res)=>{
     try{
         
-           
-        // const orders = await Order.find({
-        //     $expr: {
-        //         $and: [
-        //           { $gte: [{ $year: "$order_date" }, 2023] },
-        //           { $lt: [{ $year: "$order_date" }, 2024] } // Exclude 2024
-        //         ]
-        //       }
-        //     }).exec()  
-         
-        //  console.log(orders);
-
         const email = req.session.user
-        console.log("email :",email);
-
-        const user = await User.findOne({email}).exec()
-        console.log("user :",user);
-        const orders = await Order.find().populate('user').populate({ path: 'product_list.productId', model: 'Product' }).exec();
-       
-          console.log("order detail:",orders.user.name)
-
-
-        res.render('profile/userOrderList',{
+        const users = await User.find({email:email}).exec()        
+        const orders = await Order.find({
+            $expr: {
+                $and: [
+                  { $gte: [{ $year: "$order_date" }, 2023] },
+                  { $lt: [{ $year: "$order_date" }, 2024] } // Exclude 2024
+                ]
+              }
+            }).exec()  
+         
+         console.log(orders);
+         console.log(orders);
+        const cart  = await Cart.find().exec()       
+        const products = await Products.find({ isListing:true }).exec()
+        const address = await Address.find().exec()   
+    
+            let qtyCount = await getQtyCount(req,res);
+            let listCount = await getListCount(req,res);    
+            res.render('profile/userOrder',{
             title:"My Order | TraditionShoppe",
             user : req.session.user,
             page:'Your Orders',
             qtyCount:qtyCount,
             listCount:listCount,
-            // products:products,
-            // users:users,
+            products:products,
+            users:users,
             orders:orders,
-            // cart:cart,   
-            // address:address,        
+            cart:cart,   
+            address:address,        
             errorMessage:req.flash('errorMessage'),
             successMessage:req.flash('successMessage')
 
@@ -690,6 +687,131 @@ const load2023 = async(req,res)=>{
         console.log(err.message);
     }
 }
+
+const load2022 = async(req,res)=>{
+    try{
+        
+        const email = req.session.user
+        const users = await User.find({email:email}).exec()        
+        const orders = await Order.find({
+            $expr: {
+                $and: [
+                  { $gte: [{ $year: "$order_date" }, 2022] },
+                  { $lt: [{ $year: "$order_date" }, 2023] } // Exclude 2024
+                ]
+              }
+            }).exec()  
+         
+         console.log(orders);
+         console.log(orders);
+        const cart  = await Cart.find().exec()       
+        const products = await Products.find({ isListing:true }).exec()
+        const address = await Address.find().exec()   
+    
+            let qtyCount = await getQtyCount(req,res);
+            let listCount = await getListCount(req,res);    
+            res.render('profile/userOrder',{
+            title:"My Order | TraditionShoppe",
+            user : req.session.user,
+            page:'Your Orders',
+            qtyCount:qtyCount,
+            listCount:listCount,
+            products:products,
+            users:users,
+            orders:orders,
+            cart:cart,   
+            address:address,        
+            errorMessage:req.flash('errorMessage'),
+            successMessage:req.flash('successMessage')
+
+        })
+    }
+    catch(err){
+        console.log(err.message);
+    }
+}
+const load2021 = async(req,res)=>{
+    try{
+        
+        const email = req.session.user
+        const users = await User.find({email:email}).exec()        
+        const orders = await Order.find({
+            $expr: {
+                $and: [
+                  { $gte: [{ $year: "$order_date" }, 2021] },
+                  { $lt: [{ $year: "$order_date" }, 2022] } // Exclude 2024
+                ]
+              }
+            }).exec()  
+         
+         console.log(orders);
+         console.log(orders);
+        const cart  = await Cart.find().exec()       
+        const products = await Products.find({ isListing:true }).exec()
+        const address = await Address.find().exec()   
+    
+            let qtyCount = await getQtyCount(req,res);
+            let listCount = await getListCount(req,res);    
+            res.render('profile/userOrder',{
+            title:"My Order | TraditionShoppe",
+            user : req.session.user,
+            page:'Your Orders',
+            qtyCount:qtyCount,
+            listCount:listCount,
+            products:products,
+            users:users,
+            orders:orders,
+            cart:cart,   
+            address:address,        
+            errorMessage:req.flash('errorMessage'),
+            successMessage:req.flash('successMessage')
+
+        })
+    }
+    catch(err){
+        console.log(err.message);
+    }
+}
+
+const loadOlder = async(req,res)=>{
+    try{
+        
+        const email = req.session.user
+        const users = await User.find({email:email}).exec()        
+        const orders = await Order.find({
+            $expr: {
+                 $gt: [{ $year: "$order_date" }, 2021] },
+            }).exec()  
+         
+         console.log(orders);
+         console.log(orders);
+        const cart  = await Cart.find().exec()       
+        const products = await Products.find({ isListing:true }).exec()
+        const address = await Address.find().exec()   
+    
+            let qtyCount = await getQtyCount(req,res);
+            let listCount = await getListCount(req,res);    
+            res.render('profile/userOrder',{
+            title:"My Order | TraditionShoppe",
+            user : req.session.user,
+            page:'Your Orders',
+            qtyCount:qtyCount,
+            listCount:listCount,
+            products:products,
+            users:users,
+            orders:orders,
+            cart:cart,   
+            address:address,        
+            errorMessage:req.flash('errorMessage'),
+            successMessage:req.flash('successMessage')
+
+        })
+    }
+    catch(err){
+        console.log(err.message);
+    }
+}
+
 
 
 /******************************** */
@@ -887,9 +1009,9 @@ module.exports = {
 
     loadbuyLast30,
     load2023,
-    // load2022,
-    // load2021,
-    // loadold,
+    load2022,
+    load2021,
+    loadOlder,
 
     getQtyCount,
     getListCount

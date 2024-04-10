@@ -9,6 +9,8 @@ const Cart = require('../model/cart')
 const List = require('../model/wishlist')
 const Address = require('../model/address')
 const Order = require('../model/order')
+const Coupon = require('../model/coupon')
+const Offer = require('../model/offer')
 const bcrypt = require('bcrypt')
 
 const RazorpayObj = require('razorpay');
@@ -799,24 +801,71 @@ const loadProductDetail = async (req,res)=>{
     try{
         let id = req.params.id
         console.log(id);
-        const products = await Products.find({_id:id}).exec()
-        const categories = await Category.find({status:true}).exec()
+        const user_id= await User.find({email:req.session.user},{_id:1}).exec()
+        const products = await Products.find({_id:id}).populate('category').exec()
+        // const categories = await Products.find({status:true}).populate('category').exec()
         const sellers = await Seller.find({status:{$ne:'inactive'}}).exec()
         const discounts = await Discount.find({status:true}).exec()
         const allproducts = await Products.find({status:{ $ne:'inactive'} , isListing: true }).exec()
         
+        let couponcode = ""
+        let coupondisc= 1 
+        let couponmin = 0
+        let cpnamt = 0       
+        const coupon = await Coupon.find({status : true }).exec()
+        console.log(coupon);
+        products.forEach((pdt)=>{
+            coupon.forEach((cpn)=>{
+              if(pdt.price_unit > cpn.minimum_purchase && cpn.expire_date > new Date()) {
+                 couponcode = cpn.coupon_code,
+                 console.log("code",couponcode);
+                 coupondisc = cpn.discount_per,
+                 console.log("disc",coupondisc);
+                 couponmin = cpn.maximum_discount_amt,
+                 cpnamt =  (pdt.price_unit * coupondisc * 0.01) 
+                 console.log("amt",cpnamt);
+              } 
+            })
+        })       
+        if( cpnamt > couponmin){
+            cpnamt = couponmin
+        }
+        const offer = await Offer.find({status : true}).exec()
+        let offerdisc = 1
+        let oframt = 0
+        products.forEach((pdt)=>{
+            offer.forEach((ofr)=>{
+                console.log(pdt.product_name,ofr.offer_name,pdt.category.category_name);
+              if((pdt.product_name === ofr.offer_name || pdt.category.category_name === ofr.offer_name) && ofr.expire_date > new Date()) {
+                 offerdisc = ofr.discount_per,
+                 console.log("offr",offerdisc);
+                 oframt =  (pdt.price_unit * offerdisc * 0.01) 
+                 console.log("amt",oframt);
+              } 
+            })
+        })
         
+        console.log("amount",cpnamt,oframt);
+        req.session.offerCoupon = { cpnamt, oframt }
+        const offer_coupon = {
+            couponcode :couponcode,
+            coupondisc:coupondisc,           
+            cpnamt:cpnamt,
+            offerdisc:offerdisc,
+            oframt:oframt
+        }
         let qtyCount = await getQtyCount(req,res)
         let listCount = await getListCount(req,res)
 
         res.render('content/productView',{
             title: "View Product | TraditionShoppe", 
             user : req.session.user,
+            user_id:user_id[0]._id,
             listCount:listCount,
             qtyCount:qtyCount,              
             products:products,
             allproducts:allproducts,
-            categories:categories,
+            offer_coupon : offer_coupon,
             sellers:sellers,
             discounts:discounts,          
             errorMessage:req.flash('errorMessage'),
@@ -843,6 +892,7 @@ const loadCart = async(req,res)=>{
         const products = await Products.find({status:{$ne:'inactive'},isListing:true}).exec()
         const discounts = await Discount.find({status:true}).exec()
         let qtyCount = 0;
+        const { cpnamt, oframt } = req.session.offerCoupon
         if(user_cart){
             if(user_cart.product_list == ''){
                 await Cart.deleteOne( { 
@@ -858,7 +908,9 @@ const loadCart = async(req,res)=>{
         res.render('content/myCart',{
             title: "My Cart - TraditionShoppe",
             page:"My Cart",   
-            user : req.session.user, 
+            user : req.session.user,
+            cpnamt:cpnamt,
+            oframt:oframt, 
             products:products,  
             discounts:discounts,
             user_cart:user_cart, 
@@ -1032,7 +1084,7 @@ const subQtyFromCart = async(req,res)=>{
         const price = req.params.price;
 
         const stock = await Products.findOne({_id:pdtid},{stock:1,_id:0}).exec()
-        const user_cart = await Cart.findOne({user:userid}).exec()
+        const user_cart = await Cart.findOne({user:userid,status:"listed"}).exec()
         // console.log("stock: "+stock.stock)
         let qty = 0;
         let amount = 0;
@@ -1069,13 +1121,13 @@ const subQtyFromCart = async(req,res)=>{
         } else if (qty<=1){
             if( user_cart.product_list.length === 1 ){
             await Cart.deleteOne(
-                { user: userid })
+                { user: userid,status:"listed" })
                 console.log('successful');
                 req.flash("successMessage", "User is deleted from cart...");
                 res.redirect('/cart')
         } else{
             await Cart.updateOne(
-                { user: userid },
+                { user: userid,status:"listed" },
                 { $pull: { product_list: { productId: pdtid } },
                 $set: { 
                     total_amount: amount - parseFloat(newPrice)
@@ -1097,7 +1149,7 @@ const deleteFromCart = async(req,res)=>{
     try{
         const userid = req.params.userid;
         const pdtid = req.params.pdtid; 
-        const user_cart = await Cart.findOne({user:userid}).exec()
+        const user_cart = await Cart.findOne({user:userid,status:"listed"}).exec()
         let qty = 0;
         let amount = 0;
         let price = 0;
@@ -1109,7 +1161,7 @@ const deleteFromCart = async(req,res)=>{
             amount = user_cart.total_amount
             let newPrice = qty * price;
             await Cart.updateOne(
-                { user: userid },
+                { user: userid ,status:"listed"},
                 { $pull: { product_list: { productId: pdtid } },
                 $set: { 
                     total_amount: amount - parseFloat(newPrice)
@@ -1191,9 +1243,11 @@ const loadCheckout = async(req,res)=>{
         const userid = req.params.userid;
         const amount = req.params.amount;
 
+        const { cpnamt, oframt } = req.session.offerCoupon
+
         const users = await User.find({_id:userid}).exec()
         const user_cart = await Cart.find({user:userid,status:"listed"}).exec()
-
+        
         const address = await Address.find({user_id:userid}).exec()
        // console.log(address[0]._id);
         let qtyCount = await getQtyCount(req,res)
@@ -1210,7 +1264,8 @@ const loadCheckout = async(req,res)=>{
             user_cart:user_cart,
             address:address,
             amount:amount,
-            
+            cpnamt:cpnamt,
+            oframt:oframt,
             qtyCount:qtyCount,
             listCount:listCount,          
             errorMessage : req.flash('errorMessage'),
@@ -1436,12 +1491,14 @@ const makeCODPayment = async(req,res)=>{
             payment_amount:cartDet.total_amount,
             delivery_date:deliveryDate,
             return_date:returnDate,
-            status:'pending',
-            action:'approve'        
+            paymentstatus:"pending",
+            orderstatus:'pending',
+            adminaction:'approve'        
 
          })
          const orderData = await order.save()
          console.log(orderData);
+         req.session.orderid = orderData._id
          if(orderData.payment === 'COD'){
             console.log('successfull');
 
@@ -1455,7 +1512,8 @@ const makeCODPayment = async(req,res)=>{
                 title: "Successful Payment - TraditionShoppe",
                 user : req.session.user,
                 qtyCount:qtyCount,
-                listCount:listCount,                 
+                listCount:listCount, 
+                orderData:orderData,                
                 errorMessage : req.flash('errorMessage'),
                 successMesssage : req.flash('successMessage')
             })
@@ -1509,16 +1567,16 @@ const verifyPayment = async (req, res) => {
     const { payment, razorOrder } = req.body;
     const crypto = require("crypto");
     var hmac = crypto.createHmac("sha256",RAZORPAY_SECRET_KEY);
-    hmac.update(razorOrder.id + "|" + payment.razorpay_payment_id);
+    hmac.update(razorOrder.order_id + "|" + payment.razorpay_payment_id);
     hmac = hmac.digest("hex");
     if (hmac == payment.razorpay_signature) {
       req.session.count = 0;
       req.session.coupenId = null;
-      const uniqueOrderId = req.session.uniqueOrderId;
+      const uniqueOrderId = req.session.orderid;
       const cheek = await Order.updateOne(
         { _id: uniqueOrderId },
-        { $set: { orderPaymentStatus: "completed" } }
-      );
+        { $set: { status: "pending" } }
+      ).exec()
       res.status(200).json({ status: true });
     } else {
       res.json({ status: false });

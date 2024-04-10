@@ -14,18 +14,25 @@
             <table class="table align-items-center mb-0">
                 <thead>
                 <tr>
-                    <!-- <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">S.No</th> -->
-                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Name</th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">S.No</th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Name</th>
                     <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Delivery Address</th>
                     <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Price</th>
-                    <th class="text-secondary opacity-7">Status</th>
-                    <th class="text-secondary opacity-7">Action</th>
-                    <th class="text-secondary opacity-7"></th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Action</th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7"></th>
                 </tr>
                 </thead>
                 <tbody>
                 <% orders.forEach((row,index)=>{%>
                 <tr>
+                    <td>
+                        <div class="d-flex px-2 py-1">                          
+                          <div class="d-flex flex-column justify-content-center">
+                            <h6 class="mb-0 text-sm"><%= index+1 %></h6>                          
+                          </div>
+                        </div>
+                      </td>
                     
                     <%users.forEach((user,index)=>{%>
                         <% if(row.user.equals(user._id)){%>                    
@@ -45,46 +52,45 @@
                     <p class="text-xs font-weight-bold mb-0" style="width:150px; overflow:hidden ;"><%= row.payment_amount %> </p>
                 </td>
                 <td class="align-middle  text-sm">
-                    <% if (row.status === 'delivered'){ %>
+                    <% if (row.orderstatus === 'delivered'){ %>
                         <span class="badge badge-sm bg-gradient-success">delivered</span>
-                    <% } else if(row.status === 'pending') { %> 
+                    <% } else if(row.orderstatus === 'pending') { %> 
                         <span class="badge badge-sm bg-gradient-warning">pending</span> 
-                        <% } else if(row.status === 'cancel request') { %> 
+                        <% } else if(row.orderstatus === 'cancel request') { %> 
                             <span class="badge badge-sm bg-gradient-warning">cancel request</span>                           
-                    <% } else if(row.status === 'cancelled') { %> 
+                    <% } else if(row.orderstatus === 'cancelled') { %> 
                         <span class="badge badge-sm bg-gradient-danger">cancelled</span> 
-                    <% } else if(row.status === 'return request') { %> 
+                    <% } else if(row.orderstatus === 'return request') { %> 
                         <span class="badge badge-sm bg-gradient-warning">return request</span>                    
-                    <% } else if(row.status === 'refund received') { %> 
+                    <% } else if(row.orderstatus === 'refund received') { %> 
                         <span class="badge badge-sm bg-gradient-success">refund received</span>   
                     <% } %>    
                 </td>
-               
+               <% let pdtid = '' %>
+               <% let qty = 0  %>
                 <td class="align-middle  text-sm">
-                    <% if (row.action === 'delivered'){ %>
+                    <% if (row.adminaction === 'delivered'){ %>
                         <span class="badge badge-sm bg-gradient-success">delivered</span>
-                    <% } else if(row.action === 'approve') { %> 
+                    <% } else if(row.adminaction === 'approve') { %> 
                         <% cart.forEach((rows,index)=>{%>
                             <%if((rows.user.equals(user._id)) && (rows.status == 'pending')){%>
                                 <%rows.product_list.forEach((list)=>{%>
                                     <%products.forEach((pdt)=>{%>
                                         <%if(list.productId.equals(pdt._id)){%>
-
-
-
-                        <form action="/orderPending/<%=pdt._id%>/<%=row._id%>/<%=user._id%>/<%=list.quantity%>" method="post"><button  type="submit" class="badge badge-sm bg-gradient-warning">approve</button>  </form>                      
-                   
-                        <%}%>
-                        <%})%>
-                    <%})%>
-                <%}%>
-                <%})%> 
-                   
-                        <% } else if(row.action === 'order cancelled') { %> 
+                                            <% pdtid = pdt._id %>
+                                            <% qty = list.quantity %>                       
+                                        <%}%>
+                                    <%})%>
+                                <%})%>
+                            <%}%>
+                        <%})%> 
+                        <%console.log("pdtid:",pdtid,qty,user._id,row._id)%>
+                        <form action="/orderPending/<%=pdtid%>/<%=row._id%>/<%=user._id%>/<%=qty%>" method="post"><button  type="submit" class="badge badge-sm bg-gradient-warning">approve</button>  </form>                      
+                    <% } else if(row.adminaction === 'order cancelled') { %> 
                         <form action="/cancelapprove/<%=row._id%>" method="post"><button type="submit" class="badge badge-sm bg-gradient-danger">order cancelled</button> </form>
-                    <% } else if(row.action === 'approve return') { %> 
+                    <% } else if(row.adminaction === 'approve return') { %> 
                         <form action="/returnapprove/<%=row._id%>" method="post"><button  type="submit" class="badge badge-sm bg-gradient-warning">approve return</button></form>                  
-                    <% } else if(row.action === 'refund granted') { %> 
+                    <% } else if(row.adminaction === 'refund granted') { %> 
                        <span class="badge badge-sm bg-gradient-success">refund granted</span>  
                     <% } %>    
                 </td>

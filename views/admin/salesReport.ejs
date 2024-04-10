@@ -1,0 +1,136 @@
+<%- include('../layout/adminHeader') %>
+
+<div class="container-fluid py-4">
+  <div class="d-flex justify-space-between">
+        
+        <div class="d-flex justify-space-between">
+            <div>
+                <form action="/downloadxlx" method="post">
+                    <input type = 'submit' value = 'Download xlsx' class="btn bg-gradient-info" >
+                </form>
+            </div>
+            
+            <div>
+                <form action="/downloadpdf" method="post">
+                    <input type = 'submit' value = 'Download pdf' class="btn bg-gradient-info" >
+                </form>
+            </div>
+        </div>
+        <div class="d-block">
+            From:<input type="date" name="fromdate" class="form-control" placeholder="dd-mm-yyyy">
+            To:<input type="date" name="todate" class="form-control" placeholder="dd-mm-yyyy">
+        </div>
+        <div>
+            <div class="dropdown mr-1 ml-md-auto">
+                <button type="button" class="btn btn-secondary btn-sm dropdown-toggle" id="dropdownMenuOffset" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Filter
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuOffset">
+                <a class="dropdown-item" href="/todayReport">Today</a>
+                <a class="dropdown-item" href="/yesterdayReport">Yesterday</a>
+                <a class="dropdown-item" href="/lastWeek">Last Week</a>
+                <a class="dropdown-item" href="/lastMonth">Last Month</a>
+                </div>
+            </div>
+        </div>
+</div>
+
+
+    <div class="row">    
+      <div class="col-12">
+        <div class="card my-4">
+          
+          <div class="card-body px-0 pb-2">
+            <div class="table-responsive p-0">
+              <% if(orders != '') {%>
+              <table class="table align-items-center mb-0">
+                <thead>
+                  <tr>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">S.No</th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Customer Name</th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Date</th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Product</th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">No.of items</th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Total Cost</th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Method</th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% orders.forEach((row,index)=>{%>
+                  <tr>
+                    <td>
+                      <div class="d-flex px-2 py-1">
+                        <!-- <div>
+                          <img src="../assets/img/team-2.jpg" class="avatar avatar-sm me-3 border-radius-lg" alt="user1">
+                        </div> -->
+                        <div class="d-flex flex-column justify-content-center">
+                          <h6 class="mb-0 text-sm"><%= index+1 %></h6>
+                          <!-- <p class="text-xs text-secondary mb-0">john@creative-tim.com</p> -->
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <p class="text-xs font-weight-bold mb-0" style="width:100px; overflow:hidden ;"><%= row.user.name %> </p>
+                      <!-- <p class="text-xs text-secondary mb-0">Organization</p> -->
+                    </td>
+                    
+                    <td class="align-middle  text-sm">
+                       
+                          <p class="text-xs font-weight-bold mb-0"><%= row.order_date%></p>
+                    </td>
+                    <td class="align-middle  text-sm" >
+                        <%let pdtname = ''%>
+                        <% row.product_list.forEach((list, index) => { %>
+                           <%products.forEach((pdt)=>{%>
+                              <%if(pdt._id.equals( list.productId )) {%>
+                                <p class="text-xs font-weight-bold mb-0" style="width:150px; overflow:hidden ;"><%= pdt.product_name %> </p>
+                              <% } %>
+                          <% })%>
+                        <%})%>
+                     
+                  </td>
+                    <td class="align-middle  text-sm">
+                        <% row.product_list.forEach((list, index) => { %>
+                            
+                                 <p class="text-xs font-weight-bold mb-0" style="width:150px; overflow:hidden ;"><%= list.quantity %> </p>
+                               
+                         <%})%>
+                     
+                  </td>
+                  <td class="align-middle  text-sm">
+                    <p class="text-xs font-weight-bold mb-0"> <%= row.payment_amount %> </p>
+                </td>
+                <td class="align-middle  text-sm">
+                  
+                    <p class="text-xs font-weight-bold mb-0" style="width:150px; overflow:hidden ;"><%= row.payment %> </p>
+                  
+                  <!-- <p class="text-xs font-weight-bold mb-0"> <%=row.image %> </p> -->
+              </td>
+              <td class="align-middle  text-sm">
+                <p class="text-xs font-weight-bold mb-0"> <%= row.orderstatus %> </p>
+            </td>
+                  <!-- <td class="align-middle">
+                       
+                            <span class="badge badge-sm bg-gradient-success">Verified</span>
+                         
+                    
+                    </td> -->
+                   
+                    
+                  </tr>
+                  <% }) %>
+                </tbody>
+            </table>
+            <% } else {%>
+              <h1 class="text-center text-secondary mt-5">No user found in the database</h1>
+          <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+   
+  </div>
+
+  <%- include('../layout/adminFooter') %>

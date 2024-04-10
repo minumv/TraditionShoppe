@@ -51,7 +51,7 @@
                   <% } else {%>
                     <%stock = "Out of Stock" %>
                     <% }%>
-                <p class="text-warning">rating </p>&ensp;&ensp; <p class="text-primary"><%= stock %></p>&ensp;&ensp; <p class="text-success">ID</p>
+                <p class="text-warning">rating </p>&ensp;&ensp; <p class="text-white font-weight-bolder fs-5 " style ="background-color: #00bfa5;"><%= stock %></p>&ensp;&ensp; 
             </div>
             <div class="price-value">
                 <div class="d-flex"><p class="p-per">-<%= per %> % </p>&ensp;&ensp; <p class="p-price">₹<%= mrp %></p> </div>
@@ -66,6 +66,20 @@
                 <p class="det-name">Material : <span><%= pdt.material %></span></p>
                 <p class="det-name">Size : <span><%= pdt.size %> inch</span></p>
                 <p class="det-name">Weight : <span><%= pdt.weight %> grams</span></p>
+                <% if(offer_coupon){ %>
+                <% if(offer_coupon.couponcode !== ''){%>                 
+                  
+                <p class="det-name "><span style ="background-color: #00bfa5;" class="text-white">1 Coupon Available</span></p>
+                <%}%>
+                <% if(offer_coupon.offerdisc !== 1){%>                  
+                 
+                  <p class="det-name"><span style ="background-color: #00bfa5;" class="text-white">1 offer Available</span></p>
+                <%}%>
+                <% console.log(mrp)%>
+                <% let sum = offer_coupon.oframt+offer_coupon.cpnamt%>
+                <% mrp = mrp - sum %>
+                <% console.log("value",mrp, sum )%>
+                <%}%>
             </div>
             <div class="wish-save d-flex">
                 <a class = "link-wish"href="/addtowishlist/<%= pdt._id %>"><span class="icon icon-heart-o">&nbsp;Add to wishlist</span></a>&ensp;&ensp;&ensp;&nbsp;
@@ -74,7 +88,7 @@
             <br>          
             <div class="nav-but-div">
                 <a href="/addtocart/<%= pdt._id %>/<%= mrp %>"><button class="btn btn-lg text-white nav-but purp-back" >Add to Cart</button></a>&ensp;
-                <a href="/checkout"><button class="btn btn-lg text-white nav-but purp-back" >Buy Now</button></a>
+                <a href="/checkout/<%=user_id%>/<%= mrp %>"><button class="btn btn-lg text-white nav-but purp-back" >Buy Now</button></a>
 
             </div>
             <% if (errorMessage.length > 0) { %>                

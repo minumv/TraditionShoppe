@@ -6,6 +6,7 @@ const Seller = require('../model/seller')
 const Discount = require('../model/discount')
 const Coupon = require('../model/coupon')
 const Offer = require('../model/offer')
+const Order = require('../model/order')
 
 // const userAuthent = require('../middleware/userAuthent')
 
@@ -222,7 +223,7 @@ const Offer = require('../model/offer')
     //  //load coupon page
      const loadCouponPage = async (req, res)=>{
         try {
-            const coupon = await Coupon.find().exec()
+            const coupon = await Coupon.find().sort({'created':-1}).exec()
 
             res.render('admin/couponManage',{
                 title : "Admin Panel - TraditionShoppe",
@@ -375,7 +376,7 @@ const Offer = require('../model/offer')
                     }}
                  ).exec()                    
             }
-            const offer= await Offer.find().exec()
+            const offer= await Offer.find().sort({'created':-1}).exec()
             res.render('admin/offerManage',{
                 title : "Offer Management - TraditionShoppe",
                 page:"Offer",
@@ -571,20 +572,53 @@ const Offer = require('../model/offer')
     //     }
     // }
 
-    //  //load Sales report page
-    //  const loadSales= async (req, res)=>{
-    //     try {
-    //         res.render('admin/salesReport',{
-    //             title : "Admin Panel - TraditionShoppe",
-    //             page:"Sales Report",
-    //             errorMessage : req.flash('errorMessage'),
-    //             successMessage : req.flash('successMessage')
-    //         })
+     //load Sales report page
+     const loadSalesReport= async (req, res)=>{
+        try {
+
+            // const orderData = await Order.aggregate([
+            //     {$match:{orderstatus :{$in:["delivered","cancelled","refund received"]}}},
+            //     { $unwind:"$product_list"} ,
+            //     {$lookup:{
+            //         from:"products",
+            //         localField:"product_list.product_id",
+            //         foreignField: "_id",
+            //         as: "productInfo",
+            //     }},
+            //     { $unwind:"$productInfo"} ,
+            //     {$project : {
+            //         prodname : "$productInfo.product_name",
+            //         qty : "$product_list.quantity",
+            //         delivery_dat : "$delivered_date ",
+            //         total_cost : "$payment_amount",
+            //         method:"$payment",
+            //         status:"$orderstatus"
+            //     }}                         
+            // ])
             
-    //     } catch (err) {
-    //         console.log(err.message);
-    //     }
-    // }
+
+            const orders = await Order.find({orderstatus:{$in:["delivered","cancelled","refund received"]}})
+            .populate('product_list')
+            .populate('user')
+            .exec()
+            orders.forEach((ord)=>{
+                console.log("inside order");
+                console.log(ord.user.name,ord.payment_amount,ord.product_list)
+            })  
+            const products = await Product.find({status:'active',isListing:true}).exec()           
+            res.render('admin/salesReport',{
+                title : "Sales Report - TraditionShoppe",
+                page:"Sales Report",
+                orders:orders,
+                products:products,
+                errorMessage : req.flash('errorMessage'),
+                successMessage : req.flash('successMessage')
+            })
+            
+        } catch (err) {
+            console.log(err.message);
+        }
+    }
 
     //  //load Sales report page
     //  const loadSettings= async (req, res)=>{
@@ -648,7 +682,7 @@ const Offer = require('../model/offer')
         updateOfferDetails,
         deleteOfferDetails,
         // loadBanner,
-        // loadSales,
+        loadSalesReport,
         // loadSettings,
         // logOut
         

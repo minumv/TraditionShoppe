@@ -15,12 +15,12 @@ const orderSchema = new mongoose.Schema({
         ref: 'Address',
         required : true
     },
-    // coupon : {
-    //     type : mongoose.Types.ObjectId,
-    //     ref: 'coupon',
-    //     require : true
-    // },
-    payment : {
+    coupon : {
+        type : mongoose.Types.ObjectId,
+        ref: 'coupon',
+        require : true
+    },
+    payment : { //method
         type :String,        
         required : true
     },
@@ -37,22 +37,48 @@ const orderSchema = new mongoose.Schema({
         type : Number,
         require : true
     },
-    delivery_date:{
+    delivery_date:{ //expected delivery date
         type : Date,
         require : true,
     },
-    return_date:{
+    return_date:{   //day limit for return request
         type : Date,
         require : true,
     },
-    status : {
+    paymentstatus : {
         type : String,
-        enum: ['pending','cancel request','cancelled','delivered','refund received','return request'],
+        enum: ['pending','completed','cancelled'],
         require : true
-    },  
-    action : {
+    },
+    orderstatus : {
+        type : String,
+        enum: ['pending','packed','shipped','cancel request','cancelled','delivered','refund received','return request'],
+        require : true
+    }, 
+
+    adminaction : {
         type : String,
         enum: ['approve','order cancelled','delivered','refund granted','approve return',],
+        require : true
+    },
+    delivered_date : {  //delivered to customer
+        type : Date,
+        require : true,
+    },
+    returned_date : { //customer returned the product
+        type : Date,
+        require : true,
+    },
+    return_reason : {
+        type : String,
+        require : true
+    },
+    cancelled_date : { //customer cancelled the product
+        type : Date,
+        require : true,
+    },
+    cancel_reason : {
+        type : String,
         require : true
     },
     created : {

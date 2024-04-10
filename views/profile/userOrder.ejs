@@ -6,12 +6,12 @@
             <div >   
                 <a href="/getOrder"><p class="bottom-line border-bottom border-success mx-4 p-0">Orders</p></a>         
             </div>
-            <div >   
+            <!-- <div >   
                 <a href="/buyAgain"><p class="bottom-line border-bottom border-success mx-4 p-0">Buy Again</p></a>         
             </div>
             <div >   
                 <a href="/cancellist"><p class="bottom-line border-bottom border-success  mx-4 p-0">Cancelled Orders</p></a>         
-            </div>
+            </div> -->
         </div>
 
         <div>
@@ -71,9 +71,8 @@
                 <p><%= odr.delivery_date%></p>
                </div>
               
-                <% cart.forEach((row,index)=>{%>
-                    <%if((row.user.equals(odr.user)) && (row.status !== 'listed')){%>
-                        <%row.product_list.forEach((list)=>{%>
+                
+                        <%odr.product_list.forEach((list)=>{%>
                             <%products.forEach((pdt)=>{%>
                                 <%if(list.productId.equals(pdt._id)){%>
                                     <div class="d-flex"> 
@@ -83,7 +82,7 @@
                                         </div>
                                        
                                     <div class="pdt-det d-block border mb-2 p-2 rounded">
-                                        <p class="text-danger font-weight-bold mb-0"><%=pdt.product_name%></p>
+                                        <p class="font-weight-bold mb-0" style="color:#4F0341"><%=pdt.product_name%></p>
                                         <p>Return window closed on <%= odr.return_date%></p>
                                         <a href="/viewProduct/<%= pdt._id %>"><button class="use-but ord-but bg-warning text-center text-dark">Buy Again</button></a>
                                         <a href="/review"><button type="submit" class="use-but ord-but bg-light text-center text-dark">Write a review</button></a>
@@ -96,18 +95,17 @@
             <div class="ord-status d-block p-1">
                 <div class="d-flex">
                     <p class="text-dark fs-3 font-weight-bold">Status:</p>
-                    <p class="text-success fs-3 font-weight-bold"><%= odr.status%></p>
+                    <p class="text-success fs-3 font-weight-bold"><%= odr.orderstatus%></p>
                 </div>
                 <div class="d-flex">
                     <%console.log("orderid: "+odr._id)%>
-                    <form action="/cancelRequest/<%= odr._id %>" method="post"><button type="submit" class="use-but ord-but bg-danger">Cancel Order</button></form>
-                    <form action="/returnRequest/<%= odr._id %>"  method="post"><button type="submit" class="use-but ord-but">Return Product</button></form>
+                    <form action="/cancelRequest/<%= odr._id %>" method="post"><button type="submit" class="use-but ord-but bg-white text-dark">Cancel Order</button></form>
+                    <form action="/returnRequest/<%= odr._id %>"  method="post"><button type="submit" class="use-but ord-but bg-white text-dark">Return Product</button></form>
                 </div>
                             <%}%>
                             <%})%>
                         <%})%>
-                    <%}%>
-                <%})%>
+                
             </div>
         </div>
    
@@ -115,6 +113,7 @@
         <%})%> <!--  users -->
     <%})%> <!--  orders -->
  </div>
+</div>
 </div>
 
   <%- include('../layout/userFooter') %>

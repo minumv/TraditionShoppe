@@ -24,7 +24,7 @@
                             <% products.forEach((pdt, index) => { %>                                
                             <% if(cart.productId.equals(pdt._id) ){%> 
                                 <!-- <% console.log("qty: "+cart.quantity) %>
-                                <% console.log("price: "+pdt.price_unit) %>       -->
+                               -->  <% console.log("price: "+pdt.price_unit) %>      
                                 <%  mrpTotal += parseFloat(cart.quantity * pdt.price_unit) %> 
                                 <!-- <% console.log("total price: "+ mrpTotal) %>                                     -->
                                 <% discounts.forEach((disc_row, index) => { %>
@@ -61,10 +61,13 @@
                             <% } %>
                             <% }) %>
                             <% }) %>
+                            <%console.log("total",mrp)%>
+                            <% let sum = cpnamt+oframt %>
+                            <%console.log("totalsum",sum)%>
                             <% amount = user_cart.total_amount %>
-                            <!-- <% console.log("amount: "+ amount) %>     -->
+                            <% console.log("amount: "+ amount) %>    
                             <% let savings = parseFloat(mrpTotal - amount )%>
-                            <!-- <% console.log("savings: "+ savings) %>     -->
+                            <% console.log("savings: "+ savings) %>    
                             <% if (errorMessage.length > 0) { %>   
                                 <%console.log(errorMessage)%>             
                                <div class="alert alert-danger" role="alert"> <%- errorMessage %>  </div>                

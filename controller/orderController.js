@@ -17,7 +17,7 @@ const Address = require('../model/address')
     const loadOrder = async (req,res)=>{
         try{
             console.log("controller");
-            const orders = await Order.find().exec() 
+            const orders = await Order.find().sort({'created':-1}).exec() 
             const cart =await Cart.find().exec()
             const users = await User.find({status : {$nin:["deleted","blocked"]}}).exec()
             const products = await Product.find({isListing:true}).exec()
@@ -104,8 +104,10 @@ const Address = require('../model/address')
             await Order.updateOne(
                 { _id: odrid },
                { $set: { 
-                    status:"delivered",
-                    action:"delivered",
+                    orderstatus:"delivered",
+                    paymentstatus:"completed",
+                    adminaction:"delivered",
+                    delivered_date:new Date(),
                     // update delivery date
                 } } )
             
@@ -147,8 +149,8 @@ const cancelOrder = async (req,res)=>{
         await Order.updateOne(
             { _id: odrid },
            { $set: { 
-                status: "cancel request",
-                action:"order cancelled"
+                orderstatus: "cancel request",
+                adminaction:"order cancelled"
             } } 
         )
         console.log('successful');
@@ -181,8 +183,8 @@ const returnOrder = async (req,res)=>{
         await Order.updateOne(
             { _id: odrid },
            { $set: { 
-                status: "return request",
-                action:"approve return"
+                orderstatus: "return request",
+                adminaction:"approve return"
             } } 
         )
         console.log('successful');
@@ -226,8 +228,8 @@ const OrderReturned = async (req,res)=>{
             await Order.updateOne(
                 { _id: odrid },              
                 { $set: {     
-                    status: "refund received",
-                    action:"refund granted"
+                    orderstatus: "refund received",
+                    adminaction:"refund granted"
                 } } 
             )
         
@@ -273,7 +275,7 @@ const OrderReturned = async (req,res)=>{
                 await Order.updateOne(
                     { _id: odrid },              
                     { $set: {     
-                        status: "cancelled"                
+                        orderstatus: "cancelled"                
                     } } 
                 )
             

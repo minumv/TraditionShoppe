@@ -101,9 +101,9 @@ userRoute.get("/cancelList",userAuthent.isAuthenticated,userController.loadcance
 
 userRoute.get("/orderlast30",userAuthent.isAuthenticated,userController.loadbuyLast30)
 userRoute.get("/order2023",userAuthent.isAuthenticated,userController.load2023)
-// userRoute.get("/order2022",userAuthent.isAuthenticated,userController.load2022)
-// userRoute.get("/order2021",userAuthent.isAuthenticated,userController.load2021)
-// userRoute.get("/oldorders",userAuthent.isAuthenticated,userController.loadold)
+userRoute.get("/order2022",userAuthent.isAuthenticated,userController.load2022)
+userRoute.get("/order2021",userAuthent.isAuthenticated,userController.load2021)
+userRoute.get("/oldorders",userAuthent.isAuthenticated,userController.loadOlder)
 
 
 module.exports =  userRoute//router

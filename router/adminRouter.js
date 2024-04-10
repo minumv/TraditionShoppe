@@ -50,6 +50,11 @@ adminRoute.post("/updateOfferType",adminController.changeOfferType)
 adminRoute.post("/updateOffer/:id",adminController.updateOfferDetails)
 adminRoute.post("/deleteOffer/:id",adminController.deleteOfferDetails)
 
+/****************sales report*********************/
+adminRoute.get("/salesreport",adminController.loadSalesReport) 
+
+
+
 // adminRoute.get("/admin/banner",adminController.loadBanner)  
 // adminRoute.get("/admin/salesreport",adminController.loadSales) 
 // adminRoute.get("/admin/settings",adminController.loadSettings) 
