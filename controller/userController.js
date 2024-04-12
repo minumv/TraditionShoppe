@@ -68,6 +68,7 @@ const verifyLogin = async(req,res)=>{
             const passwordMatch = await bcrypt.compare(password,userData.password)
             if(passwordMatch){
                 req.session.user = userData.email ;
+
                 req.flash("successMessage","You are successfully logged in.")
                 res.redirect('/home')
             } else {
@@ -287,16 +288,7 @@ const sendOtpEmail = async({_id,email},res)=>{
         await newOTP.save();
         console.log(newOTP);
         await transporter.sendMail(mailOptions)
-        
-       //res.redirect('/signin/otpVerifyPage/_id')
-        // res.json({
-        //     status:"PENDING",
-        //     message:"otp verification email sent",
-        //     data:{
-        //         user_id:_id,
-        //         email
-        //     }
-        // })        
+             
     }
     catch(err){
        res.json({
@@ -308,9 +300,7 @@ const sendOtpEmail = async({_id,email},res)=>{
 const loadverifyOTPMail = async(req,res)=>{
     try{        
             console.log("at loading id: "+req.params.id+ " email: "+ req.params.email);
-        // let id = req.params.id
-        // User.findById(id)
-        // .then(otps=>{
+       
             res.render('signin/otpVerifyPage',{
             title:'VerifyOTP | TraditionShoppe',
             userId:req.params.id,
@@ -455,14 +445,14 @@ const loadHome = async (req,res)=>{
         const sellers = await Seller.find({status:{$ne:'inactive'}}).exec()
         const discounts = await Discount.find({status:true}).exec()
         
-        let qtyCount = await getQtyCount(req,res);
-        let listCount = await getListCount(req,res);
+        await getQtyCount(req,res); //get cart count
+        await getListCount(req,res);    //get wishlist count
    
         res.render('user/home',{
             title: "Home | TraditionShoppe", 
             user : email, 
-            qtyCount:qtyCount,
-            listCount:listCount,
+            qtyCount:req.session.qtyCount,
+            listCount:req.session.listCount,
             products:products,
             categories:categories,
             sellers:sellers,
@@ -508,7 +498,7 @@ const getQtyCount = async(req,res)=>{
                 console.log(product.quantity);       
                 qtyCount += product.quantity; })
         }
-        return qtyCount;
+        req.session.qtyCount = qtyCount
     }
     catch(err){
         console.log(err.message);
@@ -519,14 +509,14 @@ const getListCount = async(req,res)=>{
     try{
         let listCount = 0;
         const users = await User.findOne({email:req.session.user},{_id:1}).exec()
-        console.log("user list : "+users)
+        // console.log("user : "+users)
         const user_list = await List.findOne({user:users}).exec()
 
         if(user_list){           
             
             listCount = user_list.product_list.length;
         }
-        return listCount;
+        req.session.listCount = listCount
     }
     catch(err){
         console.log(err.message);
@@ -540,14 +530,14 @@ const loadProfile = async (req,res)=>{
     try{
         const email = req.session.user
         const users = await User.find({email:email}).exec()    
-        let qtyCount = await getQtyCount(req,res);
-        let listCount = await getListCount(req,res);
+        // let qtyCount = await getQtyCount(req,res);
+        // let listCount = await getListCount(req,res);
         
         res.render('profile/userProfile',{
             title:"My account | TraditionShoppe",
             user : req.session.user,
-            qtyCount:qtyCount,
-            listCount:listCount,
+            qtyCount:req.session.qtyCount,
+            listCount:req.session.listCount,
             page:'Your Profile',
             users:users,
             // products:products,
@@ -575,15 +565,15 @@ const loadOrder = async (req,res)=>{
         const products = await Products.find({ isListing:true }).exec()
         const address = await Address.find().exec()
 
-        let qtyCount = await getQtyCount(req,res);
-        let listCount = await getListCount(req,res);
+        // let qtyCount = await getQtyCount(req,res);
+        // let listCount = await getListCount(req,res);
         
         res.render('profile/userOrder',{
             title:"My Order | TraditionShoppe",
             user : req.session.user,
             page:'Your Orders',
-            qtyCount:qtyCount,
-            listCount:listCount,
+            qtyCount:req.session.qtyCount,
+            listCount:req.session.listCount,
             products:products,
             users:users,
             orders:orders,
@@ -625,15 +615,15 @@ const loadbuyLast30 = async(req,res)=>{
 
 
 
-        let qtyCount = await getQtyCount(req,res);
-        let listCount = await getListCount(req,res);
+        // let qtyCount = await getQtyCount(req,res);
+        // let listCount = await getListCount(req,res);
         
         res.render('profile/userOrder',{
             title:"My Order | TraditionShoppe",
             user : req.session.user,
             page:'Your Orders',
-            qtyCount:qtyCount,
-            listCount:listCount,
+            qtyCount:req.session.qtyCount,
+            listCount:req.session.listCount,
             products:products,
             users:users,
             orders:orders,

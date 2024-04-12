@@ -44,7 +44,142 @@ const storeSerachValue = async(req,res)=>{
     }
 }
 
-
+const getProducts = async(req,res)=>{
+    try{
+        const products = await Products.aggregate([
+            {
+                $match : {
+                    $and : [{status : 'active', isListing : true}]
+                }
+            },
+            {
+                $lookup : {
+                    from : 'discounts',
+                    localField : 'discount',
+                    foreignField : '_id',
+                    as : 'discountInfo'
+                }
+            },
+            {
+                $addFields: {
+                    discountInfo: { $arrayElemAt: ['$discountInfo', 0] },
+                    discountedPrice: {
+                        $cond: {
+                            if: { $gt: [{ $size: "$discountInfo" }, 0] },
+                            then: {
+                                $multiply: [
+                                    "$price_unit",
+                                    { $subtract: [1, { $divide: [{ $toDouble: { $arrayElemAt: ["$discountInfo.percentage", 0] } }, 100] }]}
+                                ]
+                            },
+                            else: "$price_unit"
+                        }
+                    }
+                }
+                
+            },
+            {
+                $lookup : {
+                    from : 'categories',
+                    localField : 'category',
+                    foreignField : '_id',
+                    as : 'categoryInfo'
+                }
+            },
+            {
+                $addFields: {
+                    categoryInfo: { $arrayElemAt: ['$categoryInfo', 0]},
+                    categoryName: "$categoryInfo.category_name"
+                }
+            },
+            {
+                $lookup : {
+                    from : 'offers',
+                    localField : 'product_name',
+                    foreignField : 'offer_name',
+                    as : 'productoffer'
+                }
+            },
+            {
+                $addFields: {
+                    productoffer: { $arrayElemAt: ['$productoffer', 0]},
+                    pdtoffer: {
+                        $cond: {
+                            if: { $gt: [{ $size: "$productoffer" }, 0] },
+                            then: {
+                                $multiply: [
+                                    "$price_unit",
+                                    { $divide: [{ $toDouble: { $arrayElemAt: ["$productoffer.discount_per", 0] } }, 100] }
+                                ]
+                            },
+                            else: 0
+                        }
+                    }
+                }
+            },
+            {
+                $lookup : {
+                    from : 'offers',
+                    localField : 'categoryName',
+                    foreignField : 'offer_name',
+                    as : 'categoryoffer'
+                }
+            },
+            {
+                $addFields: {
+                    categoryoffer: { $arrayElemAt: ['$categoryoffer', 0]},
+                    categoffer: {
+                        $cond: {
+                            if: { $gt: [{ $size: "$categoryoffer" }, 0] },
+                            then: {
+                                $multiply: [
+                                    "$price_unit",
+                                    { $divide: [{ $toDouble: { $arrayElemAt: ["$categoryoffer.discount_per", 0] } }, 100] }
+                                ]
+                            },
+                            else: 0
+                        }
+                    }
+                }
+            },
+            {
+                $addFields: {
+                    discountInfo: {
+                        $cond: {
+                            if: { $isArray: "$discountInfo" }, // Check if discountInfo is an array
+                            then: { $arrayElemAt: ["$discountInfo", 0] }, // If it's an array, extract the first element
+                            else: null // If it's not an array, set it to null
+                        }
+                    },
+                    discountedsalePrice: {
+                        $cond: {
+                            if: {
+                                $and: [
+                                    { $ne: ["$discountInfo", null] }, // Check if discountInfo is not null
+                                    { $or: [ // Check if either pdtoffer or categoffer is not 0
+                                        { $ne: ["$pdtoffer", 0] },
+                                        { $ne: ["$categoffer", 0] }
+                                    ]}
+                                ]
+                            },
+                            then: {
+                                $subtract: [
+                                    "$discountedPrice", // Subtract the offer price from the discountedPrice
+                                    { $max: ["$pdtoffer", "$categoffer"] } // Use $max to get the higher offer value
+                                ]
+                            },
+                            else: "$discountedPrice" // If no offer is applicable or discountInfo is null, keep the original discountedPrice
+                        }
+                    }
+                }
+            }            
+        ])
+        return products
+    }
+    catch(err){
+        console.log(err.message);
+    }
+}
 
 //serach products
 const listSearchProduct = async(req,res)=>{
@@ -58,32 +193,168 @@ const listSearchProduct = async(req,res)=>{
     }
 }
 
+const getPaginatedProducts = async(req,res,perPage,pageNum)=>{
+    try{
+        const products = await Products.aggregate([
+            {
+                $match : {
+                    $and : [{status : 'active', isListing : true}]
+                }
+            },
+            {
+                $lookup : {
+                    from : 'discounts',
+                    localField : 'discount',
+                    foreignField : '_id',
+                    as : 'discountInfo'
+                }
+            },
+            {
+                $addFields: {
+                    discountInfo: { $arrayElemAt: ['$discountInfo', 0] },
+                    discountedPrice: {
+                        $cond: {
+                            if: { $gt: [{ $size: "$discountInfo" }, 0] },
+                            then: {
+                                $multiply: [
+                                    "$price_unit",
+                                    { $subtract: [1, { $divide: [{ $toDouble: { $arrayElemAt: ["$discountInfo.percentage", 0] } }, 100] }]}
+                                ]
+                            },
+                            else: "$price_unit"
+                        }
+                    }
+                }
+                
+            },
+            {
+                $lookup : {
+                    from : 'categories',
+                    localField : 'category',
+                    foreignField : '_id',
+                    as : 'categoryInfo'
+                }
+            },
+            {
+                $addFields: {
+                    categoryInfo: { $arrayElemAt: ['$categoryInfo', 0]},
+                    categoryName: "$categoryInfo.category_name"
+                }
+            },
+            {
+                $lookup : {
+                    from : 'offers',
+                    localField : 'product_name',
+                    foreignField : 'offer_name',
+                    as : 'productoffer'
+                }
+            },
+            {
+                $addFields: {
+                    productoffer: { $arrayElemAt: ['$productoffer', 0]},
+                    pdtoffer: {
+                        $cond: {
+                            if: { $gt: [{ $size: "$productoffer" }, 0] },
+                            then: {
+                                $multiply: [
+                                    "$price_unit",
+                                    { $divide: [{ $toDouble: { $arrayElemAt: ["$productoffer.discount_per", 0] } }, 100] }
+                                ]
+                            },
+                            else: 0
+                        }
+                    }
+                }
+            },
+            {
+                $lookup : {
+                    from : 'offers',
+                    localField : 'categoryName',
+                    foreignField : 'offer_name',
+                    as : 'categoryoffer'
+                }
+            },
+            {
+                $addFields: {
+                    categoryoffer: { $arrayElemAt: ['$categoryoffer', 0]},
+                    categoffer: {
+                        $cond: {
+                            if: { $gt: [{ $size: "$categoryoffer" }, 0] },
+                            then: {
+                                $multiply: [
+                                    "$price_unit",
+                                    { $divide: [{ $toDouble: { $arrayElemAt: ["$categoryoffer.discount_per", 0] } }, 100] }
+                                ]
+                            },
+                            else: 0
+                        }
+                    }
+                }
+            },
+            {
+                $addFields: {
+                    discountInfo: {
+                        $cond: {
+                            if: { $isArray: "$discountInfo" }, // Check if discountInfo is an array
+                            then: { $arrayElemAt: ["$discountInfo", 0] }, // If it's an array, extract the first element
+                            else: null // If it's not an array, set it to null
+                        }
+                    },
+                    discountedsalePrice: {
+                        $cond: {
+                            if: {
+                                $and: [
+                                    { $ne: ["$discountInfo", null] }, // Check if discountInfo is not null
+                                    { $or: [ // Check if either pdtoffer or categoffer is not 0
+                                        { $ne: ["$pdtoffer", 0] },
+                                        { $ne: ["$categoffer", 0] }
+                                    ]}
+                                ]
+                            },
+                            then: {
+                                $subtract: [
+                                    "$discountedPrice", // Subtract the offer price from the discountedPrice
+                                    { $max: ["$pdtoffer", "$categoffer"] } // Use $max to get the higher offer value
+                                ]
+                            },
+                            else: "$discountedPrice" // If no offer is applicable or discountInfo is null, keep the original discountedPrice
+                        }
+                    }
+                }
+            },
 
+
+            {
+                $skip: ( pageNum - 1 ) * perPage
+            },
+            {
+                $limit: perPage
+            }
+
+            
+        ])
+        return products
+    }
+    catch(err){
+        console.log(err.message);
+    }
+}
 
 //load all products
 const loadAllProducts = async (req,res)=>{
-    try{
-            const products = await Products.find({status:'active',isListing:true}).exec()            
-            const discounts = await Discount.find({status:true}).exec()           
-
-            let qtyCount = await getQtyCount(req,res)
-            let listCount = await getListCount(req,res)
-
-
-            res.render('content/allproducts',{
-            title : "All Products| TraditionShoppe",
-            user : req.session.user,
-            page : 'All products',
-            qtyCount:qtyCount,
-            listCount:listCount,            
-            products : products,
-             discounts : discounts,
-            errorMessage:req.flash('errorMessage'),
-            successMessage:req.flash('successMessage')
+    try{    
+            const pageNum = req.query.page || 1
+            const perPage = 9
+            const totalCount = await Products.countDocuments({status:'active',isListing:true})
+            const pages = Math.ceil( totalCount / perPage )
+            console.log("count",totalCount);
 
             
-        })
+            const products = await getPaginatedProducts(req,res,perPage,pageNum)
+            
 
+           console.log( products);          
+                    
     }
     catch(err){
         console.log(err.message);
@@ -98,15 +369,14 @@ const loadSearchProducts = async (req,res)=>{
             const products = await Products.find({ "product_name":{$regex:".*"+search+".*",$options:'i'}  });            
             const discounts = await Discount.find({status:true}).exec()
 
-            let qtyCount = await getQtyCount(req,res)
-            let listCount = await getListCount(req,res)
+       
             
                 res.render('content/allproducts',{
                 title : "All Products| TraditionShoppe",
                 user : req.session.user,
                 page : 'All products', 
-                qtyCount:qtyCount,
-                listCount:listCount,                
+                qtyCount:req.session.qtyCount,
+                listCount:req.session.listCount,               
                 products : products,
                 discounts : discounts,
                 errorMessage:req.flash('errorMessage'),
@@ -130,15 +400,15 @@ const  getnewHandicrafts = async (req,res)=>{
             const discounts = await Discount.find({status:true}).exec()                    
 
             
-            let qtyCount = await getQtyCount(req,res)
-            let listCount = await getListCount(req,res)
+            // let qtyCount = await getQtyCount(req,res)
+            // let listCount = await getListCount(req,res)
             
             res.render('content/allproducts',{
             title : "All Products| TraditionShoppe",
             user : req.session.user,
             page : 'All products',
-            qtyCount:qtyCount,
-            listCount:listCount,            
+            qtyCount:req.session.qtyCount,
+            listCount:req.session.listCount,         
             products : products,
              discounts : discounts,
             errorMessage:req.flash('errorMessage'),
@@ -160,15 +430,15 @@ const  getnewAntique = async (req,res)=>{
             const products = await Products.find({ category: { $in: categoryIds }, status: 'new', isListing: true }).exec();       
             const discounts = await Discount.find({status:true}).exec()
 
-            let qtyCount = await getQtyCount(req,res)
-            let listCount = await getListCount(req,res)
+            // let qtyCount = await getQtyCount(req,res)
+            // let listCount = await getListCount(req,res)
             
             res.render('content/allproducts',{
             title : "All Products| TraditionShoppe",
             user : req.session.user,
             page : 'All products', 
-            listCount:listCount,
-            qtyCount:qtyCount,           
+            qtyCount:req.session.qtyCount,
+            listCount:req.session.listCount,        
             products : products,
              discounts : discounts,
             errorMessage:req.flash('errorMessage'),
@@ -190,15 +460,15 @@ const  getnewSpices = async (req,res)=>{
             const products = await Products.find({ category: { $in: categoryIds }, status: 'new', isListing: true }).exec();       
             const discounts = await Discount.find({status:true}).exec()
             
-            let qtyCount = await getQtyCount(req,res)
-            let listCount = await getListCount(req,res)
+            // let qtyCount = await getQtyCount(req,res)
+            // let listCount = await getListCount(req,res)
             
             res.render('content/allproducts',{
             title : "All Products| TraditionShoppe",
             user : req.session.user,
             page : 'All products',
-            listCount:listCount,
-            qtyCount:qtyCount,            
+            qtyCount:req.session.qtyCount,
+            listCount:req.session.listCount,      
             products : products,
              discounts : discounts,
             errorMessage:req.flash('errorMessage'),
@@ -221,15 +491,15 @@ const  getnewApparels = async (req,res)=>{
             const products = await Products.find({ category: { $in: categoryIds }, status: 'new', isListing: true }).exec();       
             const discounts = await Discount.find({status:true}).exec()
             
-            let qtyCount = await getQtyCount(req,res)
-            let listCount = await getListCount(req,res)
+            // let qtyCount = await getQtyCount(req,res)
+            // let listCount = await getListCount(req,res)
             
             res.render('content/allproducts',{
             title : "All Products| TraditionShoppe",
             user : req.session.user,
             page : 'All products',  
-            listCount:listCount,
-            qtyCount:qtyCount,          
+            qtyCount:req.session.qtyCount,
+            listCount:req.session.listCount,      
             products : products,
              discounts : discounts,
             errorMessage:req.flash('errorMessage'),
@@ -251,15 +521,15 @@ const  loadNew = async (req,res)=>{
             const products = await Products.find({ status: 'new', isListing: true }).exec();       
             const discounts = await Discount.find({status:true}).exec()
             
-            let qtyCount = await getQtyCount(req,res)
-            let listCount = await getListCount(req,res)
+            // let qtyCount = await getQtyCount(req,res)
+            // let listCount = await getListCount(req,res)
             
             res.render('content/allproducts',{
             title : "All Products| TraditionShoppe",
             user : req.session.user,
             page : 'All products',  
-            listCount:listCount,
-            qtyCount:qtyCount,          
+            qtyCount:req.session.qtyCount,
+            listCount:req.session.listCount,     
             products : products,
              discounts : discounts,
             errorMessage:req.flash('errorMessage'),
@@ -769,7 +1039,7 @@ const getQtyCount = async(req,res)=>{
                 console.log(product.quantity);       
                 qtyCount += product.quantity; })
         }
-        return qtyCount;
+        req.session.qtyCount = qtyCount
     }
     catch(err){
         console.log(err.message);
@@ -787,13 +1057,12 @@ const getListCount = async(req,res)=>{
             
             listCount = user_list.product_list.length;
         }
-        return listCount;
+        req.session.listCount = listCount
     }
     catch(err){
         console.log(err.message);
     }
 }
-
 //load all new handicrafts products
 
 /*******************product view details************************* */
@@ -854,15 +1123,15 @@ const loadProductDetail = async (req,res)=>{
             offerdisc:offerdisc,
             oframt:oframt
         }
-        let qtyCount = await getQtyCount(req,res)
-        let listCount = await getListCount(req,res)
+        // let qtyCount = await getQtyCount(req,res)
+        // let listCount = await getListCount(req,res)
 
         res.render('content/productView',{
             title: "View Product | TraditionShoppe", 
             user : req.session.user,
             user_id:user_id[0]._id,
-            listCount:listCount,
-            qtyCount:qtyCount,              
+            qtyCount:req.session.qtyCount,
+            listCount:req.session.listCount,         
             products:products,
             allproducts:allproducts,
             offer_coupon : offer_coupon,
@@ -888,37 +1157,34 @@ const loadCart = async(req,res)=>{
 
         const user = req.session.user       
         const user_id = await User.findOne({email:user},{_id:1}).exec()        
-        const user_cart = await Cart.findOne({user:user_id,status:"listed"}).exec()
-        const products = await Products.find({status:{$ne:'inactive'},isListing:true}).exec()
-        const discounts = await Discount.find({status:true}).exec()
-        let qtyCount = 0;
-        const { cpnamt, oframt } = req.session.offerCoupon
+        
+        const products = await getProducts(req,res)
+        const user_cart = await Cart.findOne({
+            user:user_id,
+            status:"listed",
+            "product_list.productId" : { $in : products.map(pdt => pdt._id)}        
+        }).exec()
+      
         if(user_cart){
             if(user_cart.product_list == ''){
                 await Cart.deleteOne( { 
                     user: user_id,
                 })
-            } else {
-                user_cart.product_list.forEach(product => {        
-                    qtyCount += product.quantity; })
-            }                                
-            
-        }        
-         let listCount = await getListCount(req,res)   
-        res.render('content/myCart',{
-            title: "My Cart - TraditionShoppe",
-            page:"My Cart",   
-            user : req.session.user,
-            cpnamt:cpnamt,
-            oframt:oframt, 
-            products:products,  
-            discounts:discounts,
-            user_cart:user_cart, 
-            qtyCount:qtyCount, 
-            listCount:listCount,     
-            errorMessage : req.flash('errorMessage'),
-            successMesssage : req.flash('successMessage')
-        })
+            }                        
+        }      
+         console.log(products);
+         console.log(user_cart);
+        // res.render('content/myCart',{
+        //     title: "My Cart - TraditionShoppe",
+        //     page:"My Cart",   
+        //     user : req.session.user,            
+        //     products, 
+        //     user_cart, 
+        //     qtyCount:req.session.qtyCount,
+        //     listCount:req.session.listCount,
+        //     errorMessage : req.flash('errorMessage'),
+        //     successMesssage : req.flash('successMessage')
+        // })
     }
     catch(err){
         console.log(err.message);
@@ -937,10 +1203,7 @@ const addToCartTable = async(req,res)=>{
        const stock = await Products.findOne({_id:pdt_id},{stock:1}).exec()
         const user_id = await User.findOne({email:user},{_id:1}).exec()
         const user_cart = await Cart.findOne({user:user_id,status:"listed"}).exec()
-        // console.log("pdtid: "+pdt_id)
-        // console.log("userid: "+user_id)
-        // console.log("price: "+price)
-        // console.log("cart user: "+user_cart)
+        
         let pdt_check = false;
         let amount = 0;
         let qty;
@@ -955,6 +1218,7 @@ const addToCartTable = async(req,res)=>{
                    })
                    const cartData = await cart.save()
                    if(cartData){
+                        await getQtyCount(req,res);
                        console.log('successful');
                        req.flash("successMessage", "Product is successfully added to cart...");
                        res.redirect(`/viewProduct/${pdt_id}`)
@@ -995,6 +1259,7 @@ const addToCartTable = async(req,res)=>{
                 })
                     
                 console.log('successful');
+                await getQtyCount(req,res);
                 req.flash("successMessage", "Product is successfully updated to cart...");
                 res.redirect(`/viewProduct/${pdt_id}`)
             } else {
@@ -1004,6 +1269,7 @@ const addToCartTable = async(req,res)=>{
                     {$set:{status:"listed"}})  
                    
                    console.log('successful');
+                   await getQtyCount(req,res);
                 req.flash("successMessage", "Product is successfully updated to cart...");
                 res.redirect(`/viewProduct/${pdt_id}`)
 
@@ -1060,6 +1326,7 @@ const addQtyToCart = async(req,res)=>{
                             } 
                         }
                     )
+                    await getQtyCount(req,res);
                     console.log('successful');
                     req.flash("successMessage", "Product is successfully updated to cart...");
                     res.redirect('/cart')
@@ -1114,6 +1381,7 @@ const subQtyFromCart = async(req,res)=>{
                     } 
                 }
             )
+            await getQtyCount(req,res);
             console.log('successful');
             req.flash("successMessage", "Product is successfully updated to cart...");
             res.redirect('/cart')
@@ -1123,6 +1391,7 @@ const subQtyFromCart = async(req,res)=>{
             await Cart.deleteOne(
                 { user: userid,status:"listed" })
                 console.log('successful');
+                await getQtyCount(req,res);
                 req.flash("successMessage", "User is deleted from cart...");
                 res.redirect('/cart')
         } else{
@@ -1134,6 +1403,7 @@ const subQtyFromCart = async(req,res)=>{
                 }  
             })
             console.log('successful');
+            await getQtyCount(req,res);
             req.flash("successMessage", "Product is deleted from cart...");
             res.redirect('/cart')
         }
@@ -1168,7 +1438,7 @@ const deleteFromCart = async(req,res)=>{
                 }  
             }) 
                       
-        
+            await getQtyCount(req,res);
         console.log('successful');
         req.flash("successMessage", "Product is deleted from cart...");
         res.redirect('/cart')
@@ -1243,15 +1513,15 @@ const loadCheckout = async(req,res)=>{
         const userid = req.params.userid;
         const amount = req.params.amount;
 
-        const { cpnamt, oframt } = req.session.offerCoupon
+        // const { cpnamt, oframt } = req.session.offerCoupon
 
         const users = await User.find({_id:userid}).exec()
         const user_cart = await Cart.find({user:userid,status:"listed"}).exec()
         
         const address = await Address.find({user_id:userid}).exec()
        // console.log(address[0]._id);
-        let qtyCount = await getQtyCount(req,res)
-        let listCount = await getListCount(req,res)
+        // let qtyCount = await getQtyCount(req,res)
+        // let listCount = await getListCount(req,res)
 
         console.log("user id:"+userid);
         // console.log("user details:"+users);
@@ -1259,15 +1529,15 @@ const loadCheckout = async(req,res)=>{
             title: "Checkout - TraditionShoppe",
             page:"Checkout",   
             user : req.session.user,
-            users:users,
-            userid:userid,
-            user_cart:user_cart,
-            address:address,
-            amount:amount,
-            cpnamt:cpnamt,
-            oframt:oframt,
-            qtyCount:qtyCount,
-            listCount:listCount,          
+            users,
+            userid,
+            user_cart,
+           address,
+            amount,
+            // cpnamt,
+            // oframt,
+            qtyCount:req.session.qtyCount,
+            listCount:req.session.listCount,       
             errorMessage : req.flash('errorMessage'),
             successMesssage : req.flash('successMessage')
         })
@@ -1354,8 +1624,8 @@ const loadEditAddress =async(req,res)=>{
         res.render('content/editAddress',{
             title: "Edit Address - TraditionShoppe",
             user : req.session.user,
-            address:address,  
-            amt:amt,             
+            address,  
+            amt,             
             errorMessage : req.flash('errorMessage'),
             successMesssage : req.flash('successMessage')
         })
@@ -1450,7 +1720,7 @@ const selectedMethod = async(req,res)=>{
     }
 }
 
-/*************make cod payment**************/
+/*************make payment**************/
 
 const makeCODPayment = async(req,res)=>{
     try{
@@ -1478,8 +1748,8 @@ const makeCODPayment = async(req,res)=>{
         const returnDate = moment().add(12,'days').format('ddd MMM DD YYYY')
     
 
-         let qtyCount = await getQtyCount(req,res)
-         let listCount = await getListCount(req,res)       
+        //  let qtyCount = await getQtyCount(req,res)
+        //  let listCount = await getListCount(req,res)       
         
 
          const order = new Order({
@@ -1511,8 +1781,8 @@ const makeCODPayment = async(req,res)=>{
             res.render('content/PaymentSuccess',{
                 title: "Successful Payment - TraditionShoppe",
                 user : req.session.user,
-                qtyCount:qtyCount,
-                listCount:listCount, 
+                qtyCount:req.session.qtyCount,
+                listCount:req.session.listCount, 
                 orderData:orderData,                
                 errorMessage : req.flash('errorMessage'),
                 successMesssage : req.flash('successMessage')
@@ -1589,7 +1859,9 @@ const loadWishlist = async(req,res)=>{
         res.render('content/myWishlist',{
             title: "My Wishlist - TraditionShoppe",
             page:"Checkout",   
-            user : req.session.user,          
+            user : req.session.user, 
+            qtyCount:req.session.qtyCount,
+            listCount:req.session.listCount,         
             errorMessage : req.flash('errorMessage'),
             successMesssage : req.flash('successMessage')
         })
@@ -1605,7 +1877,9 @@ const loadSaved = async(req,res)=>{
         res.render('content/savedList',{
             title: "Checkout - TraditionShoppe",
             page:"Checkout",  
-            user : req.session.user,           
+            user : req.session.user,
+            qtyCount:req.session.qtyCount,
+            listCount:req.session.listCount,           
             errorMessage : req.flash('errorMessage'),
             successMesssage : req.flash('successMessage')
         })
@@ -1619,6 +1893,10 @@ const loadSaved = async(req,res)=>{
 
 
 module.exports = {
+
+    getPaginatedProducts,
+    getProducts,
+
     loadAllProducts,
     loadSearchProducts,
     loadProductDetail,

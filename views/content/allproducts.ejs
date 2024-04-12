@@ -50,20 +50,15 @@
           <div class="row mb-5">
             <% products.forEach((pdt, index) => { %>
               
-                  <% let mrp = 0; %>
-                  <% let per = 0; %>        
-                  <% discounts.forEach((disc_row, index) => { %>
-                    <%console.log(disc_row._id , pdt.discount)%>
-                    <%if(disc_row._id .equals( pdt.discount )) {%>
-                        <% per = disc_row.percentage %>
-                        <% mrp = (pdt.price_unit * (100 - per) * 0.01)  %>
-                    <% } %>
-                  <% })%>
+                
 
             <div class="col-sm-6 col-lg-4 mb-4" data-aos="fade-up">
               <!-- <a href="/viewProduct/<%= pdt._id %>"> -->
                 <div class="block-4 div-height text-center border">
-                
+                 
+
+
+
                   <figure class="block-4-image-1">
                     <button id="wish-but" class="icon icon-heart" type="button" onclick="clickWishButton(event)">
                       <!-- &#10084; -->
@@ -74,15 +69,16 @@
                     <h3><a href="/viewProduct/<%= pdt._id %>"><%= pdt.product_name %></a></h3>
                     <div class="d-flex justify-content-around mt-2 ">
                       <p class=" mb-0 text-danger font-weight-light"><del>RS.<%= pdt.price_unit %></del></p>
-                      <p class="text-black font-weight-light">Rs.<%=mrp %></p>
+                    
+                      <p class="text-black font-weight-light">Rs.<%=pdt.discountedsalePrice %></p>
                     </div>
                   </div>
                 </div>
               <!-- </a> -->
             </div>
          
-           
-            <% })%>
+            <%})%>
+        
 
           </div>
           <div class="row" data-aos="fade-up">
@@ -90,11 +86,13 @@
               <div class="site-block-27">
                 <ul>
                   <li><a href="#">&lt;</a></li>
-                  <li class="active"><span>1</span></li>
-                  <li><a href="#">2</a></li>
-                  <li><a href="#">3</a></li>
-                  <li><a href="#">4</a></li>
-                  <li><a href="#">5</a></li>
+                  <% for(let i = 1 ; i <= pages ; i++){%>
+                    <% if( i== pageNum ) {%>
+                     <li class="active"><a href="/allproducts/?page=<%= i %>"><span><%= i %></span></a></li>
+                    <% } else { %>
+                    <li><a href="/allproducts/?page=<%= i %>"><span><%= i %></span></a></li>
+                    <% } %>
+                  <% } %>
                   <li><a href="#">&gt;</a></li>
                 </ul>
               </div>

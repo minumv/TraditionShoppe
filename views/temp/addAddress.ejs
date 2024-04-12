@@ -23,6 +23,22 @@
 										purple : #4F0341
 										green : #00bfa5
 
+										.................
+										 <% let offerprice = 0 %>
+                      <% if( pdt.pdtoffer !== 0 && pdt.categoffer !== 0 ){ %>
+                        <% if( pdt.pdtoffer >= pdt.categoffer ){ %>
+                          <% offerprice =  pdt.pdtoffer %>
+                        <%} else {%>
+                          <% offerprice =  pdt.categoffer %>
+                        <%}%>
+                      <%} else if( pdt.pdtoffer === 0 && pdt.categoffer !== 0 ){%>
+                        <% offerprice =  pdt.categoffer %>
+                      <%} else if( pdt.pdtoffer !== 0 && pdt.categoffer === 0 ){%>
+                        <% offerprice =  pdt.pdtoffer %>
+                      <%}%>
+                      <% let salesprice = pdt.discountedPrice - offerprice  %>
+					  ................
+
 				</div> -->
 			</div>
 			<div class="card-body">
