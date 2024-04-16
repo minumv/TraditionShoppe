@@ -1,0 +1,94 @@
+<%- include('../layout/profileHeader') %>
+
+<div class="ord-box">
+  <div class="cancel-det">
+      <div class="cancel-head">
+          Easy Product Return
+      </div>
+      <form id="returnForm">
+      <div class="cancel-body d-block">
+          <div>
+              <div class="dropdown mx-3">
+                  <select id="returnreason" class="form-control">
+                    <option value="No Type">Select Reason</option>
+                    <option value="I want to change delivery address">I want to another product</option>
+                    <option value="I want to change payment option">The product is damaged</option>
+                    <option value="I want to change contact details">The product has no features as mentioned</option>
+                    <!-- <option value="I was hopping for a short delivery time">I was hopping for a short delivery time</option>
+                    <option value="Price of the product has now decreased">Price of the product has now decreased</option>
+                    <option value="I am worried about the ratings and reviews">I am worried about the ratings and reviews</option> -->
+                    <option value="My reasons are not listed here">My reasons are not listed here</option>                            
+                  </select>
+              </div> 
+          </div> 
+          <%console.log("order id : ",orderid)%>        
+          <div class="d-flex justify-content-end">
+              <button id="returnbut" type="button" class="use-but ord-but bg-white text-dark"  onclick="handleReturn('<%=orderid%>')">Continue</button>
+          </div>
+      </div>
+  </div>
+  <div class="ord-det">
+
+  </div>
+
+</div>
+
+</form>
+</div>
+<%- include('../layout/userFooter') %>
+<script>
+function handleReturn(orderid) {
+    alert("button clicked");
+    
+    // Get selected values from dropdowns
+    const reason = $('#returnreason').val();
+    console.log("reason:" + reason);
+
+    // Your fetch code or any other code to handle the button click
+    fetch('/getReturnReason', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            return_reason: reason
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        // Handle success response
+        console.log('Server response:', data);
+        requestReturn(orderid);
+    })
+    .catch(error => {
+        console.error('Fetch Error:', error);
+    });
+}
+    
+    function requestReturn(ordrid){
+      fetch(`/returnRequest/${ordrid}`,{
+          method:'post',
+          headers : {
+              'Content-Type' : 'application/json'
+          }            
+      })
+      .then(res=>res.json())
+      .then(data=>{
+          if( data.success ){
+              location.href = '/getOrder'
+          } else {
+              location.href = '/getOrder'
+          }
+      })
+      .catch(error => {
+        console.error('Fetch Error:', error);
+    })
+    
+    }
+
+</script>

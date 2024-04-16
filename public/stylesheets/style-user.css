@@ -413,13 +413,15 @@ body {
 
 /****************profile********************/
 /**order**/
+
 .ord-box{
     margin-left:20px;
     margin-bottom:20px;
     padding:5px;
-    width:1210px;
+    width:1210px;    
     border-radius: 15px;
-
+     display: flex;
+     border: solid .5px rgb(211, 208, 208);
 }
 .ord-header{
     background-color: rgb(220, 229, 244)
@@ -431,10 +433,15 @@ body {
 .pdt-img{
     width:110px;
     height:110px;
-    margin-right: 15px;
-    margin-bottom: 10px;
+    margin:10px;
     border-radius: 20px;
     box-shadow: 0 1px 1px 1px rgba(0, 0, 0, 0.2); 
+}.pdt-det{
+    margin-left: 40px;
+    padding-top: 10px;
+}
+.box-wid{
+    width:100px
 }
 .nav-left{
     margin-left: 25px;
@@ -459,4 +466,111 @@ body {
 .nav-but:hover{
     color: #fff;
     background-color: #4F0341;   
+}
+
+/*****************Profile overview********************/
+.overview {
+    width: 1000px;
+    padding-left:8px;    
+}
+
+.profile{
+    width : 1000px;
+    height : 150px;
+    background-color: rgb(224, 221, 221);
+}
+
+.prof-edit-but{
+    width:130px;
+    height:30px;
+    background-color: #fff;
+    color: #4F0341;
+    border-radius: 10px;    
+}
+.box-div{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width:200px;
+    height:200px;
+    border:solid .5px rgb(224, 221, 221);
+    /* border-radius: 10px; */
+}
+.first{
+    margin-right:50px;
+}
+
+.profile-img-box{
+    width:40px;
+    height:40px
+}
+.profile-row{
+    display: flex;
+    justify-content: center;
+    padding-top:30px;
+     
+}
+.prof-det{
+    display: block;
+    margin-top:30px;
+    margin-right: 50px;
+    color:rgb(41, 36, 36);
+    font-size: 15px;
+    font-weight: 500;
+}
+
+/********profile edit page********/
+
+.edit-box{
+    display: block;
+    padding:40px;
+    padding-left:150px;
+    margin:10px;
+    width:900px;
+    height:460px;
+    border : solid .5px rgb(225, 219, 219);
+}
+.edit-but{
+    width:530px;
+    height:50px;
+    color: #fff;
+    background-color: #4F0341;
+    border-radius: 10px;    
+}
+.edit-text{
+    width:510px;
+    height:50px;
+    border-radius: 5px; 
+    background-color: #fff; 
+    border : solid .5px rgb(239, 232, 232);
+    margin: 10px;
+    padding-left: 15px;
+}
+.edit-head{
+    box-shadow: 0 2px 2px -2px rgba(0, 0, 0, 0.3); 
+    width:300px;
+    font-size: 20px;
+    color: #4F0341;
+    font-weight: 600;
+}
+
+/*************cancel page**************/
+.cancel-det{
+    margin:10px;
+    display:block;
+    width: 800px;
+    height: 400px;
+}
+
+.cancel-head{
+    padding-top: 10px;
+    height:100px;
+    
+    color: #4F0341;
+    font-size: 15px;
+    font-weight: 600;
+    box-shadow: 0 2px 2px -2px rgba(0, 0, 0, 0.3); 
+}
+.cancel-body{
+    
 }

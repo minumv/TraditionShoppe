@@ -20,7 +20,7 @@ contentRoute.post("/getSearchProduct",contentController.listSearchProduct)
 
 /*************navigation****************/
 contentRoute.get("/cart",userAuthent.isAuthenticated,contentController.loadCart)
-contentRoute.get("/checkout/:userid/:amount",userAuthent.isAuthenticated,contentController.loadCheckout)
+contentRoute.get("/checkout/:cartid",userAuthent.isAuthenticated,contentController.loadCheckout)
 contentRoute.get("/wishlist",userAuthent.isAuthenticated,contentController.loadWishlist)
 contentRoute.get("/saveforlater",userAuthent.isAuthenticated,contentController.loadSaved)
 contentRoute.get("/allproducts",userAuthent.isAuthenticated,contentController.loadAllProducts)
@@ -69,9 +69,9 @@ contentRoute.get("/highcostly",userAuthent.isAuthenticated,contentController.get
 
 /****************to cart table*********************/
 contentRoute.get("/addtocart/:id/:mrp",contentController.addToCartTable)
-contentRoute.get("/addCart/:userid/:pdtid/:price",contentController.addQtyToCart)
-contentRoute.get("/subCart/:userid/:pdtid/:price",contentController.subQtyFromCart)
-contentRoute.get("/deleteCart/:userid/:pdtid",contentController.deleteFromCart)
+contentRoute.get("/addCart/:cartid/:userid/:pdtid/:price",contentController.addQtyToCart)
+contentRoute.get("/subCart/:cartid/:userid/:pdtid/:price",contentController.subQtyFromCart)
+contentRoute.get("/deleteCart/:cartid/:userid/:pdtid",contentController.deleteFromCart)
 
 /****************add address *********************/
 contentRoute.post ("/getStateCountry",contentController.storeStateCountry)
@@ -84,9 +84,13 @@ contentRoute.post("/editAddress/:userid/:amt",contentController.changeAddress)
 contentRoute.post("/updateSelectedAddress",contentController.selectedAddress)
 contentRoute.post("/updateSelectedMethod",contentController.selectedMethod)
 
+/******************************/
+contentRoute.post("/applyCoupon/:userid",contentController.couponApply)
+
 /**********************make cod payment********************* */
 contentRoute.post("/makeOrder/:userid/:defPay",contentController.makeCODPayment)
 contentRoute.post('/verify-payment',contentController.verifyPayment)
+contentRoute.get("/paymentSuccess",contentController.loadPaymentSuccess)
 
 
 

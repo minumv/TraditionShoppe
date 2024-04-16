@@ -9,6 +9,7 @@
         </div>
         <div class="card-body px-0 pb-2">
             <div class="table-responsive p-0">
+                <% let action = ''%>
             <% if(orders != '') {%>
                 
             <table class="table align-items-center mb-0">
@@ -64,35 +65,56 @@
                         <span class="badge badge-sm bg-gradient-warning">return request</span>                    
                     <% } else if(row.orderstatus === 'refund received') { %> 
                         <span class="badge badge-sm bg-gradient-success">refund received</span>   
+                    <% } else if(row.orderstatus === 'processing') { %> 
+                        <span class="badge badge-sm bg-gradient-success">processing</span>   
                     <% } %>    
                 </td>
                <% let pdtid = '' %>
                <% let qty = 0  %>
-                <td class="align-middle  text-sm">
-                    <% if (row.adminaction === 'delivered'){ %>
-                        <span class="badge badge-sm bg-gradient-success">delivered</span>
-                    <% } else if(row.adminaction === 'approve') { %> 
-                        <% cart.forEach((rows,index)=>{%>
-                            <%if((rows.user.equals(user._id)) && (rows.status == 'pending')){%>
-                                <%rows.product_list.forEach((list)=>{%>
-                                    <%products.forEach((pdt)=>{%>
-                                        <%if(list.productId.equals(pdt._id)){%>
-                                            <% pdtid = pdt._id %>
-                                            <% qty = list.quantity %>                       
-                                        <%}%>
-                                    <%})%>
-                                <%})%>
+
+               <% cart.forEach((rows,index)=>{%>
+                <%if((rows.user.equals(user._id)) && (rows.status == 'pending')){%>
+                    <%rows.product_list.forEach((list)=>{%>
+                        <%products.forEach((pdt)=>{%>
+                            <%if(list.productId.equals(pdt._id)){%>
+                                <% pdtid = pdt._id %>
+                                <% qty = list.quantity %>                       
                             <%}%>
-                        <%})%> 
-                        <%console.log("pdtid:",pdtid,qty,user._id,row._id)%>
-                        <form action="/orderPending/<%=pdtid%>/<%=row._id%>/<%=user._id%>/<%=qty%>" method="post"><button  type="submit" class="badge badge-sm bg-gradient-warning">approve</button>  </form>                      
-                    <% } else if(row.adminaction === 'order cancelled') { %> 
-                        <form action="/cancelapprove/<%=row._id%>" method="post"><button type="submit" class="badge badge-sm bg-gradient-danger">order cancelled</button> </form>
-                    <% } else if(row.adminaction === 'approve return') { %> 
+                        <%})%>
+                    <%})%>
+                <%}%>
+            <%})%> 
+
+                <td class="align-middle  text-sm">
+                   
+                    <% if(row.orderstatus === 'shipped') { %>                                               
+                        <form action="/orderPending/<%=row._id%><%=pdtid%>/<%=user._id%>/<%=qty%>" method="post"><button  type="submit" class="badge badge-sm bg-gradient-warning">complete</button>  </form>                      
+                    <% } else if(row.orderstatus === 'cancel request') { %> 
+                        <form action="/cancelapprove/<%=row._id%>" method="post"><button type="submit" class="badge badge-sm bg-gradient-warning">approve cancel</button> </form>
+                    <% } else if(row.orderstatus === 'return request') { %> 
                         <form action="/returnapprove/<%=row._id%>" method="post"><button  type="submit" class="badge badge-sm bg-gradient-warning">approve return</button></form>                  
-                    <% } else if(row.adminaction === 'refund granted') { %> 
-                       <span class="badge badge-sm bg-gradient-success">refund granted</span>  
-                    <% } %>    
+                    <% } else if(row.orderstatus === 'pending') { %> 
+                        <% action = 'approve'%>  
+                        <form action="/statusChanging/<%=row._id%>/<%= action %>" method="post"><button  type="submit" class="badge badge-sm bg-gradient-warning">approve</button>  </form>                      
+                    <% } else if(row.orderstatus === 'processing') { %> 
+                        <% action = 'to pack'%>  
+                        <form action="/statusChanging/<%=row._id%>/<%= action %>" method="post"><button  type="submit" class="badge badge-sm bg-gradient-warning">To pack</button>  </form>                      
+                    <% } else if(row.orderstatus === 'packed') { %> 
+                        <% action = 'to dispatch'%>  
+                        <form action="/statusChanging/<%=row._id%>/<%= action %>" method="post"><button  type="submit" class="badge badge-sm bg-gradient-warning">To dispatch</button>  </form>                      
+                    <% } else if(row.orderstatus === 'dispatched') { %> 
+                        <% action = 'to ship'%>  
+                        <form action="/statusChanging/<%=row._id%>/<%= action %>" method="post"><button  type="submit" class="badge badge-sm bg-gradient-warning">To ship</button>  </form>                      
+                    <% } else if (row.orderstatus === 'delivered' || 'cancelled' || 'refund received'){ %>
+                        <span class="badge badge-sm bg-gradient-success">No Action</span>
+                    <% }%>
+
+
+
+
+
+
+                                          
                 </td>
                 
                     <td class="align-middle">
@@ -117,4 +139,60 @@
 </div>
 
 </div>
+
+<script>
+   function handleRequest(orderid,pdtid,userid,qty) {
+    alert("button clicked");
+    
+    // Get selected values from dropdowns
+    const action = $('#adminaction').val();
+    console.log("action:" + action);
+
+    // Your fetch code or any other code to handle the button click
+    fetch('/getAdminAction', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            adminaction: action
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        // Handle success response
+        console.log('Server response:', data);
+        applyadmAction(orderid,pdtid,userid,qty);
+    })
+    .catch(error => {
+        console.error('Fetch Error:', error);
+    });
+}
+
+     function applyadmAction(ordrid,pdtid,userid,qty){
+        fetch(`/applyAction/${ordrid}/${pdtid}/${userid}/${qty}`,{
+            method:'post',
+            headers : {
+                'Content-Type' : 'application/json'
+            }            
+        })
+        .then(res=>res.json())
+        .then(data=>{
+            if( data.success ){
+                location.href = '/orderManage'
+            } else {
+                location.href = '/orderManage'
+            }
+        })
+
+    }
+
+</script>
+
+
 <%- include('../layout/adminFooter') %>

@@ -13,19 +13,32 @@ orderRoute.use(bodyParser.urlencoded({extended:true}))
 
 
 /*********admin order********** */
+
 orderRoute.get("/orderManage",orderController.loadOrder)
 orderRoute.get("/orderDetails/:orderid",orderController.viewOrderMore)
 
+//admin action handling
+
+orderRoute.post("/getAdminAction",orderController.selectAdminAction)
+orderRoute.post("/statusChanging/:odrid/:action",orderController.changeOrderStatus)
 
 orderRoute.post("/orderPending/:pdtid/:odrid/:userid/:qty",orderController.OrderApproved)
-
-orderRoute.post("/cancelRequest/:odrid",orderController.cancelOrder)
-orderRoute.post("/returnRequest/:odrid",orderController.returnOrder)
 
 orderRoute.post("/cancelapprove/:odrid",orderController.OrderCancelled)
 orderRoute.post("/returnapprove/:odrid",orderController.OrderReturned)
 
 
+
+/*****************user side order*********************/
+
+orderRoute.get('/cancelPage/:odrid',userAuthent.isAuthenticated,orderController.loadCancelPage)
+orderRoute.get('/returnPage/:odrid',userAuthent.isAuthenticated,orderController.loadReturnPage)
+
+orderRoute.post("/getCancelReason",orderController.selectCancelReason)
+orderRoute.post("/getReturnReason",orderController.selectReturnReason)
+
+orderRoute.post("/cancelRequest/:odrid",orderController.cancelOrder)
+orderRoute.post("/returnRequest/:odrid",orderController.returnOrder)
 
 
 

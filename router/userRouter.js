@@ -86,12 +86,13 @@ userRoute.get("/logout",userController.logoutFrom)
 
 
 userRoute.get("/userprofile",userAuthent.isAuthenticated,userController.loadProfile)
-// userRoute.get("/getProfile",userAuthent.isAuthenticated,userController.loadProfile)
 userRoute.get("/getOrder",userAuthent.isAuthenticated,userController.loadOrder)
 userRoute.get("/getAddress",userAuthent.isAuthenticated,userController.loadAddress)
 userRoute.get("/getWallet",userAuthent.isAuthenticated,userController.loadWallet)
 userRoute.get("/getList",userAuthent.isAuthenticated,userController.loadList)
 
+userRoute.get("/geteditprofile",userAuthent.isAuthenticated,userController.loadeditProfile)
+userRoute.post("/changeprofile/:id",userAuthent.isAuthenticated,userController.editProfile)
 /************my order**************/
 // userRoute.get("/orderList",userAuthent.isAuthenticated,userController.loadorderList)
 userRoute.get("/buyAgain",userAuthent.isAuthenticated,userController.loadbuyList)

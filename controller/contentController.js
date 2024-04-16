@@ -12,9 +12,11 @@ const Order = require('../model/order')
 const Coupon = require('../model/coupon')
 const Offer = require('../model/offer')
 const bcrypt = require('bcrypt')
+const mongoose = require('mongoose');
 
 const RazorpayObj = require('razorpay');
 const { resolveContent } = require("nodemailer/lib/shared");
+const { createBrotliDecompress } = require("zlib");
 const { RAZORPAY_ID_KEY, RAZORPAY_SECRET_KEY } = process.env
 
 const razorpayInstance = new RazorpayObj({
@@ -44,8 +46,154 @@ const storeSerachValue = async(req,res)=>{
     }
 }
 
+//get a product by id
+
+const getProductById = async(req,res,id)=>{
+    try{
+
+        
+        const objectId = new mongoose.Types.ObjectId(id);
+       
+        const products = await Products.aggregate([
+            {
+                $match : {
+                    _id: objectId
+                }
+            },
+            {
+                $lookup : {
+                    from : 'discounts',
+                    localField : 'discount',
+                    foreignField : '_id',
+                    as : 'discountInfo'
+                }
+            },
+            {
+                $addFields: {
+                    discountInfo: { $arrayElemAt: ['$discountInfo', 0] },
+                    discountedPrice: {
+                        $cond: {
+                            if: { $gt: [{ $size: "$discountInfo" }, 0] },
+                            then: {
+                                $multiply: [
+                                    "$price_unit",
+                                    { $subtract: [1, { $divide: [{ $toDouble: { $arrayElemAt: ["$discountInfo.percentage", 0] } }, 100] }]}
+                                ]
+                            },
+                            else: "$price_unit"
+                        }
+                    }
+                }
+                
+            },
+            {
+                $lookup : {
+                    from : 'categories',
+                    localField : 'category',
+                    foreignField : '_id',
+                    as : 'categoryInfo'
+                }
+            },
+            {
+                $addFields: {
+                    categoryInfo: { $arrayElemAt: ['$categoryInfo', 0]},
+                    categoryName: "$categoryInfo.category_name"
+                }
+            },
+            {
+                $lookup : {
+                    from : 'offers',
+                    localField : 'product_name',
+                    foreignField : 'offer_name',
+                    as : 'productoffer'
+                }
+            },
+            {
+                $addFields: {
+                    productoffer: { $arrayElemAt: ['$productoffer', 0]},
+                    pdtoffer: {
+                        $cond: {
+                            if: { $gt: [{ $size: "$productoffer" }, 0] },
+                            then: {
+                                $multiply: [
+                                    "$price_unit",
+                                    { $divide: [{ $toDouble: { $arrayElemAt: ["$productoffer.discount_per", 0] } }, 100] }
+                                ]
+                            },
+                            else: 0
+                        }
+                    }
+                }
+            },
+            {
+                $lookup : {
+                    from : 'offers',
+                    localField : 'categoryName',
+                    foreignField : 'offer_name',
+                    as : 'categoryoffer'
+                }
+            },
+            {
+                $addFields: {
+                    categoryoffer: { $arrayElemAt: ['$categoryoffer', 0]},
+                    categoffer: {
+                        $cond: {
+                            if: { $gt: [{ $size: "$categoryoffer" }, 0] },
+                            then: {
+                                $multiply: [
+                                    "$price_unit",
+                                    { $divide: [{ $toDouble: { $arrayElemAt: ["$categoryoffer.discount_per", 0] } }, 100] }
+                                ]
+                            },
+                            else: 0
+                        }
+                    }
+                }
+            },
+            {
+                $addFields: {
+                    discountInfo: {
+                        $cond: {
+                            if: { $isArray: "$discountInfo" }, // Check if discountInfo is an array
+                            then: { $arrayElemAt: ["$discountInfo", 0] }, // If it's an array, extract the first element
+                            else: null // If it's not an array, set it to null
+                        }
+                    },
+                    discountedsalePrice: {
+                        $cond: {
+                            if: {
+                                $and: [
+                                    { $ne: ["$discountInfo", null] }, // Check if discountInfo is not null
+                                    { $or: [ // Check if either pdtoffer or categoffer is not 0
+                                        { $ne: ["$pdtoffer", 0] },
+                                        { $ne: ["$categoffer", 0] }
+                                    ]}
+                                ]
+                            },
+                            then: {
+                                $subtract: [
+                                    "$discountedPrice", // Subtract the offer price from the discountedPrice
+                                    { $max: ["$pdtoffer", "$categoffer"] } // Use $max to get the higher offer value
+                                ]
+                            },
+                            else: "$discountedPrice" // If no offer is applicable or discountInfo is null, keep the original discountedPrice
+                        }
+                    }
+                }
+            }            
+        ])
+
+        return products
+    }
+    catch(err){
+        console.log(err.message);
+    }
+}
+//get all products from database
 const getProducts = async(req,res)=>{
     try{
+
+
         const products = await Products.aggregate([
             {
                 $match : {
@@ -353,7 +501,21 @@ const loadAllProducts = async (req,res)=>{
             const products = await getPaginatedProducts(req,res,perPage,pageNum)
             
 
-           console.log( products);          
+           console.log( products);    
+           res.render('content/allproducts',{
+            title : "All Products| TraditionShoppe",
+            user : req.session.user,
+            page : 'All products', 
+            qtyCount:req.session.qtyCount,
+            listCount:req.session.listCount,               
+            products,
+            pageNum,
+            perPage,
+            totalCount, 
+            pages,           
+            errorMessage:req.flash('errorMessage'),
+            successMessage:req.flash('successMessage')
+           })
                     
     }
     catch(err){
@@ -1028,15 +1190,13 @@ const getQtyCount = async(req,res)=>{
 
         let qtyCount = 0;
         const users = await User.findOne({email:req.session.user},{_id:1}).exec()
-        console.log("user cart: "+users)
+        // console.log("user cart: "+users)
         const user_cart = await Cart.findOne({user:users,status:"listed"}).exec()
-        console.log("cart : "+user_cart)
+        // console.log("cart : "+user_cart)
         
-        if(user_cart){
-            // console.log("inside cart");
-            // console.log( user_cart.total_amount);
+        if(user_cart){           
             user_cart.product_list.forEach(product => { 
-                console.log(product.quantity);       
+                console.log("pdt qty: ",product.quantity);       
                 qtyCount += product.quantity; })
         }
         req.session.qtyCount = qtyCount
@@ -1069,74 +1229,24 @@ const getListCount = async(req,res)=>{
 const loadProductDetail = async (req,res)=>{
     try{
         let id = req.params.id
-        console.log(id);
+       
         const user_id= await User.find({email:req.session.user},{_id:1}).exec()
-        const products = await Products.find({_id:id}).populate('category').exec()
-        // const categories = await Products.find({status:true}).populate('category').exec()
-        const sellers = await Seller.find({status:{$ne:'inactive'}}).exec()
-        const discounts = await Discount.find({status:true}).exec()
-        const allproducts = await Products.find({status:{ $ne:'inactive'} , isListing: true }).exec()
-        
-        let couponcode = ""
-        let coupondisc= 1 
-        let couponmin = 0
-        let cpnamt = 0       
-        const coupon = await Coupon.find({status : true }).exec()
-        console.log(coupon);
-        products.forEach((pdt)=>{
-            coupon.forEach((cpn)=>{
-              if(pdt.price_unit > cpn.minimum_purchase && cpn.expire_date > new Date()) {
-                 couponcode = cpn.coupon_code,
-                 console.log("code",couponcode);
-                 coupondisc = cpn.discount_per,
-                 console.log("disc",coupondisc);
-                 couponmin = cpn.maximum_discount_amt,
-                 cpnamt =  (pdt.price_unit * coupondisc * 0.01) 
-                 console.log("amt",cpnamt);
-              } 
-            })
-        })       
-        if( cpnamt > couponmin){
-            cpnamt = couponmin
-        }
-        const offer = await Offer.find({status : true}).exec()
-        let offerdisc = 1
-        let oframt = 0
-        products.forEach((pdt)=>{
-            offer.forEach((ofr)=>{
-                console.log(pdt.product_name,ofr.offer_name,pdt.category.category_name);
-              if((pdt.product_name === ofr.offer_name || pdt.category.category_name === ofr.offer_name) && ofr.expire_date > new Date()) {
-                 offerdisc = ofr.discount_per,
-                 console.log("offr",offerdisc);
-                 oframt =  (pdt.price_unit * offerdisc * 0.01) 
-                 console.log("amt",oframt);
-              } 
-            })
-        })
-        
-        console.log("amount",cpnamt,oframt);
-        req.session.offerCoupon = { cpnamt, oframt }
-        const offer_coupon = {
-            couponcode :couponcode,
-            coupondisc:coupondisc,           
-            cpnamt:cpnamt,
-            offerdisc:offerdisc,
-            oframt:oframt
-        }
-        // let qtyCount = await getQtyCount(req,res)
-        // let listCount = await getListCount(req,res)
 
+        const products = await getProductById(req,res,id)
+        const allproducts = await getProducts(req,res)
+        
+        await getQtyCount (req,res)
+        await getListCount (req,res)
+        
+       
         res.render('content/productView',{
             title: "View Product | TraditionShoppe", 
             user : req.session.user,
             user_id:user_id[0]._id,
             qtyCount:req.session.qtyCount,
             listCount:req.session.listCount,         
-            products:products,
-            allproducts:allproducts,
-            offer_coupon : offer_coupon,
-            sellers:sellers,
-            discounts:discounts,          
+            products,
+            allproducts,         
             errorMessage:req.flash('errorMessage'),
             successMessage:req.flash('successMessage')
         })
@@ -1154,6 +1264,8 @@ const loadProductDetail = async (req,res)=>{
 /*********load cart*********/
 const loadCart = async(req,res)=>{
     try{
+        await getQtyCount (req,res)
+        await getListCount (req,res)
 
         const user = req.session.user       
         const user_id = await User.findOne({email:user},{_id:1}).exec()        
@@ -1164,27 +1276,39 @@ const loadCart = async(req,res)=>{
             status:"listed",
             "product_list.productId" : { $in : products.map(pdt => pdt._id)}        
         }).exec()
-      
+        let mrpTotal = 0;
         if(user_cart){
             if(user_cart.product_list == ''){
                 await Cart.deleteOne( { 
                     user: user_id,
                 })
-            }                        
+            } else {
+                user_cart.product_list.forEach((cart)=>{
+                    products.forEach((pdt)=>{
+                        if(cart.productId.equals(pdt._id) ){
+                             mrpTotal += parseFloat(cart.quantity * pdt.price_unit)
+                        }
+                    })
+                })
+            }
+            req.session.mrpTotal = mrpTotal           
+            
         }      
-         console.log(products);
-         console.log(user_cart);
-        // res.render('content/myCart',{
-        //     title: "My Cart - TraditionShoppe",
-        //     page:"My Cart",   
-        //     user : req.session.user,            
-        //     products, 
-        //     user_cart, 
-        //     qtyCount:req.session.qtyCount,
-        //     listCount:req.session.listCount,
-        //     errorMessage : req.flash('errorMessage'),
-        //     successMesssage : req.flash('successMessage')
-        // })
+         //console.log(products);
+         console.log("user cart : ",user_cart);
+         console.log( "mrptotal: ",mrpTotal)
+        res.render('content/myCart',{
+            title: "My Cart - TraditionShoppe",
+            page:"My Cart",   
+            user : req.session.user,            
+            products, 
+            user_cart, 
+            mrpTotal,
+            qtyCount:req.session.qtyCount,
+            listCount:req.session.listCount,
+            errorMessage : req.flash('errorMessage'),
+            successMesssage : req.flash('successMessage')
+        })
     }
     catch(err){
         console.log(err.message);
@@ -1194,8 +1318,7 @@ const loadCart = async(req,res)=>{
 /*********add to cart table*********/
 const addToCartTable = async(req,res)=>{
     try{
-        console.log("inside cart")
-
+        
         let pdt_id = req.params.id;
         let price = req.params.mrp;
         const user = req.session.user
@@ -1230,14 +1353,14 @@ const addToCartTable = async(req,res)=>{
 
                 }
         if (user_cart){
-            console.log(user_cart.status);
+            console.log("user cart status : ",user_cart.status);
           
                 console.log("inside listed");
             user_cart.product_list.forEach(product => {
-                if( product.productId == pdt_id ){
+                if( product.productId.equals(pdt_id)){
                     pdt_check = true;
                     qty = product.quantity;                           
-                    console.log("check pdt");
+                    console.log("check pdt qty :",qty);
                 }})
 
                 amount = parseFloat(user_cart.total_amount); 
@@ -1289,12 +1412,13 @@ const addToCartTable = async(req,res)=>{
 /*********add qty to cart table*********/
 const addQtyToCart = async(req,res)=>{
     try{
+        const cartid = req.params.cartid;
         const userid = req.params.userid;
         const pdtid = req.params.pdtid;
         const price = req.params.price;
 
         const stock = await Products.findOne({_id:pdtid},{stock:1,_id:0}).exec()
-        const user_cart = await Cart.findOne({user:userid,status:"listed"}).exec()
+        const user_cart = await Cart.findOne({_id:cartid}).exec()
         // console.log("stock: "+stock.stock)
 
         if( stock.stock>0 ){
@@ -1346,12 +1470,13 @@ const addQtyToCart = async(req,res)=>{
 /*********remove qty from cart table*********/
 const subQtyFromCart = async(req,res)=>{
     try{
-         const userid = req.params.userid;
+        const cartid = req.params.cartid;
+        const userid = req.params.userid;
         const pdtid = req.params.pdtid;
         const price = req.params.price;
 
         const stock = await Products.findOne({_id:pdtid},{stock:1,_id:0}).exec()
-        const user_cart = await Cart.findOne({user:userid,status:"listed"}).exec()
+        const user_cart = await Cart.findOne({_id:cartid}).exec()
         // console.log("stock: "+stock.stock)
         let qty = 0;
         let amount = 0;
@@ -1369,7 +1494,7 @@ const subQtyFromCart = async(req,res)=>{
         if( stock.stock>0 && qty>1){
             
             await Cart.updateOne({
-                user: userid,
+                _id:cartid,
                 "product_list.productId": pdtid 
                 },
                 {
@@ -1389,14 +1514,14 @@ const subQtyFromCart = async(req,res)=>{
         } else if (qty<=1){
             if( user_cart.product_list.length === 1 ){
             await Cart.deleteOne(
-                { user: userid,status:"listed" })
+                { _id:cartid })
                 console.log('successful');
                 await getQtyCount(req,res);
                 req.flash("successMessage", "User is deleted from cart...");
                 res.redirect('/cart')
         } else{
             await Cart.updateOne(
-                { user: userid,status:"listed" },
+                {  _id:cartid },
                 { $pull: { product_list: { productId: pdtid } },
                 $set: { 
                     total_amount: amount - parseFloat(newPrice)
@@ -1417,9 +1542,10 @@ const subQtyFromCart = async(req,res)=>{
 /*********delete from cart table*********/
 const deleteFromCart = async(req,res)=>{
     try{
+        const cartid = req.params.cartid;
         const userid = req.params.userid;
         const pdtid = req.params.pdtid; 
-        const user_cart = await Cart.findOne({user:userid,status:"listed"}).exec()
+        const user_cart = await Cart.findOne({_id:cartid}).exec()
         let qty = 0;
         let amount = 0;
         let price = 0;
@@ -1510,37 +1636,40 @@ const addToSave = async(req,res)=>{
 const loadCheckout = async(req,res)=>{
     try{
         console.log("load checkout");
-        const userid = req.params.userid;
-        const amount = req.params.amount;
+        const cartid = req.params.cartid; //use this id to fetch all other datas
 
-        // const { cpnamt, oframt } = req.session.offerCoupon
+        const objectId = new mongoose.Types.ObjectId(cartid);
+       
+        const cartDet = await Cart.aggregate([
+            { $match:{
+                _id : objectId
+            }},
+            {
+                $lookup : {
+                    from : 'address',
+                    localField : 'user',
+                    foreignField : 'user_id',
+                    as : 'useraddress'
+                }
+            }
 
-        const users = await User.find({_id:userid}).exec()
-        const user_cart = await Cart.find({user:userid,status:"listed"}).exec()
-        
-        const address = await Address.find({user_id:userid}).exec()
-       // console.log(address[0]._id);
-        // let qtyCount = await getQtyCount(req,res)
-        // let listCount = await getListCount(req,res)
+        ])
 
-        console.log("user id:"+userid);
-        // console.log("user details:"+users);
-        res.render('content/checkout',{
-            title: "Checkout - TraditionShoppe",
-            page:"Checkout",   
-            user : req.session.user,
-            users,
-            userid,
-            user_cart,
-           address,
-            amount,
-            // cpnamt,
-            // oframt,
-            qtyCount:req.session.qtyCount,
-            listCount:req.session.listCount,       
-            errorMessage : req.flash('errorMessage'),
-            successMesssage : req.flash('successMessage')
-        })
+        console.log("cart user :",cartDet);
+       
+        await getQtyCount(req,res)
+        await getListCount(req,res)
+
+        // res.render('content/checkout',{
+        //     title: "Checkout - TraditionShoppe",
+        //     page:"Checkout",   
+        //     user : req.session.user,
+                     
+        //     qtyCount:req.session.qtyCount,
+        //     listCount:req.session.listCount,       
+        //     errorMessage : req.flash('errorMessage'),
+        //     successMesssage : req.flash('successMessage')
+        // })
     }
     catch(err){
         console.log(err.message);
@@ -1702,6 +1831,56 @@ const selectedAddress = async(req,res)=>{
         console.log(err.message);
     }
 }
+
+/**************apply coupon***************/
+const couponApply = async (res,req)=>{
+    try{
+        const { couponCode , totalAmount} = req.body
+        const userid = req.params.userid
+
+        const user = await User.find({ _id:userid }).exec()
+        const coupon = await Coupon.find({ coupon_code : couponCode}).exec()
+
+        let couponApplied = false;
+
+        user.coupons.forEach((cpn)=>{
+            if( cpn.equals(coupon._id)){
+                couponApplied = true
+            }
+        })
+
+        if ( couponApplied ){
+            req.flash("errorMessage", "Coupon already applied.. Try another one!!");
+            res.status(400).send({ success: false });
+            return;
+        } else {
+
+            let couponDiscount = coupon.discount_per * .01 * totalAmount
+            if( (totalAmount < minimum_purchase) || (couponDiscount > coupon.maximum_discount_amt) ){
+                req.flash("errorMessage", "Selected coupon is not applicable to this purchase..Try another one!!");
+                res.status(400).send({ success: false });
+                return;
+            } else {
+                const discountedTotal = totalAmount - couponDiscount
+                user.coupons.push(coupon._id)
+                await user.save()
+
+                req.session.couponDiscountTotal = discountedTotal
+
+                req.flash("successMessage", "Coupon applied successfully...");
+                res.status(200).send({ success: true, discountedTotal });                
+            }
+
+        }
+
+    } catch(err){
+        console.log(err.message);
+        req.flash("successMessage", "Invalid coupon code or check details !!!");
+        res.status(400).send({ success: false });
+        return;
+    }
+}
+
 /************session for saving address to delivery***********/
 const selectedMethod = async(req,res)=>{
     try{
@@ -1721,13 +1900,12 @@ const selectedMethod = async(req,res)=>{
 }
 
 /*************make payment**************/
-
-const makeCODPayment = async(req,res)=>{
+const makePayment = async(req,res)=>{
     try{
-        const userid = req.params.userid
-        //const amount = req.params.amount
-       // const pdtlist = req.params.list
-       
+        //const userid = req.params.userid
+        let {  userid,payment,total } = req.body;
+        console.log("checkdata :",req.body)
+        console.log("defpay :",req.params.defPay)
         const pay = req.params.defPay
 
         const address = await Address.find({user_id:userid}).exec()
@@ -1767,6 +1945,7 @@ const makeCODPayment = async(req,res)=>{
 
          })
          const orderData = await order.save()
+         await getQtyCount(req,res);
          console.log(orderData);
          req.session.orderid = orderData._id
          if(orderData.payment === 'COD'){
@@ -1778,15 +1957,7 @@ const makeCODPayment = async(req,res)=>{
             await Cart.updateOne(
                 { user: userid,status:"listed" },{$set:{status:"pending"}})
 
-            res.render('content/PaymentSuccess',{
-                title: "Successful Payment - TraditionShoppe",
-                user : req.session.user,
-                qtyCount:req.session.qtyCount,
-                listCount:req.session.listCount, 
-                orderData:orderData,                
-                errorMessage : req.flash('errorMessage'),
-                successMesssage : req.flash('successMessage')
-            })
+            res.json({cod_success : true})
             
          }  else if(orderData.payment === 'Razorpay') {
 
@@ -1831,6 +2002,38 @@ const makeCODPayment = async(req,res)=>{
     }
 }
 
+const makeCODPayment = async(req,res)=>{
+    try{
+        //const userid = req.params.userid
+        const { userid,payment,total } = req.body;
+        console.log("checkout data :",req.body)
+       
+
+       
+       
+    }
+    catch(err){
+        console.log(err.message);
+    }
+}
+
+const loadPaymentSuccess = async(req,res)=>{
+    try{
+        res.render('content/PaymentSuccess',{
+            title: "Successful Payment - TraditionShoppe",
+            user : req.session.user,
+            qtyCount:req.session.qtyCount,
+            listCount:req.session.listCount, 
+            orderData:orderData,                
+            errorMessage : req.flash('errorMessage'),
+            successMesssage : req.flash('successMessage')
+        })
+    }
+    catch(err){
+        console.log(err.message);
+    }
+}
+
 const verifyPayment = async (req, res) => {
     //const email = req.session.user;
 
@@ -1845,7 +2048,10 @@ const verifyPayment = async (req, res) => {
       const uniqueOrderId = req.session.orderid;
       const cheek = await Order.updateOne(
         { _id: uniqueOrderId },
-        { $set: { status: "pending" } }
+        { $set: {
+             orderstatus: "pending",
+             paymentstatus:"completed"
+            } }
       ).exec()
       res.status(200).json({ status: true });
     } else {
@@ -1895,6 +2101,7 @@ const loadSaved = async(req,res)=>{
 module.exports = {
 
     getPaginatedProducts,
+    getProductById,
     getProducts,
 
     loadAllProducts,
@@ -1948,8 +2155,12 @@ module.exports = {
     selectedMethod,
     selectedAddress,
 
+    couponApply,
+
+    makePayment,
     makeCODPayment,
     verifyPayment,
+    loadPaymentSuccess,
 
     addToWishlist,
     addToSave,

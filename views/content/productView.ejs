@@ -29,16 +29,7 @@
             </span>
             
         </div>
-        <div id="myresult" class="img-zoom-result"></div>
-        <% let mrp = 0; %>
-        <% let per = 0; %>            
-        <% discounts.forEach((disc_row, index) => { %>
-        <%console.log(disc_row._id , pdt.discount)%>
-        <%if(disc_row._id .equals( pdt.discount )) {%>
-            <% per = disc_row.percentage %>
-            <% mrp = (pdt.price_unit * (100 - per) * 0.01)  %>
-        <% } %>
-        <% })%>
+        <div id="myresult" class="img-zoom-result"></div>    
 
         <div class="detail_view">
             <div  class="product-Name">
@@ -51,11 +42,35 @@
                   <% } else {%>
                     <%stock = "Out of Stock" %>
                     <% }%>
-                <p class="text-warning">rating </p>&ensp;&ensp; <p class="text-white font-weight-bolder fs-5 " style ="background-color: #00bfa5;"><%= stock %></p>&ensp;&ensp; 
+                <p class="text-warning">rating </p>&ensp;&ensp; <p style="color :rgb(42, 75, 165); font-size: 20px; font-weight: 600;"><%= stock %></p>&ensp;&ensp; 
             </div>
             <div class="price-value">
-                <div class="d-flex"><p class="p-per">-<%= per %> % </p>&ensp;&ensp; <p class="p-price">₹<%= mrp %></p> </div>
+              <% let per = 0 %>
+              <% if( pdt.pdtoffer!== 0 && pdt.categoffer!== 0 ) {%> 
+                  <% if( pdt.pdtoffer >= pdt.categoffer ){ %>
+                    <% per =   pdt. productoffer. discount_per %>
+                  <%} else {%>
+                    <% per =  pdt.categoryoffer. discount_per %>
+                  <%}%>
+              <%} else if ( pdt.pdtoffer === 0 && pdt.categoffer === 0 ) {%>
+                <% per =  10 %>
+              <%} else if( pdt.pdtoffer >= pdt.categoffer ){ %>
+                <% per =  pdt. productoffer. discount_per %>
+              <%} else {%>
+                <% per =  pdt.categoryoffer. discount_per %>
+              <%}%>
+                <div class="d-flex">
+                  <p class="p-per">-<%= per %> % </p>&ensp;&ensp; <p class="p-price">₹<%=pdt.discountedsalePrice %></p>&ensp;&ensp;
+
+                  <% if( pdt.pdtoffer!== 0 && pdt.categoffer!== 0 ) {%>                
+                    <p class="det-name"><span style ="background-color: #00bfa5;" class="text-white">2 offers Available</span></p>
+                  <%} else if( pdt.pdtoffer!== 0 || pdt.categoffer!== 0 ) {%>
+                    <p class="det-name"><span style ="background-color: #00bfa5;" class="text-white">1 offer Available</span></p>
+                  <%}%>
+                </div>
+              
                 <p class="p-mrp">M.R.P.: <span >₹<%= pdt.price_unit %></span></p>
+               
             </div>
             <!-- <div class="coupon">
                 <span>Coupon </span>
@@ -65,21 +80,10 @@
                 <p class="det-name">Description : <span><%= pdt.description %></span></p>
                 <p class="det-name">Material : <span><%= pdt.material %></span></p>
                 <p class="det-name">Size : <span><%= pdt.size %> inch</span></p>
-                <p class="det-name">Weight : <span><%= pdt.weight %> grams</span></p>
-                <% if(offer_coupon){ %>
-                <% if(offer_coupon.couponcode !== ''){%>                 
-                  
-                <p class="det-name "><span style ="background-color: #00bfa5;" class="text-white">1 Coupon Available</span></p>
-                <%}%>
-                <% if(offer_coupon.offerdisc !== 1){%>                  
-                 
-                  <p class="det-name"><span style ="background-color: #00bfa5;" class="text-white">1 offer Available</span></p>
-                <%}%>
-                <% console.log(mrp)%>
-                <% let sum = offer_coupon.oframt+offer_coupon.cpnamt%>
-                <% mrp = mrp - sum %>
-                <% console.log("value",mrp, sum )%>
-                <%}%>
+                <p class="det-name">Weight : <span><%= pdt.weight %> grams</span></p>             
+               
+                
+                
             </div>
             <div class="wish-save d-flex">
                 <a class = "link-wish"href="/addtowishlist/<%= pdt._id %>"><span class="icon icon-heart-o">&nbsp;Add to wishlist</span></a>&ensp;&ensp;&ensp;&nbsp;
@@ -87,8 +91,8 @@
             </div>           
             <br>          
             <div class="nav-but-div">
-                <a href="/addtocart/<%= pdt._id %>/<%= mrp %>"><button class="btn btn-lg text-white nav-but purp-back" >Add to Cart</button></a>&ensp;
-                <a href="/checkout/<%=user_id%>/<%= mrp %>"><button class="btn btn-lg text-white nav-but purp-back" >Buy Now</button></a>
+                <a href="/addtocart/<%= pdt._id %>/<%=pdt.discountedsalePrice %>"><button class="btn btn-lg text-white nav-but purp-back" >Add to Cart</button></a>&ensp;
+                <a href="/checkout/<%=user_id%>/<%=pdt.discountedsalePrice %>"><button class="btn btn-lg text-white nav-but purp-back" >Buy Now</button></a>
 
             </div>
             <% if (errorMessage.length > 0) { %>                
@@ -112,34 +116,27 @@
                   <div class="row loop-div">
                     <div class="col-md-12">
                     <div class="nonloop-block-3 owl-carousel">
-                      <% let disc = 0; %>
-                      <% let perc = 0; %>  
-                    <% allproducts.forEach((allpdt, index) => { %>
-                    <%if(allpdt.material == pdt.material || allpdt.product_type == pdt.product_type ) {%>
-                      <% discounts.forEach((disc_row, index) => { %>
-                        <%console.log(disc_row._id , allpdt.discount)%>
-                        <%if(disc_row._id .equals( allpdt.discount )) {%>
-                            <% perc = disc_row.percentage %>
-                            <% disc = (allpdt.price_unit * (100 - perc) * 0.01)  %>
-                        <% } %>
-                      <% })%>
+                      
+                    <% allproducts.forEach((allpdt, index) => { %>   
+                      <% if ( (pdt.product_type === allpdt.product_type) || (pdt.material === allpdt.material)){%>                
+                      
                         <div class="col-sm-6 col-lg-4 mb-4" data-aos="fade-up">
                             <a href="/viewProduct/<%= allpdt._id %>">
                               <div class="rel-box  text-center border">
                                 <figure class="rel-image">
-                                  <a href="/viewProduct/<%= pdt._id %>"><img src="../upload/<%= allpdt.images[0]%>" alt="Image placeholder" class="img-fluid"></a>
+                                  <a href="/viewProduct/<%= allpdt._id %>"><img src="../upload/<%= allpdt.images[0]%>" alt="Image placeholder" class="img-fluid"></a>
                                 </figure>
                                 <div class="rel-text p-4">
-                                  <h3><a href="/viewProduct/<%= pdt._id %>"><%= allpdt.product_name %></a></h3>  
+                                  <h3><a href="/viewProduct/<%= allpdt._id %>"><%= allpdt.product_name %></a></h3>  
                                   <div class="d-flex justify-content-around mt-2 ">
                                     <p class=" mb-0 text-danger font-weight-light"><del>RS.<%= allpdt.price_unit %></del></p>
-                                    <p class="text-black font-weight-light">Rs.<%=mrp %></p>
+                                    <p class="text-black font-weight-light">Rs<%=allpdt.discountedsalePrice %></p>
                                   </div>                            
                                 </div>
                               </div>
                             </a>
                           </div>
-                    <% } %>
+                          <%}%>
                     <% })%>
 
                  

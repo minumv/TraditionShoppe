@@ -346,3 +346,9 @@ $('#changeOfferButton').click(function() {
      });
 });
 
+
+/**************return request page handle****************/
+// request for cancel   onclick="requestCancel(orderid)"
+$(document).ready(function() {
+
+})

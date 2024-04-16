@@ -39,7 +39,170 @@
                       <% let salesprice = pdt.discountedPrice - offerprice  %>
 					  ................
 
-				</div> -->
+
+					  /****************order***************/
+					  <%orders.forEach((odr)=>{%>
+    <%users.forEach((usr,index)=>{%>
+                
+        <% if(usr._id.equals(odr.user)){%>
+   
+    <div class="d-block border rounded ord-box ">
+        <div class="ord-header d-flex bottom-line p-2">
+            <div class="detal d-block">
+                <p class="text-dark text-uppercase mb-0">Order placed:</p>
+                <p><%= odr.order_date%></p>
+            </div>&nbsp;&nbsp;&nbsp;
+            <div class="detal d-block mx-4">
+                <p class="text-dark text-uppercase mb-0">Total:</p>
+                <p><%= odr.payment_amount%></p>
+            </div>&nbsp;&nbsp;&nbsp;
+            
+            <div class="detal d-block mx-4">
+                <p class="text-dark text-uppercase mb-0">Payment Method:</p>
+                <p><%= odr.payment%></p>
+            </div>
+            <%address.forEach((adr,index)=>{%>
+                <%console.log("inside address")%>
+                <% if(adr._id.equals(odr.address)){%>
+                    <div class="detal d-block mx-4">
+                        <p class="text-dark text-uppercase mb-0">Ship To:</p>
+                        <p><%=adr.name%>,<%=adr.house%>,<%=adr.city%></p>
+                    </div>
+                <%}%>
+            <%})%>
+            
+
+        </div>
+        <div class="ord-body d-block bottom-line p-1">
+           <div class="d-flex">
+            <!-- after checking -->
+            <!-- <p class="text-dark fs-3 font-weight-bold mb-0">Expected Delivery:</p>
+            <p><%= odr.delivery_date%></p>
+           </div>
+          
+            
+                    <%odr.product_list.forEach((list)=>{%>
+                        <%products.forEach((pdt)=>{%>
+                            <%if(list.productId.equals(pdt._id)){%>
+                                <div class="d-flex"> 
+                                    <div class="ord-pdt d-flex">
+                                    <div class="">
+                                        <img src="../upload/<%=pdt.images[0]%>" class="pdt-img rounded border" >
+                                    </div>
+                                   
+                                <div class="pdt-det d-block border mb-2 p-2 rounded">
+                                    <p class="font-weight-bold mb-0" style="color:#4F0341"><%=pdt.product_name%></p>
+                                    <p>Return window closed on <%= odr.return_date%></p>
+                                    <div class="d-flex">
+                                        <p class="text-dark text-uppercase mb-0">Order placed:</p>
+                                        <p><%= odr.order_date%></p>
+                                    </div>
+                                    <div class="d-flex">
+                                        <p class="text-dark fs-3 font-weight-bold mb-0">Expected Delivery:</p>
+                                        <p><%= odr.delivery_date%></p>
+                                    </div>
+                                    <div class="d-flex">
+                                        <p class="text-dark text-uppercase mb-0">Payment Method:</p>
+                                        <p><%= odr.payment%></p>
+                                    </div>
+                                    <a href="/viewProduct/<%= pdt._id %>"><button class="use-but ord-but bg-warning text-center text-dark">Buy Again</button></a>
+                                    <a href="/review"><button type="submit" class="use-but ord-but bg-light text-center text-dark">Write a review</button></a>
+                                </div>
+                                <div>
+
+                                </div>
+                            
+        </div>
+        <div class="ord-addrs"></div></div>
+
+        </div>
+        <div class="ord-status d-block p-1">
+            <div class="d-flex">
+                <p class="text-dark fs-3 font-weight-bold">Status:</p>
+                <p class="text-success fs-3 font-weight-bold"><%= odr.orderstatus%></p>
+            </div>
+            <div class="d-flex">
+                <%console.log("orderid: "+odr._id)%>
+                <form action="/cancelRequest/<%= odr._id %>" method="post"><button type="submit" class="use-but ord-but bg-white text-dark">Cancel Order</button></form>
+                <form action="/returnRequest/<%= odr._id %>"  method="post"><button type="submit" class="use-but ord-but bg-white text-dark">Return Product</button></form>
+            </div>
+                        <%}%>
+                        <%})%>
+                    <%})%>
+            
+        </div>
+    </div>
+
+        <%}%> 
+    <%})%> 
+<%})%> 
+</div> 
+
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
+
+$('#returnbut').click(function() {
+    alert("button clicked")
+    alert("order",orderid)
+    // Get selected values from dropdowns
+    const reason = $('#returnreason').val();         
+    console.log("reason:"+reason);
+    
+    
+    // Send selected values to server
+    $.ajax({
+       url: '/getReturnReason', // Change this URL to match your server route
+       method: 'POST',
+       data: {
+           returnReason : reason            
+       },
+       success: function(response) {
+           // Handle success response
+           console.log('Server response:', response);
+           requestReturn(orderid)
+          // addressSubmission();
+       },
+       error: function(xhr, status, error) {
+           console.error('Error:', error);
+       }
+    });
+    });
+
+    ................
+    <% if (row.adminaction === 'delivered'){ %>
+                        <span class="badge badge-sm bg-gradient-success">delivered</span>
+                    <% } else if(row.adminaction === 'approve') { %> 
+                        
+                        <%console.log("pdtid:",pdtid,qty,user._id,row._id)%>
+                        <form action="/orderPending/<%=row._id%><%=pdtid%>/<%=user._id%>/<%=qty%>" method="post"><button  type="submit" class="badge badge-sm bg-gradient-warning">approve</button>  </form>                      
+                    <% } else if(row.adminaction === 'order cancelled') { %> 
+                        <form action="/cancelapprove/<%=row._id%>" method="post"><button type="submit" class="badge badge-sm bg-gradient-danger">order cancelled</button> </form>
+                    <% } else if(row.adminaction === 'approve return') { %> 
+                        <form action="/returnapprove/<%=row._id%>" method="post"><button  type="submit" class="badge badge-sm bg-gradient-warning">approve return</button></form>                  
+                    <% } else if(row.adminaction === 'refund granted') { %> 
+                       <span class="badge badge-sm bg-gradient-success">refund granted</span>  
+                    <% } %>
+........................................
+<div class="d-flex justify-content-center">
+                        <div class="dropdown mx-3">
+                            <select id="adminaction">
+                              <option value="Apply">Apply</option>
+                              <option value="approve">approve</option>
+                              <option value="to pack">to pack</option>
+                              <option value="to dispatch">to dispatch</option>
+                              <option value="to ship">to ship</option>
+                              <option value="approve cancel">approve cancel</option>
+                              <option value="arrived">arrived</option>
+                              <option value="approve return">approve return</option>
+                            </select>
+                        </div>
+                        <button id="actionbut" type="button" class="use-but ord-but bg-white text-dark"  onclick="handleRequest('<%=row._id%>,<%=pdtid%>,<%=user._id%>,<%=qty%>')">ok</button>
+                    </div> 
+                    
+                    ..........
+                    formaction="/makeOrder/<%=userid%>/<%=defaultPayment%>"
+-->
+				
 			</div>
 			<div class="card-body">
 				<form action="/user/checkout">

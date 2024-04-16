@@ -27,6 +27,15 @@ const userSchema = new mongoose.Schema({
         type:String,
         required:true
     },
+    coupons:
+    [{
+        type : mongoose.Schema.Types.ObjectId,
+        ref:'Coupon'
+    }],
+    wallet:{
+        type : Number,
+        require : true
+    },
     status: {
         type: String, 
         enum: ['verified','pending','blocked','inactive'],

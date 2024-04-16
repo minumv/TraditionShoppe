@@ -105,7 +105,9 @@ const successGoogleLogin = async (req,res)=>{
         products:products,
         categories:categories,
         sellers:sellers,
-        discounts:discounts, 
+        discounts:discounts,
+        qtyCount:req.session.qtyCount,
+            listCount:req.session.listCount, 
         errorMessage:req.flash('errorMessage'),
         successMessage:req.flash('successMessage')
     })
@@ -529,10 +531,10 @@ const getListCount = async(req,res)=>{
 const loadProfile = async (req,res)=>{
     try{
         const email = req.session.user
-        const users = await User.find({email:email}).exec()    
-        // let qtyCount = await getQtyCount(req,res);
-        // let listCount = await getListCount(req,res);
-        
+        const users = await User.find({email}).exec()    
+        await getQtyCount(req,res);
+        await getListCount(req,res);
+        console.log("user: ",users);
         res.render('profile/userProfile',{
             title:"My account | TraditionShoppe",
             user : req.session.user,
@@ -540,19 +542,64 @@ const loadProfile = async (req,res)=>{
             listCount:req.session.listCount,
             page:'Your Profile',
             users:users,
-            // products:products,
-            // categories:categories,
-            // sellers:sellers,
-            // discounts:discounts,          
             errorMessage:req.flash('errorMessage'),
             successMessage:req.flash('successMessage')
-
         })
     }
     catch(err){
         console.log(err.message);
     }
 }
+
+
+const loadeditProfile = async(req,res)=>{
+    try{
+        const users = await User.find({email:req.session.user}).exec()    
+        await getQtyCount(req,res);
+        await getListCount(req,res);
+        
+        res.render('profile/userProfileEdit',{
+            title:"My account | TraditionShoppe",
+            user : req.session.user,
+            qtyCount:req.session.qtyCount,
+            listCount:req.session.listCount,
+            page:'Your Profile',
+            users:users,
+            errorMessage:req.flash('errorMessage'),
+            successMessage:req.flash('successMessage')
+
+        })
+
+    } catch(err){
+        console.log(err.message);
+    }
+}
+const editProfile = async(req,res)=>{
+    try{
+        const id = req.params.id
+        console.log("userid : ",id);
+        const profile = await User.updateOne(
+            { _id:id},
+            { $set : {
+                name : req.body.name,
+                phone : req.body.contact,
+                email : req.body.mail
+            }
+        })
+
+        if(profile){
+            req.flash("successMessage", "You profile changed successfully..");        
+            res.redirect("/userprofile");  
+        } else {
+            req.flash("errorMessage", "Profile Updation Failed !!");        
+            res.redirect("/geteditprofile");  
+        }
+
+    } catch(err){
+        console.log(err.message);
+    }
+}
+
 
 /*************** handle my order********************/
 const loadOrder = async (req,res)=>{
@@ -991,7 +1038,10 @@ module.exports = {
     loadOrder,
     loadAddress,
     loadWallet,
-    loadList,  
+    loadList, 
+    
+    loadeditProfile,
+    editProfile,
 
    
     loadbuyList,

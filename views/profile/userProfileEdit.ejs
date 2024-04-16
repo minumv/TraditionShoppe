@@ -1,0 +1,20 @@
+<%- include('../layout/profileHeader') %>
+<div class="overview d-block">
+    <% users.forEach((usr)=>{%>  
+        <form action="/changeprofile/<%= usr._id%>" method="post"></form> 
+        <div class="edit-box">  
+            <div class="edit-head"><p>Edit Details</p></div>      
+            <div><input class="edit-text" type="text" name="name" value="<%= usr.name %>"></div>
+            <div><input class="edit-text" type="text" name="contact" value="<%= usr.phone %>"></div>
+            <div><input class="edit-text" type="text" name="mail" value="<%= usr.email %>"></div>
+            <div><button class="edit-but" type="submit">Save Details</button></div>
+        </div>
+        </form>    
+<%})%>
+
+
+</div>
+
+  </div>
+
+  <%- include('../layout/userFooter') %>

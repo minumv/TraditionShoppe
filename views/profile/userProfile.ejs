@@ -1,4 +1,69 @@
 <%- include('../layout/profileHeader') %>
-
+<div class="overview d-block">
+<div class="profile d-flex justify-content-center">
+  <div class="prof-det"> 
+    <% users.forEach((usr)=>{%>      
+    <div><span id="name"><%= usr.name %></span></div>
+    <div><span id="contact"><%= usr.phone %></span></div>
+    <div><span id="mail"><%= usr.email%></span></div>
+    <%})%>
+  </div>
+  <div class="prof-edit d-flex justify-content-center align-items-center">
+    <a href="/geteditprofile"><button class="prof-edit-but">Edit Profile</button></a>
+  </div>
 </div>
+<div class="profile-row">
+  <div class="box-div first">
+    <div class="d-block">
+      <div><a href="/getOrder"><img src="/userasset/images/profile-orders.png" alt="" class="profile-img-box"></a></div>
+      <div><strong class="text-dark font-weight-bold">Orders</strong></div>
+    </div>
+  </div>
+  <div class="box-div second">
+    <div class="d-block">
+      <div><a href="/getAddress"><img src="/userasset/images/profile-address.png" alt="" class="profile-img-box"></a></div>
+      <div> <strong class="text-dark font-weight-bold">Addresses</strong></div>
+    </div>
+  </div>
+</div>
+<div class="profile-row">
+  <div class="box-div first">
+    <div class="d-block">
+      <div><a href="/getList"><img src="/userasset/images/profile-collections.png" alt="" class="profile-img-box"></a></div>
+      <div><strong class="text-dark font-weight-bold">Wishlists</strong></div>
+    </div>
+  </div>
+  <div class="box-div second">
+    <div class="d-block">
+      <div><a href="/getWallet"><img src="/userasset/images/wallets_bnpl.png" alt="" class="profile-img-box"></a></div>
+      <div><strong class="text-dark font-weight-bold">Wallets</strong></div>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+
+<script>
+  function editProfile(){
+    const name = document.getElementById('name').innerHTML
+    const contact = document.getElementById('contact').innerHTML
+    const mail = document.getElementById('mail').innerHTML
+
+    fetch('/updateProfile',{
+        method:'POST',
+        headers:{
+          'Content-Type' : 'application/json'
+        },
+        body: JSON.stringify({ name , contact , mail })
+    })
+    .then(res=>res.json())
+    .then(data=>{
+      if(data.success){
+        location.href = '/userProfileEdit'
+      } else {
+        location.href = '/userProfile'
+      }
+    })
+  }
+</script>
   <%- include('../layout/userFooter') %>

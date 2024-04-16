@@ -17,23 +17,11 @@
                                 <p class="text-black">price</p>
                             </div>
                         </li>
-                        <% let mrp = 0; %>
-                        <% let per = 0; %>
-                        <% let mrpTotal = 0; %>
+                        
                         <% user_cart.product_list.forEach((cart, index) => { %>
                             <% products.forEach((pdt, index) => { %>                                
-                            <% if(cart.productId.equals(pdt._id) ){%> 
-                                <!-- <% console.log("qty: "+cart.quantity) %>
-                               -->  <% console.log("price: "+pdt.price_unit) %>      
-                                <%  mrpTotal += parseFloat(cart.quantity * pdt.price_unit) %> 
-                                <!-- <% console.log("total price: "+ mrpTotal) %>                                     -->
-                                <% discounts.forEach((disc_row, index) => { %>
-                                    <!-- <%console.log(disc_row._id , pdt.discount)%> -->
-                                    <%if(disc_row._id .equals( pdt.discount )) {%>
-                                        <% per = disc_row.percentage %>
-                                        <% mrp = parseFloat(pdt.price_unit * (100 - per) * 0.01)  %>
-                                    <% } %>
-                                <% })%>
+                                 <% if( cart.productId.equals(pdt._id)){%>           
+                                
                             <li>
                                 <div class="cart-list">
                                     <div class="d-flex align-items-center">
@@ -43,15 +31,15 @@
                                     <div class="cart-details">
                                        
                                         <div class="cart-opert but">
-                                            <a href="/subCart/<%=user_cart.user%>/<%=cart.productId%>/<%=mrp%>"><div class="p-1 m-0 side">-</div></a>
+                                            <a href="/subCart/<%=user_cart._id%>/<%=user_cart.user%>/<%=cart.productId%>/<%=pdt.discountedsalePrice%>"><div class="p-1 m-0 side">-</div></a>
                                             <div class="p-1 m-0"><button><%=cart.quantity %></button></div>
-                                            <a href="/addCart/<%=user_cart.user%>/<%=cart.productId%>/<%=mrp%>"><div class="p-1 m-0 side">+</div></a>
+                                            <a href="/addCart/<%=user_cart._id%>/<%=user_cart.user%>/<%=cart.productId%>/<%=pdt.discountedsalePrice%>"><div class="p-1 m-0 side">+</div></a>
                                         </div>
-                                        <a href="/deleteCart/<%=user_cart.user%>/<%=cart.productId%>"><span class="icon icon-trash cart-trash-icon"></span></a>
+                                        <a href="/deleteCart/<%=user_cart._id%>/<%=user_cart.user%>/<%=cart.productId%>"><span class="icon icon-trash cart-trash-icon"></span></a>
 
                                     </div>
                                     <div class="cart-price">
-                                        <p class="disc">₹<%=mrp.toFixed(2) %></p>
+                                        <p class="disc">₹<%=pdt.discountedsalePrice.toFixed(2) %></p>
                                         <p class="mrp">₹<%=pdt.price_unit.toFixed(2) %></p>
                                     </div>
                                 </div>
@@ -60,14 +48,11 @@
                           
                             <% } %>
                             <% }) %>
-                            <% }) %>
-                            <%console.log("total",mrp)%>
-                          
-                           
-                            <% amount = user_cart.total_amount %>
-                            <% console.log("amount: "+ amount) %>    
+                            <% }) %>                        
+                            <% amount = user_cart.total_amount %>                      
                             <% let savings = parseFloat(mrpTotal - amount )%>
-                            <% console.log("savings: "+ savings) %>    
+                            
+                            
                             <% if (errorMessage.length > 0) { %>   
                                 <%console.log(errorMessage)%>             
                                <div class="alert alert-danger" role="alert"> <%- errorMessage %>  </div>                
@@ -87,7 +72,7 @@
                     <div class="cart-proceed">
                         <p class="head">TraditionShoppe Subtotal(<%=qtyCount%><br> items):<span>₹<%=amount.toFixed(2)%> </span></p>
                         <p class="sub">Total Savings : <span>₹<%=savings.toFixed(2)%> </span></p>
-                        <a href="/checkout/<%=user_cart.user%>/<%=user_cart.total_amount%>"><button>Proceed to Buy Item</button></a>
+                        <a href="/checkout/<%=user_cart._id%>"><button>Proceed to Buy Item</button></a>
                         <div class="d-flex">
                             <div class="line"></div>
                             &nbsp;or&nbsp;

@@ -1,17 +1,12 @@
 <%- include('../layout/profileHeader') %>
+  
     <div class="d-block">
        
           
         <div class="d-flex">
             <div >   
                 <a href="/getOrder"><p class="bottom-line border-bottom border-success mx-4 p-0">Orders</p></a>         
-            </div>
-            <!-- <div >   
-                <a href="/buyAgain"><p class="bottom-line border-bottom border-success mx-4 p-0">Buy Again</p></a>         
-            </div>
-            <div >   
-                <a href="/cancellist"><p class="bottom-line border-bottom border-success  mx-4 p-0">Cancelled Orders</p></a>         
-            </div> -->
+            </div>            
         </div>
 
         <div>
@@ -33,87 +28,93 @@
             <p class="text-dark text-uppercase">My Recent Orders</p>
         </div>
         <%orders.forEach((odr)=>{%>
-        <%users.forEach((usr,index)=>{%>
+            <%users.forEach((usr,index)=>{%>
+                        
+                <% if(usr._id.equals(odr.user)){%>
+                    <%odr.product_list.forEach((list)=>{%>
+                        <%products.forEach((pdt)=>{%>
+                            <%if(list.productId.equals(pdt._id)){%>
+        <div class="ord-box">
+                
+                <div>
+                    <img src="../upload/<%=pdt.images[0]%>" class="pdt-img rounded border" >
+                </div>
+
+                <%let dateString =  odr.order_date %>
+                <%let date = new Date(dateString)%>
+
+                <%let options = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }%>
+                <%let formattedDate = date.toLocaleDateString('en-US', options)%>
                     
-            <% if(usr._id.equals(odr.user)){%>
-       
-        <div class="d-block border rounded ord-box ">
-            <div class="ord-header d-flex bottom-line p-2">
-                <div class="detal d-block">
-                    <p class="text-dark text-uppercase mb-0">Order placed:</p>
-                    <p><%= odr.order_date%></p>
-                </div>&nbsp;&nbsp;&nbsp;
-                <div class="detal d-block mx-4">
+                <div class="pdt-det">
+                    <div class="d-flex">
+                        <p class="text-dark text-uppercase mb-0">Order placed:</p>
+                        <p><%= formattedDate%></p>
+                    </div>
+
+                    <%  dateString =  odr.delivery_date %>
+                    <%  date = new Date(dateString)%>
+
+                    <%  options = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }%>
+                    <%  formattedDate = date.toLocaleDateString('en-US', options)%>
+                    <div class="d-flex">
+                        <p class="text-dark fs-3 font-weight-bold mb-0">Expected Delivery:</p>
+                        <p><%= formattedDate %></p>
+                    </div>
+                    <div class="d-flex">
+                        <p class="text-dark text-uppercase mb-0">Payment Method:</p>
+                        <p><%= odr.payment%></p>
+                    </div>
+                </div>
+                <div class="pdt-det box-wid">
                     <p class="text-dark text-uppercase mb-0">Total:</p>
                     <p><%= odr.payment_amount%></p>
-                </div>&nbsp;&nbsp;&nbsp;
-                
-                <div class="detal d-block mx-4">
-                    <p class="text-dark text-uppercase mb-0">Payment Method:</p>
-                    <p><%= odr.payment%></p>
                 </div>
                 <%address.forEach((adr,index)=>{%>
                     <%console.log("inside address")%>
                     <% if(adr._id.equals(odr.address)){%>
-                        <div class="detal d-block mx-4">
-                            <p class="text-dark text-uppercase mb-0">Ship To:</p>
-                            <p><%=adr.name%>,<%=adr.house%>,<%=adr.city%></p>
-                        </div>
+                <div class="pdt-det d-block box-wid">
+                    <p class="text-dark text-uppercase mb-0">Ship To:</p>
+                    <div><span class=""><%=adr.name%></span></div>
+                    <div><span><%=adr.house%></span></div>
+                    <div><span><%=adr.city%></span></div>
+                </div>
                     <%}%>
                 <%})%>
-                
-
-            </div>
-            <div class="ord-body d-block bottom-line p-1">
-               <div class="d-flex">
-                <!-- after checking -->
-                <p class="text-dark fs-3 font-weight-bold mb-0">Expected Delivery:</p>
-                <p><%= odr.delivery_date%></p>
-               </div>
-              
-                
-                        <%odr.product_list.forEach((list)=>{%>
-                            <%products.forEach((pdt)=>{%>
-                                <%if(list.productId.equals(pdt._id)){%>
-                                    <div class="d-flex"> 
-                                        <div class="ord-pdt d-flex">
-                                        <div class="">
-                                            <img src="../upload/<%=pdt.images[0]%>" class="pdt-img rounded border" >
-                                        </div>
-                                       
-                                    <div class="pdt-det d-block border mb-2 p-2 rounded">
-                                        <p class="font-weight-bold mb-0" style="color:#4F0341"><%=pdt.product_name%></p>
-                                        <p>Return window closed on <%= odr.return_date%></p>
-                                        <a href="/viewProduct/<%= pdt._id %>"><button class="use-but ord-but bg-warning text-center text-dark">Buy Again</button></a>
-                                        <a href="/review"><button type="submit" class="use-but ord-but bg-light text-center text-dark">Write a review</button></a>
-                                    </div>
-                                
-            </div>
-            <div class="ord-addrs"></div></div>
-
-            </div>
-            <div class="ord-status d-block p-1">
-                <div class="d-flex">
-                    <p class="text-dark fs-3 font-weight-bold">Status:</p>
-                    <p class="text-success fs-3 font-weight-bold"><%= odr.orderstatus%></p>
+                <div class="pdt-det box-wid">
+                    <p class="text-dark text-uppercase mb-0">Status:</p>
+                    <p><%=odr.orderstatus%></p>
                 </div>
-                <div class="d-flex">
-                    <%console.log("orderid: "+odr._id)%>
-                    <form action="/cancelRequest/<%= odr._id %>" method="post"><button type="submit" class="use-but ord-but bg-white text-dark">Cancel Order</button></form>
-                    <form action="/returnRequest/<%= odr._id %>"  method="post"><button type="submit" class="use-but ord-but bg-white text-dark">Return Product</button></form>
-                </div>
-                            <%}%>
-                            <%})%>
-                        <%})%>
-                
+
+                <div class="d-block">
+                    <div><a href="/viewProduct/<%= pdt._id %>"><button class="use-but ord-but bg-light text-center text-dark">Buy Again</button></a></div>
+                    <div><a href="/review"><button type="submit" class="use-but ord-but bg-light text-center text-dark">Write a review</button></a></div>
+                    <% if (odr.orderstatus === 'pending'){%>
+                        <div><a href="/cancelPage/<%= odr._id %>"><button type="submit" class="use-but ord-but bg-light text-center text-dark">Cancel Order</button></a></div>
+                    <%} else if(odr.orderstatus === 'delivered'){%> 
+                        <div><a href="/returnPage/<%= odr._id %>"><button type="submit" class="use-but ord-but bg-white text-dark">Return Product</button></a></div>  
+                    <%}%>
+                </div>   
             </div>
-        </div>
-   
-            <%}%> <!--  users if -->
-        <%})%> <!--  users -->
-    <%})%> <!--  orders -->
+        <%}%>
+        <%})%>
+    <%})%>
+    <%}%> <!--  users if -->
+    <%})%> <!--  users -->
+<%})%> <!--  orders -->
  </div>
 </div>
 </div>
 
+<script>
+
+    /*  onclick="requestReturn(odr._id)" */
+   
+    
+</script>
+
+
+
   <%- include('../layout/userFooter') %>
+
+  

@@ -163,16 +163,18 @@
              </div> 
         </form>
         <% defaultPayment = 'Razorpay' %>
-        <form  role="form" id="checkout-form"  method="post">
+        <!-- <form  role="form" id="checkout-form"  method="post"> -->
             <div class="col-md-4">
                 <div class="payment boredr-shadow d-block text-dark">
                     <div class="bottom-line mb-0 p-0 ">
-                        <p class="p-head text-dark">Your available balance</p>                        
+                        <p class="p-head text-dark">Add Coupon Here</p>                        
                     </div>
                     <div class="d-flex justify-content-around pt-2 ">
-                        <input type="text" name="bal" id="bal" class="rounded">
-                        <button class="but bg-light text-dark rounded">Apply</button>
+                        <input type="text" name="couponCode" id="couponCode" class="rounded">
+                        <button class="but bg-light text-dark rounded" onclick="applyCoupon(amount,userid)">Apply</button>
                     </div>
+               
+               
                     <div class="bottom-line mt-3">
                         <p class="p-head text-dark">Choose payment method</p>                        
                     </div>
@@ -196,7 +198,7 @@
                     <%console.log("checkout user :",userid)%>
                     <% user_cart.forEach((cart,index)=>{%>
                     <div class="d-flex justify-content-center">                      
-                        <button id="payButton" type="submit" formaction="/makeOrder/<%=userid%>/<%=defaultPayment%>"" class="use-but font-weight-bold">Use this payment method</button>
+                        <button id="payButton" type="button" onclick="checkoutHandle('<%=userid%>','<%= defaultPayment %>','<%=amount%>')" class="use-but font-weight-bold">Use this payment method</button>
                     </div>
                     <div class="bottom-line ">
                         <p class="text-center text-dark">Choose a payment method to continue checking out.
@@ -236,7 +238,7 @@
             </div>    
             <%console.log("checkout user :",userid)%>   
          </div>
-        
+        <!-- </form> -->
        
 
         
@@ -263,28 +265,54 @@
 
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <script>
+
+    function applyCoupon( amount , userid ){
+        const code = document.getElementById('couponCode').value
+        console.log(code);
+
+        fetch(`/applyCoupon/${userid}`,{
+            method : 'POST',
+            headers : {
+                'Content_Type' : 'application/json'
+            },
+            body : JSON>stringify({
+                couponCode : code,
+                totalAmount : amount
+            })
+        }).then(res=>res.json())
+        .then(data =>{
+            if(data.success){
+                const discountedTotal = data.discountedTotal
+                location.href = `/checkout/${userid}/${discountedTotal}`
+            } else {
+                location.href = `/checkout/${userid}/${amount}`
+            }
+        })
+
+    }
+
     alert("inside script")
     
-    $(document).ready(function() {
+   function checkoutHandle(userid,payment,amount){
+   
+        const checkoutData = {
+            userid,
+            payment,
+            total : amount  
+        }
+       
         
-        var usr_id = $("#checkout-form").attr("action").split("/")[2];
-        var url = '/makeOrder/' + usr_id + '/Razorpay';
-        
-    $("#checkout-form").submit(function(e){
-        // alert("inside form")
-        console.log("inside form submission")
-        var formData = $('#checkout-form').serialize()
-        // alert(formData)
-        console.log("form data",formData)
-        // alert(url)
-        //e.preventDefault()       
+           
         $.ajax({           
-            url:url,
+            url:`/makeOrder/${userid}/${payment}`,
             method:'post',
-            data: formData,
+            data : JSON.stringify(checkoutData),
             success:function(res){
            
-                if(res.success){                 
+                if(res.cod_success){ 
+                    location.href='/paymentSuccess'
+                }
+                else {                
                     var options = {
                         
                         "key": "" +res.key_id+ "", // Enter the Key ID generated from the Dashboard
@@ -331,8 +359,8 @@
             alert("An error occurred while processing your request. Please try again later."); // Display an error message to the user
         }
         })
-    })
-})
+   
+   }
 
 
 async function verifyPayment(payment, order) {
@@ -347,7 +375,7 @@ async function verifyPayment(payment, order) {
                 .then(res => res.json())
                 .then(status => {
                     if (status.status) {
-                        alert(status)
+                         location.href='/paymentSuccess'
                     }
                 })}
                 catch(err){
