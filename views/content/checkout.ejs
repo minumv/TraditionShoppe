@@ -356,7 +356,18 @@
                         }
                     };
                     
-                    var rzp1 = new Razorpay(options);              
+                    var rzp1 = new Razorpay(options); 
+                    rzp1.on('payment.failed', function (resp) {
+                        console.log('error:', resp.error.code);
+                        console.log('error:', resp.error.description);
+                        console.log('error:', resp.error.source);
+                        console.log('error:', resp.error.step);
+                        console.log('error:', resp.error.reason);
+                        console.log('error:', resp.error.metadata.order_id);
+                        console.log('error:', resp.error.metadata.payment_id);
+                        
+                        location.href = `/checkout/${cartid}/${total}`
+                    });             
                     
                     rzp1.open();
                 } 
@@ -370,7 +381,8 @@
             error: function(xhr, status, error){
             // Handle any errors that occur during the AJAX request
             console.error("AJAX Error:", error); // Log the error to the console
-            alert("An error occurred while processing your request. Please try again later."); // Display an error message to the user
+            // alert("An error occurred while processing your request. Please try again later."); // Display an error message to the user
+            location.href = `/checkout/${cartid}/${total}`
         }
         })
    

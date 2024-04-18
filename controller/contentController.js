@@ -1903,6 +1903,7 @@ const couponApply = async (req,res)=>{
                     console.log("couponid :",couponid);
                     usr.coupons.push(couponid);
                     await usr.save();
+                    console.log("coupon added to collection");
                 }));
 
                 req.session.couponDiscountTotal = discountedTotal
@@ -1931,6 +1932,7 @@ const couponApply = async (req,res)=>{
                     console.log("couponid :",couponid);
                     usr.coupons.push(couponid);
                     await usr.save();
+                    console.log("coupon added to collection");
                 }   
                 
                 req.session.couponDiscountTotal = discountedTotal    
@@ -2074,6 +2076,20 @@ const makeCODPayment = async(req,res)=>{
 
         const { paymentMethod,address,total,cartid,userid } = jsonData;
         console.log("checkout data :",jsonData)
+
+        const user = await User.findOne({_id:userid}).exec()
+
+        
+    
+            if(paymentMethod === 'Wallet' && (user.wallet === 0 || !user.wallet)){
+                req.flash("errorMessage", "Payment failed..Your wallet is empty..!!");
+                res.status(400).send({success : false ,msg : 'Something went wrong!'})
+            } else  if( paymentMethod === 'Wallet' && user.wallet < total ){
+                req.flash("errorMessage", "Insufficicient balance in wallet..!!");
+                res.status(400).send({success : false ,msg : 'Something went wrong!'})
+            } else {
+       
+
        console.log("cart id :",cartid)
         const cartDet = await Cart.findOne({_id:cartid}).exec()
         
@@ -2123,6 +2139,15 @@ const makeCODPayment = async(req,res)=>{
 
             res.json({cod_success : true})
         }  else if(orderData.payment === 'Wallet') {
+            console.log('successfull');
+            const newWallet = user.wallet - total
+            await User.updateOne(
+                {_id:userid},{$set:{wallet:newWallet}}).exec()
+            
+            await Cart.updateOne(
+                { _id:cartid },{$set:{status:"pending"}}).exec()
+
+            res.json({cod_success : true})
 
         }  else if(orderData.payment === 'Razorpay') {
 
@@ -2162,6 +2187,7 @@ const makeCODPayment = async(req,res)=>{
              req.flash("errorMessage", "Payment failed.. Try again!!");
              res.redirect(`/checkout/${cartid}/${amount}`)
         }
+    }
 
        
        
@@ -2171,18 +2197,6 @@ const makeCODPayment = async(req,res)=>{
     }
 }
 
-// const generateRandomOrderId = () => {
-//     const length = 8;
-//     const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-//     let orderId = "";
-  
-//     for (let i = 0; i < length; i++) {
-//       const randomIndex = Math.floor(Math.random() * characters.length);
-//       orderId += characters.charAt(randomIndex);
-//     }
-  
-//     return orderId;
-//   };
 
 const loadPaymentSuccess = async(req,res)=>{
     try{
@@ -2251,19 +2265,19 @@ const verifyPayment = async (req, res) => {
 const continueFailedPayment = async (req, res) => {
     try{
                 const { orderId } = req.body;
-                const Order = await Order.findOne({ orderId: orderId }).populate("user");
+                const order = await Order.findOne({ orderId: orderId }).populate("user");
                 req.session.failedPaymentOrderId = orderId;
                 var options = {
-                amount: Order.total * 100,
+                amount: order.payment_amount * 100,
                 currency: "INR",
-                receipt: Order._id,
+                receipt: "RCPT"+order._id,
                 };
             
                 instance.orders.create(options, function (error, raz_order) {
                 if (error) {
                     console.error("Error creating Razorpay order:", error);
                 } else {
-                    res.json({ raz_order: raz_order, user: Order.user });
+                    res.json({ raz_order: raz_order, user: order.user });
                 }
                 })
     } catch (err){
@@ -2283,17 +2297,30 @@ const FailedPaymentVerification = async (req, res) => {
                 hmac.update(razorOrder.id + "|" + payment.razorpay_payment_id);
                 hmac = hmac.digest("hex");
                 if (hmac == payment.razorpay_signature) {
-                const uniqueOrderId = req.session.orderid;
-                await Order.updateOne(
-                    { orderId: uniqueOrderId },
-                    { $set: { 
-                        orderstatus: "pending",
-                        paymentstatus:"completed"} }
-                );
-            
-                res.status(200).json({ status: true });
+
+                    const orderid = req.session.orderid;
+                    console.log("orderid :",orderid)
+                    await Order.updateOne(
+                        { _id: orderid },
+                        { $set: {
+                            paymentstatus:"completed"
+                            } }
+                    ).exec()
+                    const cartid = req.session.cartid
+                    console.log("cartid :",cartid)
+                    await Cart.updateOne(
+                        { _id: cartid },
+                        { $set: {
+                            status:"pending"
+                            } }
+                    ).exec()
+                    console.log("payment verification success")
+                    res.status(200).json({ status: true });
+
                 } else {
-                res.json({ status: false });
+
+                    console.log("payment verification failed!!")
+                    res.json({ status: false });
                 }
         } catch(err) {
             console.log(err.message);
