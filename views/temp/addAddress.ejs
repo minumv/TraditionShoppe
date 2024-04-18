@@ -138,6 +138,39 @@
 <%})%> 
 </div> 
 
+////////
+
+        // const cartDet = await Cart.aggregate([
+        //     { $match:{
+        //         _id : objectId
+        //     }},
+        //     {
+        //         $lookup : {
+        //             from : 'addresses',
+        //             localField : 'user',
+        //             foreignField : 'user_id',
+        //             as : 'useraddress'
+        //         }
+        //     },
+        //     {
+        //         $unwind: {
+        //             path: "$useraddress",
+        //             preserveNullAndEmptyArrays: true  // Preserve documents where the array is empty or null
+        //         }
+        //     },
+        //     {
+        //         $addFields: {
+        //             useraddress: {
+        //                 $cond: [
+        //                     { $eq: [{ $type: "$useraddress" }, "missing"] },  // Check if useraddress is missing
+        //                     null,  // Set to null if missing
+        //                     "$useraddress"  // Otherwise, keep the original value
+        //                 ]
+        //             }
+        //         }
+        //     }
+//////////////
+
 
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
 
@@ -201,6 +234,27 @@ $('#returnbut').click(function() {
                     
                     ..........
                     formaction="/makeOrder/<%=userid%>/<%=defaultPayment%>"
+                       <%if((cart.useraddress === null)){%>
+                                    <a href="#" id="openModal" data-modal-target="#modal"><span class="icon icon-plus d-flex">&nbsp;<p>Add new address</p></span></a>
+                                <%} else {%>
+                                  
+                                        
+                                                <div class="addrs-box">
+                                                    <input type="radio" id="address<%= index %>" name="address" value="<%= cart.useraddress._id %>" <% if (index === 0) { %> checked <% } %> >
+                                                    <label for="address<%= index %>" class="text-dark"><%=cart.useraddress.name %>,<%=cart.useraddress.house %>,<span class="text-uppercase"><%=cart.useraddress.city %></span>,<span class="text-uppercase"><%=cart.useraddress.state %></span>,<%=cart.useraddress.pincode %>,<%=cart.useraddress.Country %>
+                                                    <a href="/loadeditAddress/<%=cart.useraddress._id%>/<%=cart._id%>">Edit address</a></label><br>
+                                                </div>
+                                           
+                                
+                                    <% if (errorMessage.length > 0) { %>                
+                                        <p style="color : red;"><%- errorMessage %></p>                    
+                                    <% } %>                                    
+                                    <a href="#" id="openModal" data-modal-target="#modal"><span class="icon icon-plus d-flex">&nbsp;<p>Add new address</p></span></a>
+                                <%}%>
+
+
+
+
 -->
 				
 			</div>

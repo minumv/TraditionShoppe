@@ -250,51 +250,51 @@ $('#editAddress').click(function() {
 
 /***************saving checked radio button value******************/
 
-$('input[type="radio"][name="address"]').change(function() {
-    if ($(this).is(":checked")) {
-        // Get the value of the selected radio button
-        var selectedAddressId = $(this).val();
-        console.log("Selected Address ID:", selectedAddressId);
+// $('input[type="radio"][name="address"]').change(function() {
+//     if ($(this).is(":checked")) {
+//         // Get the value of the selected radio button
+//         var selectedAddressId = $(this).val();
+//         console.log("Selected Address ID:", selectedAddressId);
         
-        // Make an AJAX request to send the selected address ID to the server
-        $.ajax({
-            url: '/updateSelectedAddress', // Specify your server endpoint
-            method: 'POST',
-            data: { addressid: selectedAddressId },
-            success: function(response) {
-                console.log('Server response:', response);
-                // Handle success response
-            },
-            error: function(xhr, status, error) {
-                console.error('Error:', error);
-                // Handle error
-            }
-        });
-    }
-});
+//         // Make an AJAX request to send the selected address ID to the server
+//         $.ajax({
+//             url: '/updateSelectedAddress', // Specify your server endpoint
+//             method: 'POST',
+//             data: { addressid: selectedAddressId },
+//             success: function(response) {
+//                 console.log('Server response:', response);
+//                 // Handle success response
+//             },
+//             error: function(xhr, status, error) {
+//                 console.error('Error:', error);
+//                 // Handle error
+//             }
+//         });
+//     }
+// });
 
-$('input[type="radio"][name="paymethods"]').change(function() {
-    if ($(this).is(":checked")) {
-        // Get the value of the selected radio button
-        var payMethodSeletced = $(this).val();
-        console.log("Selected pay method:", payMethodSeletced);
+// $('input[type="radio"][name="paymethods"]').change(function() {
+//     if ($(this).is(":checked")) {
+//         // Get the value of the selected radio button
+//         var payMethodSeletced = $(this).val();
+//         console.log("Selected pay method:", payMethodSeletced);
         
-        // Make an AJAX request to send the selected address ID to the server
-        $.ajax({
-            url: '/updateSelectedMethod', // Specify your server endpoint
-            method: 'POST',
-            data: { paymethod: payMethodSeletced },
-            success: function(response) {
-                console.log('Server response:', response);
-                // Handle success response
-            },
-            error: function(xhr, status, error) {
-                console.error('Error:', error);
-                // Handle error
-            }
-        });
-    }
-});
+//         // Make an AJAX request to send the selected address ID to the server
+//         $.ajax({
+//             url: '/updateSelectedMethod', // Specify your server endpoint
+//             method: 'POST',
+//             data: { paymethod: payMethodSeletced },
+//             success: function(response) {
+//                 console.log('Server response:', response);
+//                 // Handle success response
+//             },
+//             error: function(xhr, status, error) {
+//                 console.error('Error:', error);
+//                 // Handle error
+//             }
+//         });
+//     }
+// });
 
 /****************offer type add******************/
 $('#addOfferButton').click(function() {
@@ -347,8 +347,3 @@ $('#changeOfferButton').click(function() {
 });
 
 
-/**************return request page handle****************/
-// request for cancel   onclick="requestCancel(orderid)"
-$(document).ready(function() {
-
-})

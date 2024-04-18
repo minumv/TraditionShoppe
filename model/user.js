@@ -34,11 +34,12 @@ const userSchema = new mongoose.Schema({
     }],
     wallet:{
         type : Number,
-        require : true
+        require : true,
+        default : 0
     },
     status: {
         type: String, 
-        enum: ['verified','pending','blocked','inactive'],
+        enum: ['Verified','Pending','Blocked','Inactive'],
         default:'Pending'
     },
     isVerifiedByOtp:{

@@ -23,8 +23,13 @@
     
   </head>
   <body>
-    <%console.log("checkout user :",userid)%>
-    <form  role="form" id="address-form" action="/addAddress/<%=userid%>/<%=amount%>" method="post">
+    <% let ordr_tot = 0%>
+   
+    <%if(cartDet){%>                          
+
+        <% let addressid = ''%>
+        <% cartDet.forEach((cart,index)=>{%>
+    <form  role="form" id="address-form" method="post">
         <div class="check-header">
            <div class="site-logo">
             <a class="navbar-brand m-0" href="/home" target="_blank">
@@ -35,6 +40,13 @@
            <div> <p class="text-dark fs-3">Checkout</p></div>
            <div><a href="/cart"><span class="icon icon-shopping_cart text-dark "></span></a></div>
         </div>
+        <% if (errorMessage.length > 0) { %>                
+            <div class="alert alert-danger" role="alert"> <%- errorMessage %>  </div>                  
+          <% } %>
+          <% if (successMessage.length > 0) { %>                
+            <div class="alert alert-success" role="alert"> <%- successMessage %>  </div>                  
+          <% } %>
+          
         <div class="row d-flex base-addrs">
             <div class="col-md-4">
                 <div class="address boredr-shadow">                    
@@ -42,38 +54,28 @@
                         <p class="p-head text-dark">Your Addresses</p>
                     </div>
                     <div class="d-block bottom-line">
-                        <!-- if user has address display here or display 'add address option' -->
-                        <!-- new user? -->
-                        <!-- <% console.log(amount)%> -->
-                        <% let defaultPayment = '' %>
-                        <%console.log("checkout user :",userid)%>
-                        <% let usr_id = userid %>
-                        <%if(users){%>                          
-
-                            <% let addressid = ''%>
-                            <% users.forEach((user)=>{%>
-                                <% console.log(user.address)%>
-                                <%if((!user.address)||(user.address.length === 0)){%>
+                                
+                        
+                        
+                                
+                                <%if(!userAddress){%>
                                     <a href="#" id="openModal" data-modal-target="#modal"><span class="icon icon-plus d-flex">&nbsp;<p>Add new address</p></span></a>
                                 <%} else {%>
-                                    <%user.address.forEach((adrs,index)=>{%>
-                                        <%address.forEach((val,index)=>{%>
-                                            <%if(adrs.equals(val._id)){%>                                               
-                                                <% addressid = val._id%>
+                                  
+                                        <% userAddress.forEach((adr,index)=>{%>
                                                 <div class="addrs-box">
-                                                    <input type="radio" id="address<%= index %>" name="address" value="<%= val._id %>" <% if (index === 0) { %> checked <% } %> >
-                                                    <label for="address<%= index %>" class="text-dark"><%=val.name %>,<%=val.house %>,<span class="text-uppercase"><%=val.city %></span>,<span class="text-uppercase"><%=val.state %></span>,<%=val.pincode %>,<%=val.Country %>
-                                                    <a href="/loadeditAddress/<%=val._id%>/<%=amount%>">Edit address</a></label><br>
+                                                    <input type="radio" id="address<%= index %>" name="address" value="<%= adr._id %>" <% if (index === 0) { %> checked <% } %> >
+                                                    <label for="address<%= index %>" class="text-dark"><%=adr.name %>,<%=adr.house %>,<span class="text-uppercase"><%=adr.city %></span>,<span class="text-uppercase"><%=adr.state %></span>,<%=adr.pincode %>,<%=adr.Country %>
+                                                    <a href="/loadeditAddress/<%=adr._id%>/<%=cart._id%>/<%=cart.total_amount%>">Edit address</a></label><br>
                                                 </div>
-                                            <%}%>
-                                        <%})%>
-                                    <%})%>
-                                    <% if (errorMessage.length > 0) { %>                
-                                        <p style="color : red;"><%- errorMessage %></p>                    
-                                    <% } %>                                    
+                                           
+                                
+                                    
+                                    <%})%>                                  
                                     <a href="#" id="openModal" data-modal-target="#modal"><span class="icon icon-plus d-flex">&nbsp;<p>Add new address</p></span></a>
+                                    
                                 <%}%>
-                            <%})%>
+                            
                       
                             
                     </div>
@@ -158,7 +160,7 @@
                 </div>
                 <div class="modal-footer">
                   <!-- <a id="cancel" data-close-button class="btnmodal btn btn-lg bg-light btn-lg w-25 mt-4 mb-0 me-2">No, cancel</a> -->
-                  <button type="submit" id="addAddress" formaction="/addAddress/<%=userid%>/<%=amount%>" class="btnmodal btn btn-lg bg-warning btn-lg w-25 mt-4 mb-0 me-2">Use this address</button>
+                  <button type="submit" id="addAddress" formaction="/addAddress/<%=cart.user%>/<%=cart._id%>/<%=cart.total_amount%>" class="btnmodal btn btn-lg bg-warning btn-lg w-25 mt-4 mb-0 me-2">Use this address</button>
                 </div>
              </div> 
         </form>
@@ -171,7 +173,7 @@
                     </div>
                     <div class="d-flex justify-content-around pt-2 ">
                         <input type="text" name="couponCode" id="couponCode" class="rounded">
-                        <button class="but bg-light text-dark rounded" onclick="applyCoupon(amount,userid)">Apply</button>
+                        <button class="but bg-light text-dark rounded" type="button" onclick="applyCoupon('<%=cart.total_amount %>','<%=cart.user%>','<%=cart._id%>')">Apply</button>
                     </div>
                
                
@@ -184,7 +186,10 @@
                        
                         <input type="radio" id="cod" name="paymethods" value="COD">
                         <label for="cod">Cash on Delivery/Pay on Delivery</label>   
-                        <p class="cod-rad">Cash, UPI and Cards accepted.</p>                         
+                        <p class="cod-rad">Cash, UPI and Cards accepted.</p>  
+                        
+                        <input type="radio" id="wallet" name="paymethods" value="Wallet">
+                        <label for="razorpay">Wallet</label><br>
                     </div>
                     <div class="d-flex justify-content-start p-4">
 
@@ -195,10 +200,9 @@
             </div>
             <div class="col-md-4">
                 <div class="checkout boredr-shadow">
-                    <%console.log("checkout user :",userid)%>
-                    <% user_cart.forEach((cart,index)=>{%>
+                    <% ordr_tot = cart.total_amount %>
                     <div class="d-flex justify-content-center">                      
-                        <button id="payButton" type="button" onclick="checkoutHandle('<%=userid%>','<%= defaultPayment %>','<%=amount%>')" class="use-but font-weight-bold">Use this payment method</button>
+                        <button id="payButton" type="button" onclick="checkoutHandle(event,'<%=amount%>','<%=cart._id%>','<%=cart.user%>')" class="use-but font-weight-bold">Use this payment method</button>
                     </div>
                     <div class="bottom-line ">
                         <p class="text-center text-dark">Choose a payment method to continue checking out.
@@ -207,43 +211,40 @@
                     <div class="d-block text-dark">
                         <p class="bottom-line p-head text-dark">Order Summary</p>
                         <div class="d-flex justify-content-between">
-                            <p>Items:</p>
-                            <%let total = cart.total_amount%>
-                            <p><%=total%></p>
+                            <p>Items:</p>                           
+                            <p><%=cart.total_amount%></p>
                         </div>
                         <div class="d-flex justify-content-between">
                             <p>Delivery:</p>
                             <p>--</p>
-                        </div>
-                        <div class="d-flex justify-content-between">
-                            <p>Offer:</p>
-                            <p>₹oframt</p>
-                        </div>  
+                        </div>                         
+                        <% if(coupondiscount !== 0){%> 
                         <div class="d-flex justify-content-between">
                             <p>Coupon:</p>
                             <p>₹cpnamt</p>
                         </div>                          
-                       
+                        <%}%>
                         <div class="d-flex justify-content-between bottom-line">
                             <p>Total:</p>
                             <p> ₹<%=cart.total_amount%></p>
                         </div>
                         <div class="d-flex justify-content-between">
                             <p class="p-head">Order Total:</p>
-                            <p class="p-head"> ₹<%=cart.total_amount%></p>
+                            <p class="p-head"> ₹<%=amount%></p>
+                           
                         </div>
                     </div>
-                    <%})%>   
+                      
                 </div>
             </div>    
-            <%console.log("checkout user :",userid)%>   
+              
          </div>
         <!-- </form> -->
        
 
         
          <!-- add address -->
-   
+         <%})%>
 
     <%}%>
 
@@ -266,45 +267,62 @@
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <script>
 
-    function applyCoupon( amount , userid ){
-        const code = document.getElementById('couponCode').value
-        console.log(code);
+    function applyCoupon( amount , userid , cartid ){
+        const couponCode = document.getElementById('couponCode').value
+        const totalAmount = amount
+        console.log("code :",couponCode);
+        console.log("amount :",totalAmount);
+        console.log("userid :",userid);
+        console.log("cartid :",cartid);
+
+        const couponData = {
+            couponCode,
+            totalAmount
+        }
+        console.log("coupondata :",couponData)
 
         fetch(`/applyCoupon/${userid}`,{
             method : 'POST',
             headers : {
-                'Content_Type' : 'application/json'
+                'Content-Type' : 'application/json'
             },
-            body : JSON>stringify({
-                couponCode : code,
-                totalAmount : amount
-            })
+            body : JSON.stringify(couponData)
         }).then(res=>res.json())
         .then(data =>{
             if(data.success){
                 const discountedTotal = data.discountedTotal
-                location.href = `/checkout/${userid}/${discountedTotal}`
+                location.href = `/checkout/${cartid}/${discountedTotal}`
             } else {
-                location.href = `/checkout/${userid}/${amount}`
+                location.href = `/checkout/${cartid}/${amount}`
             }
         })
 
     }
 
-    alert("inside script")
+  
     
-   function checkoutHandle(userid,payment,amount){
-   
+   function checkoutHandle(event,amnt,cart_ID,user_ID){
+    alert("inside script")
+        const paymentMethod = document.querySelector('input[name="paymethods"]:checked');
+        const address = document.querySelector('input[name="address"]:checked');
+        const total = amnt;
+        const cartid = cart_ID;
+        const userid = user_ID
+        //const deliveryCharge = document.getElementById('dlvcharge').textContent;
+
+
         const checkoutData = {
-            userid,
-            payment,
-            total : amount  
+            paymentMethod: paymentMethod.value,
+            address: address.value,
+            total,
+            cartid,
+            userid
         }
-       
+       console.log(checkoutData)
         
            
         $.ajax({           
-            url:`/makeOrder/${userid}/${payment}`,
+            url:`/makeOrder`,
             method:'post',
             data : JSON.stringify(checkoutData),
             success:function(res){
@@ -318,16 +336,12 @@
                         "key": "" +res.key_id+ "", // Enter the Key ID generated from the Dashboard
                         "amount": "" +res.amount+ "", // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
                         "currency": "INR",
-                        "name": ""+res.product_name+"",
+                        "name": "TraditioShoppe",
                         "description": "Test Transaction",
                         "image": "/userasset/images/logo.png",
                         "order_id": "" +res.order_id+ "", //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
-                        "handler": function(res){
-                            alert("hello")
-                            alert(res.razorpay_payment_id);
-                            alert(res.razorpay_order_id);
-                            alert(res.razorpay_signature)
-                            verifyPayment(res,order)
+                        "handler": function(response){
+                           verifyPayment(response,res.razorder)
                         },
                         "prefill": {
                             "name": ""+res.name+"",

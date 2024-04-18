@@ -72,7 +72,7 @@
                     <div class="cart-proceed">
                         <p class="head">TraditionShoppe Subtotal(<%=qtyCount%><br> items):<span>₹<%=amount.toFixed(2)%> </span></p>
                         <p class="sub">Total Savings : <span>₹<%=savings.toFixed(2)%> </span></p>
-                        <a href="/checkout/<%=user_cart._id%>"><button>Proceed to Buy Item</button></a>
+                        <a href="/checkout/<%=user_cart._id%>/<%=amount%>"><button>Proceed to Buy Item</button></a>
                         <div class="d-flex">
                             <div class="line"></div>
                             &nbsp;or&nbsp;

@@ -25,7 +25,7 @@
    <div class="container">
     <%if(address){%>
         <%address.forEach((addr,index)=>{%>
-    <form action="/editAddress/<%=addr._id%>/<%=amt%>" method="post">
+    <form action="/editAddress/<%=addr._id%>/<%=cartid%>/<%=amount%>" method="post">
         <div class="address-body">
             
                     <div>
@@ -93,7 +93,7 @@
                     
                 
                 <div>
-                    <button type="submit" id="editAddress" formaction="/editAddress/<%=addr._id%>/<%=amt%>" class="btnmodal btn btn-lg bg-warning btn-lg w-25 mt-4 mb-0 me-2">Use this address</button>
+                    <button type="submit" id="editAddress" formaction="/editAddress/<%=addr._id%>/<%=cartid%>/<%=amount%>" class="btnmodal btn btn-lg bg-warning btn-lg w-25 mt-4 mb-0 me-2">Use this address</button>
                 </div>
                 
         </div>

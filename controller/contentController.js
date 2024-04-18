@@ -1196,7 +1196,7 @@ const getQtyCount = async(req,res)=>{
         
         if(user_cart){           
             user_cart.product_list.forEach(product => { 
-                console.log("pdt qty: ",product.quantity);       
+               // console.log("pdt qty: ",product.quantity);       
                 qtyCount += product.quantity; })
         }
         req.session.qtyCount = qtyCount
@@ -1635,41 +1635,41 @@ const addToSave = async(req,res)=>{
 /*********load checkout*********/
 const loadCheckout = async(req,res)=>{
     try{
-        console.log("load checkout");
-        const cartid = req.params.cartid; //use this id to fetch all other datas
-
-        const objectId = new mongoose.Types.ObjectId(cartid);
+        
        
-        const cartDet = await Cart.aggregate([
-            { $match:{
-                _id : objectId
-            }},
-            {
-                $lookup : {
-                    from : 'address',
-                    localField : 'user',
-                    foreignField : 'user_id',
-                    as : 'useraddress'
-                }
-            }
-
-        ])
+        const userid = await User.findOne({email:req.session.user},{_id:1}).exec()
+        
+        const cartDet = await Cart.find({_id:req.params.cartid}).exec()
+        const userAddress = await Address.find({user_id:userid._id}).exec()
+        const amount = req.params.amount
+   
 
         console.log("cart user :",cartDet);
-       
+        console.log("user address :",userAddress);
         await getQtyCount(req,res)
         await getListCount(req,res)
 
-        // res.render('content/checkout',{
-        //     title: "Checkout - TraditionShoppe",
-        //     page:"Checkout",   
-        //     user : req.session.user,
-                     
-        //     qtyCount:req.session.qtyCount,
-        //     listCount:req.session.listCount,       
-        //     errorMessage : req.flash('errorMessage'),
-        //     successMesssage : req.flash('successMessage')
-        // })
+        // req.session.couponDiscountTotal = discountedTotal
+        // req.session.coupondiscount = couponDiscount
+
+        let coupondiscount = 0
+        if(req.session.coupondisc){
+            coupondiscount = req.session.coupondiscount
+        }
+
+        res.render('content/checkout',{
+            title: "Checkout - TraditionShoppe",
+            page:"Checkout",   
+            user : req.session.user,
+            cartDet, 
+            userAddress,
+            amount,
+            coupondiscount,
+            qtyCount:req.session.qtyCount,
+            listCount:req.session.listCount,       
+            errorMessage : req.flash('errorMessage'),
+            successMessage : req.flash('successMessage')
+        })
     }
     catch(err){
         console.log(err.message);
@@ -1698,7 +1698,8 @@ const storeStateCountry =async(req,res)=>{
 const addNewAddress =async(req,res)=>{
     try{
         const userid = req.params.userid;
-        const amt = req.params.amt;
+        const cartid = req.params.cartid;
+        const amount = req.params.amount;
         const { country,state } = req.session.stateCountry || { country: '', state: '' }
 
         const address = new Address({
@@ -1729,11 +1730,11 @@ const addNewAddress =async(req,res)=>{
  
             console.log('successful');
            
-            res.redirect(`/checkout/${userid}/${amt}`)
+            res.redirect(`/checkout/${cartid}/${amount}`)
         } else {
             console.log('failed');
              req.flash("errorMessage", "Address registration failed.. Try again!!");
-             res.redirect(`/checkout/${userid}/${amt}`)
+             res.redirect(`/checkout/${cartid}/${amount}`)
         }  
 
     }
@@ -1746,15 +1747,16 @@ const addNewAddress =async(req,res)=>{
 const loadEditAddress =async(req,res)=>{
     try{
         const addressid = req.params.addressid
-        const amt = req.params.amt;
-
+        const cartid = req.params.cartid;
+        const amount = req.params.amount
         const address = await Address.find({_id:addressid}).exec()
 
         res.render('content/editAddress',{
             title: "Edit Address - TraditionShoppe",
             user : req.session.user,
             address,  
-            amt,             
+            cartid,
+            amount,             
             errorMessage : req.flash('errorMessage'),
             successMesssage : req.flash('successMessage')
         })
@@ -1785,8 +1787,10 @@ const changeStateCountry =async(req,res)=>{
 /************edit address**************/
 const changeAddress =async(req,res)=>{
     try{
-        const addressid = req.params.addressid
-        const amt = req.params.amt
+        const addressid = req.params.addressid;
+        const cartid = req.params.cartid;
+        const amount = req.params.amount
+       // const amt = req.params.amt
 
         const {country,state} = req.session.stateCountryedited
 
@@ -1807,7 +1811,7 @@ const changeAddress =async(req,res)=>{
         
         console.log('successful');
            
-        res.redirect(`/checkout/${address[0].user_id}/${amt}`)
+        res.redirect(`/checkout/${cartid}/${amount}`)
     }
     catch(err){
         console.log(err.message);
@@ -1833,49 +1837,115 @@ const selectedAddress = async(req,res)=>{
 }
 
 /**************apply coupon***************/
-const couponApply = async (res,req)=>{
+const couponApply = async (req,res)=>{
     try{
-        const { couponCode , totalAmount} = req.body
+        
         const userid = req.params.userid
+        console.log("userid :",userid)
+
+        // if (!req.body || !req.body.couponCode || !req.body.totalAmount) {
+        //     console.error("Invalid request body:", req.body);
+        //     return res.status(400).json({ success: false, message: 'Invalid request body' });
+
+        // }
+        console.log("req-body :",req.body)
+        const { couponCode , totalAmount } = req.body
 
         const user = await User.find({ _id:userid }).exec()
-        const coupon = await Coupon.find({ coupon_code : couponCode}).exec()
+        const coupon = await Coupon.find({ coupon_code : couponCode},{_id:1,discount_per:1,minimum_purchase:1,maximum_discount_amt:1}).exec()
+
+        console.log("user :",user)
+        console.log("coupon :",coupon)
+
+    
+        console.log("total Amount :",totalAmount);
+        let couponid , coupondisc, couponminim, couponamt;
+       
+        coupon.forEach((cpn)=>{
+            couponid = cpn._id,
+            coupondisc =cpn.discount_per,
+            couponminim = cpn.minimum_purchase,
+            couponamt = cpn.maximum_discount_amt
+        }) 
 
         let couponApplied = false;
+        let couponDiscount = coupondisc * .01 * totalAmount
+        let couponEmpty = false;
+        let discountedTotal = totalAmount - couponDiscount   
 
-        user.coupons.forEach((cpn)=>{
-            if( cpn.equals(coupon._id)){
-                couponApplied = true
-            }
+        console.log("coupon discount :",couponDiscount);
+        console.log("total discount :",discountedTotal);
+        user.forEach((usr)=>{
+            if(usr.coupons.length === 0){
+                couponEmpty = true
+            } else {
+                usr.coupons.forEach((cpn)=>{
+                    if(cpn === null){
+                        couponApplied = false
+                    }
+                else if( cpn.equals(couponid)){
+                    couponApplied = true
+                }
+            })}
         })
-
-        if ( couponApplied ){
-            req.flash("errorMessage", "Coupon already applied.. Try another one!!");
-            res.status(400).send({ success: false });
-            return;
-        } else {
-
-            let couponDiscount = coupon.discount_per * .01 * totalAmount
-            if( (totalAmount < minimum_purchase) || (couponDiscount > coupon.maximum_discount_amt) ){
+        
+        
+        //coupuns empty or not
+        if(couponEmpty){
+            console.log("coupon empty");           
+            if( (totalAmount < couponminim) || (couponDiscount > couponamt) ){
                 req.flash("errorMessage", "Selected coupon is not applicable to this purchase..Try another one!!");
                 res.status(400).send({ success: false });
                 return;
-            } else {
-                const discountedTotal = totalAmount - couponDiscount
-                user.coupons.push(coupon._id)
-                await user.save()
+            } else { 
+                      
+                await Promise.all(user.map(async (usr) => {
+                    console.log("couponid :",couponid);
+                    usr.coupons.push(couponid);
+                    await usr.save();
+                }));
 
                 req.session.couponDiscountTotal = discountedTotal
+                req.session.coupondiscount = couponDiscount
 
+                console.log("coupon applied first time successfully..");
                 req.flash("successMessage", "Coupon applied successfully...");
                 res.status(200).send({ success: true, discountedTotal });                
             }
 
-        }
-
+        } else if ( couponApplied ){
+            console.log("error : coupon applied!!");
+            req.flash("errorMessage", "Coupon already applied.. Try another one!!");
+            res.status(400).send({ success: false });
+            return;
+        } else {
+            console.log("coupon not applied yet");            
+            if( (totalAmount < couponminim) || (couponDiscount > couponamt) ){
+                req.flash("errorMessage", "Selected coupon is not applicable to this purchase..Try another one!!");
+                res.status(400).send({ success: false });
+                return;
+            } else {                
+                // user.coupons.push(cpn._id)
+                // await user.save()
+                for (let usr of user) {
+                    console.log("couponid :",couponid);
+                    usr.coupons.push(couponid);
+                    await usr.save();
+                }   
+                
+                req.session.couponDiscountTotal = discountedTotal    
+                console.log("coupon applied amount : " + discountedTotal);      
+                console.log("coupon applied successfull..");
+                req.flash("successMessage", "Coupon applied successfully...");
+                res.status(200).send({ success: true, discountedTotal });                
+            }
+    
+        } 
+   
+               
     } catch(err){
         console.log(err.message);
-        req.flash("successMessage", "Invalid coupon code or check details !!!");
+        req.flash("errorMessage", "Invalid coupon code or check details !!!");
         res.status(400).send({ success: false });
         return;
     }
@@ -1910,16 +1980,11 @@ const makePayment = async(req,res)=>{
 
         const address = await Address.find({user_id:userid}).exec()
         const adr = address[0]._id
-
         const cartDet = await Cart.findOne({user:userid,status:'listed'}).populate('user').exec()
         console.log("productlist for oredr",cartDet)
         const productDet = await Products.findOne({_id:cartDet.product_list[0].productId}).exec()
-       
-      
-        console.log(productDet.product_name);
-     
-        const addressid = req.session.deliverAddress ||  adr
-        const paymethod = req.session.paymethod || pay
+        // const addressid = req.session.deliverAddress ||  adr
+        // const paymethod = req.session.paymethod || pay
 
         const currentDate = moment().format('ddd MMM DD YYYY');
         const deliveryDate = moment().add(7,'days').format('ddd MMM DD YYYY')
@@ -2005,9 +2070,98 @@ const makePayment = async(req,res)=>{
 const makeCODPayment = async(req,res)=>{
     try{
         //const userid = req.params.userid
-        const { userid,payment,total } = req.body;
-        console.log("checkout data :",req.body)
+        const jsonData = JSON.parse(Object.keys(req.body)[0]);
+
+        const { paymentMethod,address,total,cartid,userid } = jsonData;
+        console.log("checkout data :",jsonData)
+       console.log("cart id :",cartid)
+        const cartDet = await Cart.findOne({_id:cartid}).exec()
+        
+        console.log("Cart details :",cartDet)
        
+        
+        const productDet = await Products.findOne({_id:cartDet.product_list[0].productId}).exec()
+        console.log("productlist for order :",productDet)
+
+        const currentDate = moment().format('ddd MMM DD YYYY');
+        const deliveryDate = moment().add(7,'days').format('ddd MMM DD YYYY') //expected
+        //const returnDate = moment().add(12,'days').format('ddd MMM DD YYYY')
+    
+ 
+        req.session.cartid = cartid
+
+         const order = new Order({
+            order_date : currentDate,
+            user: userid,
+            address:address,
+            payment : paymentMethod,
+            product_list: cartDet.product_list,
+            payment_amount:total,
+            delivery_date:deliveryDate,
+           // return_date:returnDate,
+            paymentstatus:"pending",
+            orderstatus:'pending',
+            adminaction:'approve'        
+
+         })
+         const orderData = await order.save()
+         await getQtyCount(req,res);
+
+         console.log("order details :",orderData); //success
+         console.log("order id :",orderData._id); //success
+         console.log("order payment :",orderData.payment); //success
+
+        
+         req.session.orderid = orderData._id
+         req.session.orderData = orderData
+
+         if(orderData.payment === 'COD'){
+            console.log('successfull');
+
+            await Cart.updateOne(
+                { _id:cartid },{$set:{status:"pending"}})
+
+            res.json({cod_success : true})
+        }  else if(orderData.payment === 'Wallet') {
+
+        }  else if(orderData.payment === 'Razorpay') {
+
+           
+            const amt = total * 100
+            const options = {
+                amount : amt,
+                currency : 'INR',
+                receipt : "RCPT"+orderData._id
+            }
+            razorpayInstance.orders.create(options,(err,razorder)=>{
+                if(!err){                   
+                   // console.log("razorpay order :",razorder)
+                    res.json({
+                        success : true,
+                        msg : "Order Placed",
+                        order_id :razorder.id,
+                        amount : amt,
+                        key_id : RAZORPAY_ID_KEY,
+                        product_name : productDet.product_name ,
+                        description : "Test Transaction",
+                        contact : cartDet.user.phone,
+                        name : cartDet.user.name,
+                        email : cartDet.user.email,                       
+                        razorder:razorder
+                    })
+                   
+                } else {
+                        console.error(err)
+                        req.flash("errorMessage", "Payment failed.. Try again!!");
+                        res.status(400).send({success : false ,msg : 'Something went wrong!'})
+                   }
+            })
+
+         } else{
+            console.log('failed');
+             req.flash("errorMessage", "Payment failed.. Try again!!");
+             res.redirect(`/checkout/${cartid}/${amount}`)
+        }
 
        
        
@@ -2017,9 +2171,26 @@ const makeCODPayment = async(req,res)=>{
     }
 }
 
+// const generateRandomOrderId = () => {
+//     const length = 8;
+//     const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+//     let orderId = "";
+  
+//     for (let i = 0; i < length; i++) {
+//       const randomIndex = Math.floor(Math.random() * characters.length);
+//       orderId += characters.charAt(randomIndex);
+//     }
+  
+//     return orderId;
+//   };
+
 const loadPaymentSuccess = async(req,res)=>{
     try{
-        res.render('content/PaymentSuccess',{
+            const {orderData} = req.session.orderData
+            console.log("success :",orderData);
+            await getQtyCount(req,res);
+
+            res.render('content/PaymentSuccess',{
             title: "Successful Payment - TraditionShoppe",
             user : req.session.user,
             qtyCount:req.session.qtyCount,
@@ -2036,27 +2207,97 @@ const loadPaymentSuccess = async(req,res)=>{
 
 const verifyPayment = async (req, res) => {
     //const email = req.session.user;
+   try{
+            console.log("inside verifypayment")
+            const { payment, razorOrder } = req.body;
+            console.log("verifypayment details :",req.body)
 
-    const { payment, razorOrder } = req.body;
-    const crypto = require("crypto");
-    var hmac = crypto.createHmac("sha256",RAZORPAY_SECRET_KEY);
-    hmac.update(razorOrder.order_id + "|" + payment.razorpay_payment_id);
-    hmac = hmac.digest("hex");
-    if (hmac == payment.razorpay_signature) {
-      req.session.count = 0;
-      req.session.coupenId = null;
-      const uniqueOrderId = req.session.orderid;
-      const cheek = await Order.updateOne(
-        { _id: uniqueOrderId },
-        { $set: {
-             orderstatus: "pending",
-             paymentstatus:"completed"
-            } }
-      ).exec()
-      res.status(200).json({ status: true });
-    } else {
-      res.json({ status: false });
-    }
+            const crypto = require("crypto");
+            var hmac = crypto.createHmac("sha256",RAZORPAY_SECRET_KEY);
+            hmac.update(razorOrder.id + "|" + payment.razorpay_payment_id);
+            hmac = hmac.digest("hex");
+            console.log("hmac :",hmac)
+            console.log("paymnt signtr :",payment.razorpay_signature)
+            if (hmac == payment.razorpay_signature) {
+              
+                const orderid = req.session.orderid;
+                console.log("orderid :",orderid)
+                await Order.updateOne(
+                    { _id: orderid },
+                    { $set: {
+                        paymentstatus:"completed"
+                        } }
+                ).exec()
+                const cartid = req.session.cartid
+                console.log("cartid :",cartid)
+                await Cart.updateOne(
+                    { _id: cartid },
+                    { $set: {
+                        status:"pending"
+                        } }
+                ).exec()
+                console.log("payment verification success")
+                res.status(200).json({ status: true });
+            } else {
+                console.log("payment verification failed")
+                res.json({ status: false });
+            }
+   } catch(err){
+    console.log(err.message);
+   }
+  }
+
+// continue payment from order page
+const continueFailedPayment = async (req, res) => {
+    try{
+                const { orderId } = req.body;
+                const Order = await Order.findOne({ orderId: orderId }).populate("user");
+                req.session.failedPaymentOrderId = orderId;
+                var options = {
+                amount: Order.total * 100,
+                currency: "INR",
+                receipt: Order._id,
+                };
+            
+                instance.orders.create(options, function (error, raz_order) {
+                if (error) {
+                    console.error("Error creating Razorpay order:", error);
+                } else {
+                    res.json({ raz_order: raz_order, user: Order.user });
+                }
+                })
+    } catch (err){
+            console.log(err.message);
+    }
+  }
+
+
+  // continued failedPayment verification
+const FailedPaymentVerification = async (req, res) => {
+        try{
+                 //const user_id = req.session.isAuth;
+                const { payment, razorOrder } = req.body;
+            
+                const crypto = require("crypto");
+                var hmac = crypto.createHmac("sha256", RAZORPAY_SECRET_KEY);
+                hmac.update(razorOrder.id + "|" + payment.razorpay_payment_id);
+                hmac = hmac.digest("hex");
+                if (hmac == payment.razorpay_signature) {
+                const uniqueOrderId = req.session.orderid;
+                await Order.updateOne(
+                    { orderId: uniqueOrderId },
+                    { $set: { 
+                        orderstatus: "pending",
+                        paymentstatus:"completed"} }
+                );
+            
+                res.status(200).json({ status: true });
+                } else {
+                res.json({ status: false });
+                }
+        } catch(err) {
+            console.log(err.message);
+        }
   }
 
 /*********load wishlist*********/
@@ -2160,6 +2401,8 @@ module.exports = {
     makePayment,
     makeCODPayment,
     verifyPayment,
+    continueFailedPayment,
+    FailedPaymentVerification,
     loadPaymentSuccess,
 
     addToWishlist,
