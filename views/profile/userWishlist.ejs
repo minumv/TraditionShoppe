@@ -1,5 +1,111 @@
 <%- include('../layout/profileHeader') %>
 
+<div class="d-block bg-warning">
+       
+  <div class="row mb-5 ms-4">
+    <% list.forEach((lst)=>{ %>
+    <% products.forEach((pdt, index) => { %>
+      <% if(lst.product_list.includes(pdt._id.toString())) { %>
+        
+
+    <div class="mb-4 ms-5 bg-success" data-aos="fade-up" style="margin-left:20px;padding:20px;">
+      <!-- <a href="/viewProduct/<%= pdt._id %>"> -->
+        <div class="block-4 text-center border" style="width:250px;height:450px;">     
+
+
+
+          <figure class="block-4-image" style="width:300px;height:250px;">
+            <button class="wish-close" class="icon icon-heart rounded-circle " type="button" onclick="removeFromList('<%= pdt._id %>')">X
+              <!-- &#10084; -->
+            </button>       
+            <a href="/viewProduct/<%= pdt._id %>"><img src="../upload/<%= pdt.images[0]%>" alt="Image placeholder" class="img-fluid" style="width:300px;height:250px;"></a>
+          </figure>
+          <div class="block-4-text p-4">
+            <h3><a href="/viewProduct/<%= pdt._id %>"><%= pdt.product_name %></a></h3>
+            <div class="d-flex justify-content-around mt-2 ">
+              <p class=" mb-0 text-danger font-weight-light"><del>RS.<%= pdt.price_unit %></del></p>
+            
+              <p class="text-black font-weight-light">Rs.<%=pdt.discountedsalePrice %></p>
+            </div>
+            <div class="">
+              <button class="use-but ord-but text-center bg-light" onclick="addingtoCart('<%= pdt._id %>','<%=pdt.discountedsalePrice %>')" type="button" style="color:  #4F0341;" >Add to cart</button></div>
+              <!-- <button  class="use-but ord-but text-center bg-light" ype="button" onclick="removeFromList('<%= pdt._id %>')" style="background-color:  #4F0341;" >Remove</button>   -->
+            </div>
+        </div>
+      <!-- </a> -->
+    </div>
+    <%}%>
+    <%})%>
+    <%})%>
+
   </div>
 
-  <%- include('../layout/userFooter') %>
+<div class="row" data-aos="fade-up">
+<div class="col-md-12 text-center">
+<div class="site-block-27">
+  <ul>         
+    <% for(let i = 1 ; i <= pages ; i++){%>
+      <% if( i== pageNum ) {%>
+       <li class="active"><a href="/getList/?page=<%= i %>"><span><%= i %></span></a></li>
+      <% } else { %>
+      <li><a href="/getList/?page=<%= i %>"><span><%= i %></span></a></li>
+      <% } %>
+    <% } %>         
+  </ul>
+</div>
+</div>
+</div>
+</div>
+
+</div>
+<!-- pagination -->
+
+
+
+</div>
+
+
+
+  </div>
+
+ 
+  
+  <script>
+    //adding to cart
+    function addingtoCart(pdtid,amt){
+      fetch(`/addtocart/${pdtid}/${amt}`,{
+        method : "post",
+        headers : {
+          "Content-Type" :"application/json"
+        }
+      })
+      .then(res=>res.json())
+      .then(data=>{
+        if(data.success){
+          location.href = '/getList'
+        } else {
+          location.href = '/getList'
+        }
+      })
+    }
+
+    //remove from list
+    function removeFromList(pdtid){
+      fetch(`/removeList/${pdtid}`,{
+        method : "post",
+        headers : {
+          "Content-Type" :"application/json"
+        }
+      })
+      .then(res=>res.json())
+      .then(success=>{
+        if(success){
+          location.href = '/getList'
+        } else {
+          location.href = '/getList'
+        }
+      })
+    }
+  </script>
+<%- include('../layout/userFooter') %>
+ 

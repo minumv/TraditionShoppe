@@ -13,7 +13,8 @@ const List = require('../model/wishlist')
 const Order = require('../model/order')
 const Address = require('../model/address')
 
-
+//other controllers
+const content = require('../controller/contentController')
 
 //email handler
 const nodemailer = require('nodemailer')
@@ -489,9 +490,9 @@ const getQtyCount = async(req,res)=>{
 
         let qtyCount = 0;
         const users = await User.findOne({email:req.session.user},{_id:1}).exec()
-        console.log("user cart: "+users)
+        //console.log("user cart: "+users)
         const user_cart = await Cart.findOne({user:users,status:"listed"}).exec()
-        console.log("cart : "+user_cart)
+       // console.log("cart : "+user_cart)
         
         if(user_cart){
             // console.log("inside cart");
@@ -531,7 +532,7 @@ const getListCount = async(req,res)=>{
 const loadProfile = async (req,res)=>{
     try{
         const email = req.session.user
-        const users = await User.find({email}).exec()    
+        const users = await User.findOne({email}).exec()    
         await getQtyCount(req,res);
         await getListCount(req,res);
         console.log("user: ",users);
@@ -554,7 +555,7 @@ const loadProfile = async (req,res)=>{
 
 const loadeditProfile = async(req,res)=>{
     try{
-        const users = await User.find({email:req.session.user}).exec()    
+        const users = await User.findOne({email:req.session.user}).exec()    
         await getQtyCount(req,res);
         await getListCount(req,res);
         
@@ -606,14 +607,64 @@ const loadOrder = async (req,res)=>{
     try{
 
         const email = req.session.user
-        const users = await User.find({email:email}).exec()        
-        const orders = await Order.find().exec()       
-        const cart  = await Cart.find().exec()       
-        const products = await Products.find({ isListing:true }).exec()
-        const address = await Address.find().exec()
+        const users = await User.findOne({email:email}).exec() 
+            const pageNum = req.query.page || 1
+            const perPage = 9
+            const totalCount = await Order.countDocuments({user:users._id})
+            const pages = Math.ceil( totalCount / perPage )
+            console.log("count",totalCount);
+        //const orders = await Order.find({user:users[0]._id}).populate('address').exec()   
 
-        // let qtyCount = await getQtyCount(req,res);
-        // let listCount = await getListCount(req,res);
+        const orders = await Order.aggregate([
+            {
+                $match: { user: users._id }
+            },
+            {
+                $lookup: {
+                    from: "addresses", // Assuming 'addresses' is the name of your Address collection
+                    localField: "address", // Field in the 'orders' collection
+                    foreignField: "_id", // Field in the 'addresses' collection
+                    as: "addressDetails"
+                }
+            },
+            {
+                $unwind: {
+                    path: "$addressDetails",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $lookup: {
+                    from: "products", // Assuming 'addresses' is the name of your Address collection
+                    localField: "product_list.productId", // Field in the 'orders' collection
+                    foreignField: "_id", // Field in the 'addresses' collection
+                    as: "productDetails"
+                }
+            },
+            {
+                $unwind: {
+                    path: "$productDetails",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $sort: { order_date : -1 }
+            },
+            {
+                $skip: ( pageNum - 1 ) * perPage
+            },
+            {
+                $limit: perPage
+            }
+        ]);
+
+        console.log("order details :",orders)         
+             
+    
+        
+
+        await getQtyCount(req,res);
+        await getListCount(req,res);
         
         res.render('profile/userOrder',{
             title:"My Order | TraditionShoppe",
@@ -621,11 +672,12 @@ const loadOrder = async (req,res)=>{
             page:'Your Orders',
             qtyCount:req.session.qtyCount,
             listCount:req.session.listCount,
-            products:products,
-            users:users,
-            orders:orders,
-            cart:cart,   
-            address:address,        
+            users,
+            orders, 
+            pageNum,
+            perPage,
+            totalCount, 
+            pages,     
             errorMessage:req.flash('errorMessage'),
             successMessage:req.flash('successMessage')
 
@@ -635,6 +687,34 @@ const loadOrder = async (req,res)=>{
         console.log(err.message);
     }
 }
+
+
+const loadOrderView = async (req,res)=>{
+    try{
+        const odrid = req.params.id
+        const users = await User.findOne({email:req.session.user}).exec()
+        const order = await Order.findOne({_id:odrid}).exec()
+        await getQtyCount(req,res);
+        await getListCount(req,res);
+        
+        res.render('profile/orderDetails',{
+            title:"My Order Details | TraditionShoppe",
+            user : req.session.user,
+            page:'Change Address',
+            qtyCount:req.session.qtyCount,
+            listCount:req.session.listCount,
+            users,
+            order,
+            errorMessage:req.flash('errorMessage'),
+            successMessage:req.flash('successMessage')
+
+        })
+    }
+    catch(err){
+        console.log(err.message);
+    }
+}
+
 
 const loadbuyLast30 = async(req,res)=>{
 
@@ -927,19 +1007,21 @@ const loadcancelList = async (req,res)=>{
 const loadAddress = async (req,res)=>{
     try{
 
-        let qtyCount = await getQtyCount(req,res);
-        let listCount = await getListCount(req,res);
+        const users = await User.findOne({email:req.session.user}).exec()
+
+        const address= await Address.find({user_id:users._id}).exec()
+
+        await getQtyCount(req,res);
+        await getListCount(req,res);
         
         res.render('profile/userAddress',{
             title:"My Address | TraditionShoppe",
             user : req.session.user,
             page:'Your Address',
-            qtyCount:qtyCount,
-            listCount:listCount,
-            // products:products,
-            // categories:categories,
-            // sellers:sellers,
-            // discounts:discounts,          
+            qtyCount:req.session.qtyCount,
+            listCount:req.session.listCount,     
+            address,
+            users,        
             errorMessage:req.flash('errorMessage'),
             successMessage:req.flash('successMessage')
 
@@ -950,22 +1032,238 @@ const loadAddress = async (req,res)=>{
     }
 }
 
+const loadnewAddress = async (req,res)=>{
+    try{
+        await getQtyCount(req,res);
+        await getListCount(req,res);
+
+        const users = await User.findOne({email:req.session.user}).exec()
+        
+        res.render('profile/newAddress',{
+            title:"My Address | TraditionShoppe",
+            user : req.session.user,
+            page:'aAd Address',
+            qtyCount:req.session.qtyCount,
+            listCount:req.session.listCount,
+            users,
+            errorMessage:req.flash('errorMessage'),
+            successMessage:req.flash('successMessage')
+
+        })
+    }
+    catch(err){
+        console.log(err.message);
+    }
+}
+const storeAddress = async (req,res)=>{
+    try{
+        const user = await User.findOne({email:req.session.user}).exec()
+        const user_addr = await Address.find({user_id:user._id}).exec()
+        console.log("form body :",req.body)
+
+        let setDefault = true
+        if(user_addr){
+            setDefault = false
+        }
+        const addrData =await new Address({
+            user_id:user._id,
+            name: req.body.name,
+            mobile:req.body.mobile,
+            house:req.body.house,
+            street:req.body.street,
+            landmark:req.body.landmark,
+            city:req.body.city,
+            pincode:req.body.pin,
+            state:req.body.state,
+            country:req.body.country,
+            isDefault:setDefault
+        }).save()
+
+        if(addrData){
+            const address = await Address.find({user_id:user._id}).exec()
+            
+            const lastAddedAddress = address[address.length - 1]; // Retrieve the last address in the array
+            console.log(lastAddedAddress._id);
+          
+            
+            await User.updateOne({_id:user._id},
+                { $push: { address: lastAddedAddress._id }})
+ 
+            console.log('successful');
+            req.flash("successMessage", "Address registered successfully..");
+            res.json({ success: true });
+        }
+        else {
+            req.flash("errorMessage", "Address registration failed.. Try again!!");
+            res.json({ success: false });
+        }
+       
+    }
+    catch(err){
+        console.log(err.message);
+    }
+}
+
+const loadeditAddress = async (req,res)=>{
+    try{
+        const addrid = req.params.id
+        const users = await User.findOne({email:req.session.user}).exec()
+        const address = await Address.findOne({_id:addrid}).exec()
+        await getQtyCount(req,res);
+        await getListCount(req,res);
+        
+        res.render('profile/editAddress',{
+            title:"My Address | TraditionShoppe",
+            user : req.session.user,
+            page:'Change Address',
+            qtyCount:req.session.qtyCount,
+            listCount:req.session.listCount,
+            users,
+            address,
+            errorMessage:req.flash('errorMessage'),
+            successMessage:req.flash('successMessage')
+
+        })
+    }
+    catch(err){
+        console.log(err.message);
+    }
+}
+
+const changeAddress = async (req,res)=>{
+    try{
+        const addrid = req.params.id
+        console.log("form data edit :",req.body)
+
+        const address = await Address.updateOne(
+            { _id:addrid },
+            {$set : {
+                name: req.body.name,
+                mobile:req.body.mobile,
+                house:req.body.house,
+                street:req.body.street,
+                landmark:req.body.landmark,
+                city:req.body.city,
+                pincode:req.body.pin,
+                state:req.body.state,
+                country:req.body.country,
+            }}
+        )
+        if(address){
+            console.log('address changed');
+            req.flash("successMessage", "Address changed successfully..");
+            res.json({ success: true });
+        }
+        else {
+            req.flash("errorMessage", "Address changing failed.. Try again!!");
+            res.json({ success: false });
+        }    
+     }
+    catch(err){
+        console.log(err.message);
+    }
+}
+
+const deleteAddress = async (req,res)=>{
+    try{
+        const addrid = req.params.id
+        const user = await User.findOne({email:req.session.user}).exec()
+        const defaultAddress = await Address.findOne({_id:addrid}).exec()
+        if(defaultAddress.isDefault){
+            req.flash("errorMessage", "Default address can't remove!!");
+            res.json({ success: false });
+        } else {
+            await Address.deleteOne(
+                {_id:addrid}).exec()
+            await User.updateOne(
+                {_id:user._id},
+                {   $pull:{address:addrid}}
+            ).exec()
+            req.flash("successMessage", "Address changed successfully..");
+            res.json({ success: true });                    
+        }
+        
+     }
+    catch(err){
+        console.log(err.message);
+    }
+}
+
+const setAddressDefault = async (req,res)=>{
+    try{
+        const addrid = req.params.id       
+
+        const defaultAddress = await Address.findOne({isDefault:true})
+        if(defaultAddress){
+            await Address.updateOne(
+                { _id:defaultAddress._id },
+                {$set : {
+                    isDefault:false
+                }}
+            )
+        }
+
+        const setDefault = await Address.updateOne(
+            { _id:addrid },
+            {$set : {
+                isDefault:true
+            }}
+        ).exec()
+        if(setDefault){
+            console.log('address changed');
+            req.flash("successMessage", "Your address set as default..");
+            res.json({ success: true });
+        }
+        else {
+            req.flash("errorMessage", "Something wrong, Your address can't set as default!!!!");
+            res.json({ success: false });
+        }    
+     }
+    catch(err){
+        console.log(err.message);
+    }
+}
+
+
+
+/**************handle my wallet******************/
 const loadWallet = async (req,res)=>{
     try{
-
-        let qtyCount = await getQtyCount(req,res);
-        let listCount = await getListCount(req,res);
         
-        res.render('profile/userWallet',{
+            const users = await User.findOne({email:req.session.user}).exec() 
+            const pageNum = req.query.page || 1
+            const perPage = 6
+            const totalCount = await Order.countDocuments({user:users._id,payment:"Wallet"}).exec()               
+            const pages = Math.ceil( totalCount / perPage )
+            console.log("count",totalCount);
+
+            const order = await Order.aggregate([{
+                $match:{
+                    $and:{ user:users._id, payment:"Wallet"}
+                }
+            },
+            {
+                $skip: ( pageNum - 1 ) * perPage
+            },
+            {
+                $limit: perPage
+            }])
+
+            await getQtyCount(req,res);
+            await getListCount(req,res);
+        
+            res.render('profile/userWallet',{
             title:"My account | TraditionShoppe",
             user : req.session.user,
             page:'Your Wallet',
-            qtyCount:qtyCount,
-            listCount:listCount,
-            // products:products,
-            // categories:categories,
-            // sellers:sellers,
-            // discounts:discounts,          
+            qtyCount:req.session.qtyCount,
+            listCount:req.session.listCount,  
+            users,
+            order,   
+            pageNum,
+            perPage,
+            totalCount, 
+            pages,        
             errorMessage:req.flash('errorMessage'),
             successMessage:req.flash('successMessage')
 
@@ -976,22 +1274,64 @@ const loadWallet = async (req,res)=>{
     }
 }
 
+
+
+/**************************************/
 const loadList = async (req,res)=>{
     try{
+        
+        const products = await content.getProducts(req,res)
+        const users = await User.findOne({email:req.session.user}).exec()
+        console.log("user :",users)
+        const pageNum = req.query.page || 1
+        const perPage = 8
+        const totalpdtCount = await List.aggregate([
+            {
+                $match: { user: users._id }
+            },
+            {
+                $unwind: "$product_list" 
+            },
+            {
+                $group: {
+                    _id: "$_id", 
+                    count: { $sum: 1 }
+                }
+            }
+        ]);
 
-        let qtyCount = await getQtyCount(req,res);
-        let listCount = await getListCount(req,res);
+        const totalCount = totalpdtCount.length > 0 ? totalpdtCount[0].count : 0;
+
+        const pages = Math.ceil( totalCount / perPage )
+        console.log("count",totalCount);
+
+        const list = await List.aggregate([{
+            $match:{user:users._id}
+        },
+        {
+            $skip: ( pageNum - 1 ) * perPage
+        },
+        {
+            $limit: perPage
+        }])
+        console.log("wishlist :",list)
+
+        await getQtyCount(req,res);
+        await getListCount(req,res);
         
         res.render('profile/userWishlist',{
             title:"My Wishlist | TraditionShoppe",
             user : req.session.user,
             page:'Your Wishlist',
-            qtyCount:qtyCount,
-            listCount:listCount,
-            // products:products,
-            // categories:categories,
-            // sellers:sellers,
-            // discounts:discounts,          
+            qtyCount:req.session.qtyCount,
+            listCount:req.session.listCount,               
+            products,
+            pageNum,
+            perPage,
+            totalCount, 
+            pages,
+            list, 
+            users,         
             errorMessage:req.flash('errorMessage'),
             successMessage:req.flash('successMessage')
 
@@ -1002,6 +1342,20 @@ const loadList = async (req,res)=>{
     }
 }
 
+//remove product from wishlist
+const removeProduct =async(req,res)=>{
+    try{
+        const pdtid = req.params.id
+        const users = await User.find({email:req.session.user}).exec()
+        await List.updateOne(
+            {user:users._id},
+            { $pull: { product_list: pdtid } }).exec()
+        res.json({success:true})
+    }
+    catch(err){
+        console.log(err.message);
+    }
+}
 
 
 
@@ -1035,10 +1389,25 @@ module.exports = {
     logoutFrom,
 
     loadProfile,
+
     loadOrder,
+    loadOrderView,
+
+    // loadReview,
+    // storReview,
+
     loadAddress,
+    loadnewAddress,
+    storeAddress,
+    loadeditAddress,
+    changeAddress,
+    setAddressDefault,
+    deleteAddress,
+
     loadWallet,
+
     loadList, 
+    removeProduct,
     
     loadeditProfile,
     editProfile,

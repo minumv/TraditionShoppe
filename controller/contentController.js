@@ -1843,11 +1843,6 @@ const couponApply = async (req,res)=>{
         const userid = req.params.userid
         console.log("userid :",userid)
 
-        // if (!req.body || !req.body.couponCode || !req.body.totalAmount) {
-        //     console.error("Invalid request body:", req.body);
-        //     return res.status(400).json({ success: false, message: 'Invalid request body' });
-
-        // }
         console.log("req-body :",req.body)
         const { couponCode , totalAmount } = req.body
 
@@ -1971,103 +1966,8 @@ const selectedMethod = async(req,res)=>{
     }
 }
 
-/*************make payment**************/
-const makePayment = async(req,res)=>{
-    try{
-        //const userid = req.params.userid
-        let {  userid,payment,total } = req.body;
-        console.log("checkdata :",req.body)
-        console.log("defpay :",req.params.defPay)
-        const pay = req.params.defPay
 
-        const address = await Address.find({user_id:userid}).exec()
-        const adr = address[0]._id
-        const cartDet = await Cart.findOne({user:userid,status:'listed'}).populate('user').exec()
-        console.log("productlist for oredr",cartDet)
-        const productDet = await Products.findOne({_id:cartDet.product_list[0].productId}).exec()
-        // const addressid = req.session.deliverAddress ||  adr
-        // const paymethod = req.session.paymethod || pay
-
-        const currentDate = moment().format('ddd MMM DD YYYY');
-        const deliveryDate = moment().add(7,'days').format('ddd MMM DD YYYY')
-        const returnDate = moment().add(12,'days').format('ddd MMM DD YYYY')
-    
-
-        //  let qtyCount = await getQtyCount(req,res)
-        //  let listCount = await getListCount(req,res)       
-        
-
-         const order = new Order({
-            order_date : currentDate,
-            user: userid,
-            address:addressid,
-            payment : paymethod,
-            product_list: cartDet.product_list,
-            payment_amount:cartDet.total_amount,
-            delivery_date:deliveryDate,
-            return_date:returnDate,
-            paymentstatus:"pending",
-            orderstatus:'pending',
-            adminaction:'approve'        
-
-         })
-         const orderData = await order.save()
-         await getQtyCount(req,res);
-         console.log(orderData);
-         req.session.orderid = orderData._id
-         if(orderData.payment === 'COD'){
-            console.log('successfull');
-
-            // await Cart.deleteOne(
-            //     { user: userid })
-
-            await Cart.updateOne(
-                { user: userid,status:"listed" },{$set:{status:"pending"}})
-
-            res.json({cod_success : true})
-            
-         }  else if(orderData.payment === 'Razorpay') {
-
-           
-            const amt = cartDet.total_amount * 100
-            const options = {
-                amount : amt,
-                currency : 'INR',
-                receipt : "RCPT"+orderData._id
-            }
-            razorpayInstance.orders.create(options,(err,order)=>{
-                if(!err){
-                    res.json({
-                        success : true,
-                        msg : "Order Placed",
-                        order_id : order.id,
-                        amount : amt,
-                        key_id : RAZORPAY_ID_KEY,
-                        product_name : productDet.product_name ,
-                        description : "Test Transaction",
-                        contact : cartDet.user.phone,
-                        name : cartDet.user.name,
-                        email : cartDet.user.email,
-                        order:order
-                    })
-                   
-                } else {
-                    console.error(err)
-                        res.status(400).send({success : false ,msg : 'Something went wrong!'})
-                   }
-            })
-
-         } else{
-            console.log('failed');
-             req.flash("errorMessage", "Payment failed.. Try again!!");
-             res.redirect(`/checkout/${userid}/${amount}`)
-        }
-       
-    }
-    catch(err){
-        console.log(err.message);
-    }
-}
+/****************** payment ********************/
 
 const makeCODPayment = async(req,res)=>{
     try{
@@ -2425,7 +2325,7 @@ module.exports = {
 
     couponApply,
 
-    makePayment,
+   
     makeCODPayment,
     verifyPayment,
     continueFailedPayment,

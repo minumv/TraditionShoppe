@@ -571,6 +571,54 @@ body {
     font-weight: 600;
     box-shadow: 0 2px 2px -2px rgba(0, 0, 0, 0.3); 
 }
-.cancel-body{
+
+/***********address***************/
+.empty-addr,.add-addr,.addr-body{
+    display:flex;  
+    justify-content: center;
+    align-items: center;
+    width:250px;
+    height:250px;
+}
+    
+.empty-addr{    
+    font-size: 20px;
+    
+}
+.add-addr,.empty-addr{
+    border-style: dashed;
+    border-color: #5b4a58;
+    color:#5b4a58;
+    font-weight: 500;
+}
+
+.addr-body,.add-addr{   
+   
+    font-size: 15px;
+    margin:15px
+}
+.addr-body{
+    border-style:solid;
+    border-color: #440d3a;  
+    color:#2f0728;  
+    margin:15px;  
+}
+
+.addrs-text-box{
+    box-shadow: 0 2px 2px -2px rgba(0, 0, 0, 0.3); 
+    border:none;
+    border-radius: 10px;
+    text-align: center;
+    width: 250px;
+    background-color: #f8f1f7;
+    text-transform: capitalize;
+}
+.text-span{
+   
+    width: 150px;
+    background-color:#e6e1e1;
+    color: #6d676c;
+    text-align:center;
+    font-weight: 400;
     
 }

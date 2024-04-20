@@ -2,11 +2,11 @@
 <div class="overview d-block">
 <div class="profile d-flex justify-content-center">
   <div class="prof-det"> 
-    <% users.forEach((usr)=>{%>      
-    <div><span id="name"><%= usr.name %></span></div>
-    <div><span id="contact"><%= usr.phone %></span></div>
-    <div><span id="mail"><%= usr.email%></span></div>
-    <%})%>
+       
+    <div><span id="name"><%= users.name %></span></div>
+    <div><span id="contact"><%= users.phone %></span></div>
+    <div><span id="mail"><%= users.email%></span></div>
+  
   </div>
   <div class="prof-edit d-flex justify-content-center align-items-center">
     <a href="/geteditprofile"><button class="prof-edit-but">Edit Profile</button></a>

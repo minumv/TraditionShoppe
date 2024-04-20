@@ -1,0 +1,94 @@
+<%- include('../layout/profileHeader') %>
+<div class="d-flex justify-content-center align-items-center" style="width:1210px;">
+    <div class="">
+    
+        <div class="d-flex justify-content-center align-items-center"><span class="addr-head">Add Address</span></div>
+        <form action="" id="addressForm">
+        <div class="addr-box">           
+                  
+                    <div  class="m-3 d-flex">
+                        <span class="addrs-text-box text-span">Name</span>
+                        <input class="addrs-text-box" type="text" name="name" >
+                    </div>
+                    <div  class="m-3 d-flex">
+                        <span class="addrs-text-box text-span">Mobile</span>
+                        <input class="addrs-text-box" type="text" name="mobile">
+                    </div >
+                    <div  class="m-3 d-flex">
+                        <span class="addrs-text-box text-span">Pin No</span>
+                        <input class="addrs-text-box" type="text" name="pin" >
+                    </div>
+                    <div  class="m-3 d-flex">
+                        <span class="addrs-text-box text-span">House</span>
+                        <input class="addrs-text-box" type="text" name="house">
+                    </div>
+                    <div  class="m-3 d-flex">
+                        <span class="addrs-text-box text-span">Street</span>
+                        <input class="addrs-text-box" type="text" name="street">
+                    </div>               
+                    <div  class="m-3 d-flex">
+                        <span class="addrs-text-box text-span">Landmark</span>
+                        <input class="addrs-text-box" type="text" name="landmark">
+                    </div>                
+                    <div  class="m-3 d-flex">
+                        <span class="addrs-text-box text-span">City</span>
+                        <input class="addrs-text-box" type="text" name="city">
+                    </div>
+                    <div  class="m-3 d-flex">
+                        <span class="addrs-text-box text-span">State</span>
+                        <input class="addrs-text-box" type="text" name="state" >
+                    </div>
+                    <div  class="m-3 d-flex">
+                        <span class="addrs-text-box text-span">Country</span>
+                        <input class="addrs-text-box" type="text" name="country">
+                    </div>
+                    
+                
+                <div  class="m-3">
+                    <button type="button" onclick="storeAddress(event)" class="use-but ord-but  text-white" style="background-color: #4F0341; width:400px;margin-left:0px;height:50px;">Save this address</button>
+                </div>
+                
+        </div>
+    </form>
+    </div>
+
+    </div>
+</div>
+
+<script>
+    function storeAddress(){
+        event.preventDefault()
+
+        const name =document.querySelector('input[name="name"]').value;
+        const mobile =document.querySelector('input[name="mobile"]').value;
+        const house =document.querySelector('input[name="house"]').value;
+        const street =document.querySelector('input[name="street"]').value;
+        const landmark =document.querySelector('input[name="landmark"]').value;
+        const city =document.querySelector('input[name="city"]').value;
+        const pin =document.querySelector('input[name="pin"]').value;
+        const state =document.querySelector('input[name="state"]').value;
+        const country =document.querySelector('input[name="country"]').value;
+
+        const formData = {
+            name,mobile,house,street,landmark,city,pin,state,country
+        }
+        console.log("form data :",formData)
+       
+     fetch(`/addnewAddress`,{
+       method : "post", 
+       headers : {
+                'Content-Type' : 'application/json'
+            },      
+       body:  JSON.stringify(formData)
+     })
+     .then(res=>res.json())
+     .then(data=>{
+       if(data.success){
+         location.href = '/getAddress'
+       } else {
+         location.href = '/getAddress'
+       }
+     })
+   }
+</script>
+<%- include('../layout/userFooter') %>

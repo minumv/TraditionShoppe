@@ -27,17 +27,13 @@
         <div>
             <p class="text-dark text-uppercase">My Recent Orders</p>
         </div>
-        <%orders.forEach((odr)=>{%>
-            <%users.forEach((usr,index)=>{%>
-                        
-                <% if(usr._id.equals(odr.user)){%>
-                    <%odr.product_list.forEach((list)=>{%>
-                        <%products.forEach((pdt)=>{%>
-                            <%if(list.productId.equals(pdt._id)){%>
-        <div class="ord-box">
+        <%orders.forEach((odr)=>{%>            
+                    
+       <div> 
+        <div class="row ord-box">
                 
                 <div>
-                    <img src="../upload/<%=pdt.images[0]%>" class="pdt-img rounded border" >
+                    <img src="../upload/<%=odr.productDetails.images[0]%>" class="pdt-img rounded border" >
                 </div>
 
                 <%let dateString =  odr.order_date %>
@@ -47,6 +43,11 @@
                 <%let formattedDate = date.toLocaleDateString('en-US', options)%>
                     
                 <div class="pdt-det">
+                    <div class="d-flex">
+                        <p class="text-dark text-uppercase mb-0"><%=odr.productDetails.product_name%></p>
+                       
+                    </div>
+
                     <div class="d-flex">
                         <p class="text-dark text-uppercase mb-0">Order placed:</p>
                         <p><%= formattedDate%></p>
@@ -70,24 +71,21 @@
                     <p class="text-dark text-uppercase mb-0">Total:</p>
                     <p><%= odr.payment_amount%></p>
                 </div>
-                <%address.forEach((adr,index)=>{%>
-                    <%console.log("inside address")%>
-                    <% if(adr._id.equals(odr.address)){%>
+                
                 <div class="pdt-det d-block box-wid">
                     <p class="text-dark text-uppercase mb-0">Ship To:</p>
-                    <div><span class=""><%=adr.name%></span></div>
-                    <div><span><%=adr.house%></span></div>
-                    <div><span><%=adr.city%></span></div>
+                    <div><span class=""><%=odr.addressDetails.name%></span></div>
+                    <div><span><%=odr.addressDetails.house%></span></div>
+                    <div><span><%=odr.addressDetails.city%></span></div>
                 </div>
-                    <%}%>
-                <%})%>
+                   
                 <div class="pdt-det box-wid">
                     <p class="text-dark text-uppercase mb-0">Status:</p>
                     <p><%=odr.orderstatus%></p>
                 </div>
 
                 <div class="d-block">
-                    <div><a href="/viewProduct/<%= pdt._id %>"><button class="use-but ord-but bg-light text-center text-dark">Buy Again</button></a></div>
+                    <div><a href="/viewProduct/<%= odr.productDetails._id %>"><button class="use-but ord-but bg-light text-center text-dark">Buy Again</button></a></div>
                     <div><a href="/review"><button type="submit" class="use-but ord-but bg-light text-center text-dark">Write a review</button></a></div>
                     <% if (odr.orderstatus === 'pending'){%>
                         <div><a href="/cancelPage/<%= odr._id %>"><button type="submit" class="use-but ord-but bg-light text-center text-dark">Cancel Order</button></a></div>
@@ -96,22 +94,38 @@
                     <%}%>
                 </div>   
             </div>
-        <%}%>
-        <%})%>
-    <%})%>
-    <%}%> <!--  users if -->
-    <%})%> <!--  users -->
+
+
+
+            
+        
 <%})%> <!--  orders -->
+
+<div class="row" data-aos="fade-up">
+    <div class="col-md-12 text-center">
+      <div class="site-block-27">
+        <ul>         
+          <% for(let i = 1 ; i <= pages ; i++){%>
+            <% if( i== pageNum ) {%>
+             <li class="active"><a href="/getOrder/?page=<%= i %>"><span><%= i %></span></a></li>
+            <% } else { %>
+            <li><a href="/getOrder/?page=<%= i %>"><span><%= i %></span></a></li>
+            <% } %>
+          <% } %>         
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
  </div>
+ <!-- pagination -->
+
+
+
 </div>
 </div>
 
-<script>
-
-    /*  onclick="requestReturn(odr._id)" */
-   
-    
-</script>
 
 
 

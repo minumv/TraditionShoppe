@@ -667,6 +667,17 @@ a {
         
         /* transform: translate(-50%, -50%); */
       }
+      .wish-close{
+        position: absolute;
+        top: 30px;
+        right: 35px;
+        font-size: 15px;
+        color:rgb(19, 20, 19);
+        cursor: pointer;
+        background: white;
+        border: none;
+        border-radius: 45%;
+      }
      
       .block-4 img{
         border-bottom-left-radius: 10px;

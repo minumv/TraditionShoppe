@@ -86,25 +86,46 @@ userRoute.get("/logout",userController.logoutFrom)
 
 
 userRoute.get("/userprofile",userAuthent.isAuthenticated,userController.loadProfile)
-userRoute.get("/getOrder",userAuthent.isAuthenticated,userController.loadOrder)
-userRoute.get("/getAddress",userAuthent.isAuthenticated,userController.loadAddress)
-userRoute.get("/getWallet",userAuthent.isAuthenticated,userController.loadWallet)
-userRoute.get("/getList",userAuthent.isAuthenticated,userController.loadList)
-
 userRoute.get("/geteditprofile",userAuthent.isAuthenticated,userController.loadeditProfile)
 userRoute.post("/changeprofile/:id",userAuthent.isAuthenticated,userController.editProfile)
-/************my order**************/
-// userRoute.get("/orderList",userAuthent.isAuthenticated,userController.loadorderList)
-userRoute.get("/buyAgain",userAuthent.isAuthenticated,userController.loadbuyList)
-userRoute.get("/cancelList",userAuthent.isAuthenticated,userController.loadcancelList)
 
-/************my order by date**************/
 
+/************order**************/
+userRoute.get("/getOrder",userAuthent.isAuthenticated,userController.loadOrder)
+userRoute.get("/getOrderView",userAuthent.isAuthenticated,userController.loadOrderView)
 userRoute.get("/orderlast30",userAuthent.isAuthenticated,userController.loadbuyLast30)
 userRoute.get("/order2023",userAuthent.isAuthenticated,userController.load2023)
 userRoute.get("/order2022",userAuthent.isAuthenticated,userController.load2022)
 userRoute.get("/order2021",userAuthent.isAuthenticated,userController.load2021)
 userRoute.get("/oldorders",userAuthent.isAuthenticated,userController.loadOlder)
+
+/**************review*******************/
+// userRoute.get("/getReview",userAuthent.isAuthenticated,userController.loadReview)
+// userRoute.post("/addReview",userAuthent.isAuthenticated,userController.storeReview)
+
+/**************address*******************/
+userRoute.get("/getAddress",userAuthent.isAuthenticated,userController.loadAddress)
+userRoute.get("/getNewAddress",userAuthent.isAuthenticated,userController.loadnewAddress)
+userRoute.post("/addnewAddress",userAuthent.isAuthenticated,userController.storeAddress)
+userRoute.get("/getEditAddress/:id",userAuthent.isAuthenticated,userController.loadeditAddress)
+userRoute.post("/editnewAddress/:id",userAuthent.isAuthenticated,userController.changeAddress)
+userRoute.post("/removeAddress/:id",userAuthent.isAuthenticated,userController.deleteAddress)
+userRoute.post("/setAddress/:id",userAuthent.isAuthenticated,userController.setAddressDefault)
+
+/**************wallet*******************/
+userRoute.get("/getWallet",userAuthent.isAuthenticated,userController.loadWallet)
+
+
+/**************wishlist*******************/
+userRoute.get("/getList",userAuthent.isAuthenticated,userController.loadList)
+userRoute.post("/removeList/:id",userAuthent.isAuthenticated,userController.removeProduct)
+
+
+
+// userRoute.get("/orderList",userAuthent.isAuthenticated,userController.loadorderList)
+userRoute.get("/buyAgain",userAuthent.isAuthenticated,userController.loadbuyList)
+userRoute.get("/cancelList",userAuthent.isAuthenticated,userController.loadcancelList)
+
 
 
 module.exports =  userRoute//router
