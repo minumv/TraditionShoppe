@@ -1237,9 +1237,24 @@ const loadWallet = async (req,res)=>{
             const pages = Math.ceil( totalCount / perPage )
             console.log("count",totalCount);
 
-            const order = await Order.aggregate([{
+            const orders = await Order.aggregate([{
                 $match:{
-                    $and:{ user:users._id, payment:"Wallet"}
+                    $and:[{ user:users._id}, {payment:"Wallet"}]
+                }
+            },
+            {
+                $lookup:{
+                    from:'products',
+                    localField:'product_list.productId',
+                    foreignField:'_id',
+                    as:'productDetails'
+                    
+                }
+            },
+            {
+                $unwind: {
+                    path: "$productDetails",
+                    preserveNullAndEmptyArrays: true
                 }
             },
             {
@@ -1251,7 +1266,7 @@ const loadWallet = async (req,res)=>{
 
             await getQtyCount(req,res);
             await getListCount(req,res);
-        
+            console.log("orders :",orders)
             res.render('profile/userWallet',{
             title:"My account | TraditionShoppe",
             user : req.session.user,
@@ -1259,7 +1274,7 @@ const loadWallet = async (req,res)=>{
             qtyCount:req.session.qtyCount,
             listCount:req.session.listCount,  
             users,
-            order,   
+            orders,   
             pageNum,
             perPage,
             totalCount, 
@@ -1346,7 +1361,7 @@ const loadList = async (req,res)=>{
 const removeProduct =async(req,res)=>{
     try{
         const pdtid = req.params.id
-        const users = await User.find({email:req.session.user}).exec()
+        const users = await User.findOne({email:req.session.user}).exec()
         await List.updateOne(
             {user:users._id},
             { $pull: { product_list: pdtid } }).exec()

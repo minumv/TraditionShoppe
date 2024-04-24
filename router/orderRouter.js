@@ -22,7 +22,7 @@ orderRoute.get("/orderDetails/:orderid",orderController.viewOrderMore)
 orderRoute.post("/getAdminAction",orderController.selectAdminAction)
 orderRoute.post("/statusChanging/:odrid/:action",orderController.changeOrderStatus)
 
-orderRoute.post("/orderPending/:pdtid/:odrid/:userid/:qty",orderController.OrderApproved)
+orderRoute.post("/orderPending/:odrid/:pdtid/:userid",orderController.OrderApproved)
 
 orderRoute.post("/cancelapprove/:odrid",orderController.OrderCancelled)
 orderRoute.post("/returnapprove/:odrid",orderController.OrderReturned)

@@ -1344,11 +1344,11 @@ const addToCartTable = async(req,res)=>{
                         await getQtyCount(req,res);
                        console.log('successful');
                        req.flash("successMessage", "Product is successfully added to cart...");
-                       res.redirect(`/viewProduct/${pdt_id}`)
+                       res.json({ success: true });
                    } else {
                        console.log('failed');
                        req.flash("errorMessage", "Product is not added to cart... Try again!!");
-                       res.redirect("/newProducts");
+                       res.json({ success: false });
                    }  
 
                 }
@@ -1384,7 +1384,7 @@ const addToCartTable = async(req,res)=>{
                 console.log('successful');
                 await getQtyCount(req,res);
                 req.flash("successMessage", "Product is successfully updated to cart...");
-                res.redirect(`/viewProduct/${pdt_id}`)
+                res.json({ success: true });
             } else {
                 console.log("user exist pdt not, push new pdts into pdtlist array")
                 await Cart.updateOne({_id:user_cart.id},
@@ -1394,14 +1394,14 @@ const addToCartTable = async(req,res)=>{
                    console.log('successful');
                    await getQtyCount(req,res);
                 req.flash("successMessage", "Product is successfully updated to cart...");
-                res.redirect(`/viewProduct/${pdt_id}`)
+                res.json({ success: true });
 
             }
     
         } 
     }else{
         req.flash("errorMessage", "Out of the stock!!");
-        res.redirect(`/viewProduct/${pdt_id}`)
+        res.json({ success: false });
     }
     }
     catch(err){

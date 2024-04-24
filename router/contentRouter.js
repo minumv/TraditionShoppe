@@ -68,10 +68,10 @@ contentRoute.get("/costly",userAuthent.isAuthenticated,contentController.getcost
 contentRoute.get("/highcostly",userAuthent.isAuthenticated,contentController.gethighcostly)
 
 /****************to cart table*********************/
-contentRoute.get("/addtocart/:id/:mrp",contentController.addToCartTable)
-contentRoute.get("/addCart/:cartid/:userid/:pdtid/:price",contentController.addQtyToCart)
-contentRoute.get("/subCart/:cartid/:userid/:pdtid/:price",contentController.subQtyFromCart)
-contentRoute.get("/deleteCart/:cartid/:userid/:pdtid",contentController.deleteFromCart)
+contentRoute.post("/addtocart/:id/:mrp",contentController.addToCartTable)
+contentRoute.post("/addCart/:cartid/:userid/:pdtid/:price",contentController.addQtyToCart)
+contentRoute.post("/subCart/:cartid/:userid/:pdtid/:price",contentController.subQtyFromCart)
+contentRoute.post("/deleteCart/:cartid/:userid/:pdtid",contentController.deleteFromCart)
 
 /****************add address *********************/
 contentRoute.post ("/getStateCountry",contentController.storeStateCountry)

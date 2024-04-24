@@ -1,95 +1,70 @@
 <%- include('../layout/profileHeader') %>
-<%orders.forEach((odr)=>{%>            
+         
                     
-  <div> 
-   <div class="row ord-box">
-           
-           <div>
-               <img src="../upload/<%=odr.productDetails.images[0]%>" class="pdt-img rounded border" >
-           </div>
-
-           <%let dateString =  odr.order_date %>
-           <%let date = new Date(dateString)%>
-
-           <%let options = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }%>
-           <%let formattedDate = date.toLocaleDateString('en-US', options)%>
-               
-           <div class="pdt-det">
-               <div class="d-flex">
-                   <p class="text-dark text-uppercase mb-0"><%=odr.productDetails.product_name%></p>
-                  
-               </div>
-
-               <div class="d-flex">
-                   <p class="text-dark text-uppercase mb-0">Order placed:</p>
-                   <p><%= formattedDate%></p>
-               </div>
-
-               <%  dateString =  odr.delivery_date %>
-               <%  date = new Date(dateString)%>
-
-               <%  options = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }%>
-               <%  formattedDate = date.toLocaleDateString('en-US', options)%>
-               <div class="d-flex">
-                   <p class="text-dark fs-3 font-weight-bold mb-0">Expected Delivery:</p>
-                   <p><%= formattedDate %></p>
-               </div>
-               <div class="d-flex">
-                   <p class="text-dark text-uppercase mb-0">Payment Method:</p>
-                   <p><%= odr.payment%></p>
-               </div>
-           </div>
-           <div class="pdt-det box-wid">
-               <p class="text-dark text-uppercase mb-0">Total:</p>
-               <p><%= odr.payment_amount%></p>
-           </div>
-           
-           <div class="pdt-det d-block box-wid">
-               <p class="text-dark text-uppercase mb-0">Ship To:</p>
-               <div><span class=""><%=odr.addressDetails.name%></span></div>
-               <div><span><%=odr.addressDetails.house%></span></div>
-               <div><span><%=odr.addressDetails.city%></span></div>
-           </div>
-              
-           <div class="pdt-det box-wid">
-               <p class="text-dark text-uppercase mb-0">Status:</p>
-               <p><%=odr.orderstatus%></p>
-           </div>
-
-           <div class="d-block">
-               <div><a href="/viewProduct/<%= odr.productDetails._id %>"><button class="use-but ord-but bg-light text-center text-dark">Buy Again</button></a></div>
-               <div><a href="/review"><button type="submit" class="use-but ord-but bg-light text-center text-dark">Write a review</button></a></div>
-               <% if (odr.orderstatus === 'pending'){%>
-                   <div><a href="/cancelPage/<%= odr._id %>"><button type="submit" class="use-but ord-but bg-light text-center text-dark">Cancel Order</button></a></div>
-               <%} else if(odr.orderstatus === 'delivered'){%> 
-                   <div><a href="/returnPage/<%= odr._id %>"><button type="submit" class="use-but ord-but bg-white text-dark">Return Product</button></a></div>  
-               <%}%>
-           </div>   
-       </div>
-
-
-
-       
+  <div class="d-block" style="width: 1210px;"> 
+    <div>
+        <p class="wallet-head">My Balance :&nbsp;&nbsp;<span>₹&nbsp;<%= users.wallet%></span></p>
+    </div>
    
-<%})%> <!--  orders -->
+    <% if(!orders || orders.length === 0) {%>
+        <div class="d-flex justify-content-center align-items-center">
+           <div class="d-block"> 
+                <div>
+                    <img width="450" height="300" src="/userasset/images/wallet-empty.png" />
+                </div>
+                <div class="d-flex justify-content-center align-items-center">
+                    <a href="/allproducts" class="use-but ord-but text-center text-white" style="background-color:#4F0341 ;">Go to Shopping</a>
+                </div>
+            </div>
+        </div>
 
-<div class="row" data-aos="fade-up">
-<div class="col-md-12 text-center">
- <div class="site-block-27">
-   <ul>         
-     <% for(let i = 1 ; i <= pages ; i++){%>
-       <% if( i== pageNum ) {%>
-        <li class="active"><a href="/getOrder/?page=<%= i %>"><span><%= i %></span></a></li>
-       <% } else { %>
-       <li><a href="/getOrder/?page=<%= i %>"><span><%= i %></span></a></li>
-       <% } %>
-     <% } %>         
-   </ul>
- </div>
-</div>
-</div>
-</div>
+    <%} else if(orders){%>       
+    
+            <%orders.forEach((odr)=>{%>   
+            <div class="row ord-box">
+                
+                    <div class="wallet-align">
+                    <div><img src="../upload/<%=odr.productDetails.images[0]%>" class="pdt-img rounded border" ></div>
+                    </div>&nbsp;&nbsp;
 
+                    <div class="wallet-align  wal-name" style="width:400px;">
+                        <p class="text-uppercase mb-0"><%=odr.productDetails.product_name%></p>
+                    </div>&nbsp;&nbsp;
+                    <div class="wallet-align wal-name" style="width:200px;">
+                        <p class="text-dark text-uppercase mb-0">₹<%= odr.payment_amount%></p>
+                    </div>
+
+                <%let dateString =  odr.order_date %>
+                <%let date = new Date(dateString)%>
+
+                <%let options = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }%>
+                <%let formattedDate = date.toLocaleDateString('en-US', options)%>
+                    
+                    <div class="wallet-align wal-name">              
+                        <p class="text-dark text-uppercase mb-0"><%= formattedDate%></p>
+                    </div>
+                
+            </div>    
+           <%})%>    
+
+    <div class="row" data-aos="fade-up">
+        <div class="col-md-12 text-center">
+            <div class="site-block-27">
+                <ul>         
+                    <% for(let i = 1 ; i <= pages ; i++){%>
+                    <% if( i== pageNum ) {%>
+                        <li class="active"><a href="/getOrder/?page=<%= i %>"><span><%= i %></span></a></li>
+                    <% } else { %>
+                    <li><a href="/getOrder/?page=<%= i %>"><span><%= i %></span></a></li>
+                    <% } %>
+                    <% } %>         
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <%}%>
+</div>
 </div>
 
 

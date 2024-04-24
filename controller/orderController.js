@@ -8,6 +8,7 @@ const Discount = require('../model/discount')
 const Cart = require('../model/cart')
 const Order = require('../model/order')
 const Address = require('../model/address')
+const mongoose = require('mongoose');
 
 
 // const userAuthent = require('../middleware/userAuthent')
@@ -16,20 +17,70 @@ const Address = require('../model/address')
 /****************load order page*******************/
     const loadOrder = async (req,res)=>{
         try{
-            console.log("controller");
-            const orders = await Order.find().sort({'created':-1}).exec() 
-            const cart =await Cart.find().exec()
-            const users = await User.find({status : {$nin:["deleted","blocked"]}}).exec()
-            const products = await Product.find({isListing:true}).exec()
+           // console.log("controller");
+            // const orders = await Order.find().sort({'created':-1}).exec() 
+            // const cart =await Cart.find().exec()
+            // const users = await User.find({status : {$nin:["deleted","blocked"]}}).exec()
+            // const products = await Product.find({isListing:true}).exec()
+
+            const orders = await Order.aggregate([
+            
+            {
+                $lookup:{
+                    from:'products',
+                    localField:'product_list.productId',
+                    foreignField:'_id',
+                    as:'productDetails'
+                    
+                }
+            },
+            {
+                $unwind: {
+                    path: "$productDetails",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $lookup:{
+                    from:'addresses',
+                    localField:'address',
+                    foreignField:'_id',
+                    as:'addressDetails'
+                    
+                }
+            },
+            {
+                $unwind: {
+                    path: "$addressDetails",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $lookup:{
+                    from:'users',
+                    localField:'user',
+                    foreignField:'_id',
+                    as:'userDetails'
+                    
+                }
+            },
+            {
+                $unwind: {
+                    path: "$userDetails",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $sort : { 'created' : -1 }
+            }
+            ])
+          
+
             const address = await Address.find().exec()
             res.render('admin/orderManage',{
                 title: "Order Management | TraditionShoppe",
                 page:"Orders",
-                orders:orders,
-                users:users,
-                products:products,
-                address:address,
-                cart:cart,
+                orders,                
                 errorMessage:req.flash('errorMessage'),
                 successMessage:req.flash('successMessage')
             })
@@ -40,7 +91,7 @@ const Address = require('../model/address')
     }
 
 
-    /****************viw order details*******************/
+    /****************view order details*******************/
     const viewOrderMore = async (req,res)=>{
         try{
 
@@ -212,7 +263,7 @@ const returnOrder = async (req,res)=>{
                     returned_date : new Date()               
                 } } 
             )
-            console.log('successful');
+            console.log('return request successful',returned);
             if( returned ){
                 req.flash("successMessage", "Return request send successfully...");
             res.status(200).send({success:true})
@@ -259,8 +310,9 @@ const applyAdminAction = async(req,res)=>{
         //const cartid = req.params.cartid
         const qty = req.params.qty
         let result = false
-        const action = req.session.adminaction
-        
+        let action = req.session.adminaction
+        console.log("action :",action)
+
         if(action === 'complete'){
              result = await OrderApproved(req,res,pdtid,odrid,userid,qty)
         } else if(action === 'to pack'){
@@ -292,9 +344,10 @@ const applyAdminAction = async(req,res)=>{
 
 const changeOrderStatus= async(req,res)=>{
     try{
+        console.log("change status @",req.params.odrid)
         const odrid = req.params.odrid
-        const action = req.params.action
-        const orderstat = ''
+        let action = req.params.action
+        let orderstat = ''
         if( action === 'to pack'){
             orderstat = 'packed'
         } else if( action === 'to dispatch'){
@@ -304,48 +357,59 @@ const changeOrderStatus= async(req,res)=>{
         } else if( action === 'approve'){
             orderstat = 'processing'
         }
-
-        await Order.updateOne(
-            {odrid},
+        console.log("orderstatus :", orderstat , action)
+        const changeStat = await Order.updateOne(
+            {_id:odrid},
             { $set : {
                 orderstatus : orderstat
             }}
         )
-        return true;
+        console.log("changed? :",changeStat)
+        console.log("status changed successfully")
+        if(changeStat){
+            req.flash("successMessage", "Process completed..");
+            res.json({success:true})
+        } else {
+            req.flash("successMessage", "Process failed !!");
+            res.json({success:false})
+        }
+       
     }
     catch(err){
         console.log(err.message);
     }
 }
-const OrderApproved = async (req,res,pdtid,odrid,userid,qty)=>{
+const OrderApproved = async (req,res)=>{
     try{
-        // const pdtid = req.params.pdtid
-        // const odrid = req.params.odrid
-        // const userid = req.params.userid
-        // //const cartid = req.params.cartid
-        // const qty = req.params.qty
-       
-        // const email = req.session.user
-        // const users = await User.find({email:email}).exec()        
-        // const orders = await Order.find({_id:odrid}).exec()       
-        // const cart  = await Cart.find().exec()       
-        const products = await Product.find({ _id:pdtid}).exec()
-        // const address = await Address.find().exec()
-       
+        const odrid = req.params.odrid
+        const pdtid = req.params.pdtid
+        const userid = req.params.userid
+        // console.log("order id :",odrid)
+        // console.log("order id :",odrid)
+        let qty = 0
+        const order = await Order.findOne({_id:odrid}).exec()
+        order.product_list.forEach((odr)=>{
+            qty = odr.quantity
+        })
+        console.log("order det :",order)
+
+        const products = await Product.findOne({_id:pdtid})
         let changeStock = 0
         if(products){
             // console.log("stock : "+products[0].stock );
             // console.log("qty : "+qty+ typeof (qty) );
-            changeStock = products[0].stock - parseFloat(qty) 
+            changeStock = products.stock - parseFloat(qty) 
             console.log("stock : "+changeStock + typeof (changeStock) );
         }
         console.log("ordrid: " + odrid);
         console.log("usrrid: " + userid);
+
         const currentDate = new Date();
         const returnDate = new Date(currentDate.setDate(currentDate.getDate() + 14));
+        console.log ("return date :",returnDate)
 
 
-        await Order.updateOne(
+        const orderStat = await Order.updateOne(
             { _id: odrid },
            { $set: { 
                 orderstatus:"delivered",
@@ -355,36 +419,62 @@ const OrderApproved = async (req,res,pdtid,odrid,userid,qty)=>{
                 return_date: returnDate
                 // update delivery date
             } } )
+
+            console.log("order status ?",orderStat)
         
-        await Cart.updateOne(
-            { user: userid },{$set:{status:"purchased"}})
+        const cartStat = await Cart.updateOne(
+            { user: userid , status:"pending" },
+            {$set:
+                {
+                    status:"purchased"
+                }})
+            console.log("cart status ?",cartStat)
+         const prodStat = await Product.updateOne(
+            { _id: pdtid },
+            {$set:
+                {
+                    stock:changeStock
+                }})  
+            console.log("product status ?",prodStat)
 
-         await Product. updateOne(
-            { _id: pdtid },{$set:{stock:changeStock}})  
+        if(orderStat && cartStat && prodStat ){
+            req.flash("successMessage", "Process completed...");
+            res.json({success:true})
+        } else {
+            req.flash("successMessage", "Process failed !!");
+            res.json({success:false})
+        }  
 
-        return true;
+            
     }
     catch(err){
         console.log(err.message);
     }
 }
 
-const OrderReturned = async (req,res,odrid)=>{
+const OrderReturned = async (req,res)=>{
     try{
         // const pdtid = req.params.pdtid
-        // const odrid = req.params.odrid
+        const odrid = req.params.odrid
         // const userid = req.params.userid
         // const qty = req.params.qty
         // const total = req.params.total
 
-         const email = req.session.user
-         const users = await User.find({email:email}).exec()        
-         const orders = await Order.find({_id:odrid}).exec()       
-        // const cart  = await Cart.find().exec()       
-        // const products = await Products.find({ isListing:true }).exec()
-        // const address = await Address.find().exec()
+        
+                
+         const orders = await Order.findOne({_id:odrid}).populate('user').exec()       
+        //console.log("orders",orders)
 
+        let pdtid = ''
+        let qty = 0
+        orders.product_list.forEach((odr)=>{
+            pdtid = odr.productId
+            qty = odr.quantity
+        })
 
+        const products = await Product.findOne({_id:pdtid}).exec()
+        let newStock = products.stock + qty
+        console.log("new stock :",newStock, "stock :",products.stock , "qty :",qty)
 
         // if(orders.product_list.length>1){
         //     await Order.updateOne(
@@ -397,7 +487,7 @@ const OrderReturned = async (req,res,odrid)=>{
         //     )
         // }
         // else {
-            await Order.updateOne(
+           const orderStat = await Order.updateOne(
                 { _id: odrid },              
                 { $set: {     
                     orderstatus: "refund received",
@@ -405,25 +495,39 @@ const OrderReturned = async (req,res,odrid)=>{
                     paymentstatus:"refund granted"
                 } } 
             )
+            const prodStat = await Product.updateOne(
+                { _id:pdtid },
+                { $set : {
+                    stock : newStock
+                }}
+            )
             //add wallet to user collection
-            if(users.wallet != null){
-                let amount = users.wallet + orders.payment_amount
+            if(orders.user.wallet != null){
+                let amount = orders.user.wallet + orders.payment_amount
+                console.log("wallet :",orders.user.wallet,"amount :",amount)
                 await User.updateOne(
-                    {email:email},
+                    {_id:orders.user._id},
                     { $set :{
                         wallet : amount
                     }}
                 )
             } else {
                 await User.updateOne(
-                    {email:email},
+                    {_id:orders.user._id},
                     { $set :{
                         wallet : orders.payment_amount
                     }}
                 )
             }
-       
-            return true;
+
+            if(orderStat && prodStat){
+                req.flash("successMessage", "Process completed..");
+                res.json({success:true})
+            } else {
+                req.flash("successMessage", "Process failed !!");
+                res.json({success:false})
+            }  
+            
     }
     catch(err){
         console.log(err.message);
@@ -431,18 +535,18 @@ const OrderReturned = async (req,res,odrid)=>{
 }
 
 /*   load buylist */
-    const OrderCancelled = async (req,res,odrid)=>{
+    const OrderCancelled = async (req,res)=>{
         try{
             // const pdtid = req.params.pdtid
-            // const odrid = req.params.odrid
+            const odrid = req.params.odrid
             // const userid = req.params.userid
             // const qty = req.params.qty
             // const total = req.params.total
-            const email = req.session.user
-            const users = await User.find({email:email}).exec()      
-            const orders = await Order.find({_id:odrid}).exec()       
+            
            
-                await Order.updateOne(
+            const orders = await Order.findOne({_id:odrid}).populate('user').exec()       
+           
+                const orderStat = await Order.updateOne(
                     { _id: odrid },              
                     { $set: {     
                         orderstatus: "cancelled" ,
@@ -453,17 +557,17 @@ const OrderReturned = async (req,res,odrid)=>{
                 )
                 //update wallet(Add paymentamount) based on payment method
                 if(orders.payment === 'Razorpay'){
-                    if(users.wallet != null){
-                        let amount = users.wallet + orders.payment_amount
+                    if(orders.user.wallet != null){
+                        let amount = orders.user.wallet + orders.payment_amount
                         await User.updateOne(
-                            {email:email},
+                            {_id:orders.user._id},
                             { $set :{
                                 wallet : amount
                             }}
                         )
                     } else {
                         await User.updateOne(
-                            {email:email},
+                            {_id:orders.user._id},
                             { $set :{
                                 wallet : orders.payment_amount
                             }}
@@ -471,7 +575,13 @@ const OrderReturned = async (req,res,odrid)=>{
                     }
                 }
             
-                return true;
+                if(orderStat){
+                    req.flash("successMessage", "Process completed..");
+                    res.json({success:true})
+                } else {
+                    req.flash("successMessage", "Process failed !!");
+                    res.json({success:false})
+                } 
         }
         catch(err){
             console.log(err.message);

@@ -91,8 +91,9 @@
             </div>           
             <br>          
             <div class="nav-but-div">
-                <a href="/addtocart/<%= pdt._id %>/<%=pdt.discountedsalePrice %>"><button class="btn btn-lg text-white nav-but purp-back" >Add to Cart</button></a>&ensp;
-                <a href="/checkout/<%=user_id%>/<%=pdt.discountedsalePrice %>"><button class="btn btn-lg text-white nav-but purp-back" >Buy Now</button></a>
+                <!-- <a href="/addtocart/<%= pdt._id %>/<%=pdt.discountedsalePrice %>"><button class="use-but ord-but text-center nav-but text-white" style="background-color:#4F0341;font-size:18px ;">Add to Cart</button></a>&ensp; -->
+                <button type="button" onclick="addingtoCart('<%= pdt._id %>','<%=pdt.discountedsalePrice %>')" class="use-but ord-but text-center nav-but text-white" style="background-color:#4F0341;font-size:18px ;">Add to Cart</button></a>&ensp;
+                <a href="/checkout/<%=user_id%>/<%=pdt.discountedsalePrice %>"><button class="use-but ord-but text-center nav-but text-white" style="background-color:#4F0341 ;font-size:18px ;">Buy Now</button></a>
 
             </div>
             <% if (errorMessage.length > 0) { %>                
@@ -140,28 +141,7 @@
                     <% })%>
 
                  
-                    <!-- <div class="col-sm-6 col-md-6 col-lg-4 mb-5 mb-lg-0" data-aos="fade" data-aos-delay="100">
-                      <a class="block-2-item" href="#">
-                        <figure class="image">
-                          <img src="images/children.jpg" alt="" class="img-fluid">
-                        </figure>
-                        <div class="text">
-                          <span class="text-uppercase">Collections</span>
-                          <h3>Children</h3>
-                        </div>
-                      </a>
-                    </div>
-                    <div class="col-sm-6 col-md-6 col-lg-4 mb-5 mb-lg-0" data-aos="fade" data-aos-delay="200">
-                      <a class="block-2-item" href="#">
-                        <figure class="image">
-                          <img src="images/men.jpg" alt="" class="img-fluid">
-                        </figure>
-                        <div class="text">
-                          <span class="text-uppercase">Collections</span>
-                          <h3>Men</h3>
-                        </div>
-                      </a>
-                    </div> -->
+                   
                   </div>
                 </div>
                 </div>
@@ -175,6 +155,24 @@
 
 
 
-
+<script>
+  //adding to cart
+  function addingtoCart(pdtid,amt){
+    fetch(`/addtocart/${pdtid}/${amt}`,{
+      method : "post",
+      headers : {
+        "Content-Type" :"application/json"
+      }
+    })
+    .then(res=>res.json())
+    .then(data=>{
+      if(data.success){
+        location.href = `/viewProduct/${pdt_id}`
+      } else {
+        location.href = `/viewProduct/${pdt_id}`
+      }
+    })
+  }
+</script>
 
 <%- include('../layout/userFooter') %>
