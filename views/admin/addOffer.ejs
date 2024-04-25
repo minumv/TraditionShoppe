@@ -11,21 +11,22 @@
                     </div>
 
                     <div class="card-body">             
-                      <div class="input-group input-group-outline mb-3">
-                         <input type="text" name="name" class="form-control" placeholder="Enter Offer Name">
-                      </div> 
+                     
                       <div class="input-group input-group-outline mb-3">
                       <div class="dropdown mx-3">
                         <select id="offertype" class="form-control">
                           <option value="No Type">Select Type</option>
                           <option value="Product Offer">Product Offer</option>
                           <option value="Category Offer">Category Offer</option>
-                          <option value="Referral Offer">Referral Offer</option>
-                            <option value="Today Deals Offer">Today Deals Offer</option>
-                            <option value="Seller Offer">Seller Offer</option>                        
-                            
                         </select></div> 
-                    </div>                   
+                    </div>  
+                    <div class="input-group input-group-outline mb-3">
+                      <div class="mx-4">
+                        <select id="offerName" class="form-control">
+                          <option value="No Selection">Select Name</option>                            
+                        </select>
+                      </div>
+                   </div>                  
                       <div class="input-group input-group-outline mb-3">
                         <input type="text" name="percentage" class="form-control" placeholder="Enter Discount Percentage">
                      </div>   
@@ -37,7 +38,7 @@
                      </div>                                         
                                            
                         <div class="text-center d-flex justify-content-end">                         
-                            <input type="submit" id="addOfferButton"    class="btn btn-lg bg-gradient-primary btn-lg w-100 mt-4 mb-0 me-2">Add</button>
+                            <button type="button" id="addOfferButton"  onclick="addOfferDetails()"   class="btn btn-lg bg-gradient-primary btn-lg w-100 mt-4 mb-0 me-2">Add</button>
                          </div>
                          <% if (errorMessage.length > 0) { %>                
                             <div class="alert alert-danger" role="alert"> <%- errorMessage %>  </div>                  
@@ -55,5 +56,59 @@
        </div>   
   </section>
 
+<script>
+  document.getElementById('offertype').addEventListener('change', function() {
+    const selectedType = this.value;
+    
+    // Fetch corresponding names based on selectedType
+    fetch(`/getNames/${selectedType}`)
+    .then(response => response.json())
+    .then(data => {
+        const offerNameDropdown = document.getElementById('offerName');
+        
+        // Clear previous options
+        offerNameDropdown.innerHTML = '<option value="No Selection">Select Name</option>';
+        
+        // Populate offerName dropdown with fetched names
+        data.names.forEach(name => {
+            const option = document.createElement('option');
+            option.value = name;
+            option.textContent = name;
+            offerNameDropdown.appendChild(option);
+        });
+    })
+    .catch(error => {
+        console.error('Error fetching names:', error);
+    });
+});
 
+function addOfferDetails(){
+    const offer_type = document.getElementById('offertype').value
+    const offer_name = document.getElementById('offerName').value
+    const percentage = document.querySelector('input[name="percentage"]').value
+    const start = document.querySelector('input[name="start"]').value
+    const end = document.querySelector('input[name="end"]').value
+
+    const offerData = {
+      offer_type, offer_name, percentage, start, end
+    }
+
+    console.log("ofer details :",offerData)
+  fetch("/newOffer",{
+    method:"post",
+    headers:{
+      'Content-Type' :  'application/json'
+    },
+    body : JSON.stringify(offerData)
+  }).then((res)=>res.json())
+  .then((data)=>{    
+        if(data.success){
+          location.href = '/getOffer'
+        } else {
+          location.href = '/newOffer'
+      }
+  })
+  
+}
+</script>
   <%- include('../layout/adminFooter') %>

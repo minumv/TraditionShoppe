@@ -41,6 +41,10 @@ const userSchema = new mongoose.Schema({
         type: String, 
         enum: ['Verified','Pending','Blocked','Inactive'],
         default:'Pending'
+    },    
+    referalCode: {
+        type: String,
+        require:true    
     },
     isVerifiedByOtp:{
         type: Boolean,

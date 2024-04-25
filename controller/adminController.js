@@ -151,14 +151,20 @@ const Order = require('../model/order')
         
     }
 
-    //block customer 
+    
+    //block customer
+
     const  blockCustomer = async (req,res)=>{
         try{        
 
             let id = req.params.id
-            await User.updateOne({_id:id},{$set:{
-            status : 'Blocked'           
-        }})
+            const user = await User.findById(id)
+            // await User.updateOne({_id:id},{$set:{
+            // status : 'Blocked'     
+            user.status = 'Blocked'
+            await user.save()    
+            req.session.blocked = true
+        
            res.redirect('/admin/customers')
          
         } catch (err){
@@ -166,7 +172,9 @@ const Order = require('../model/order')
         }
         
     }
+   
     //delete customer 
+
     const  unBlockCustomer = async (req,res)=>{
     try{  
 
@@ -220,8 +228,9 @@ const Order = require('../model/order')
     //     }
     // }
 
-    //  //load coupon page
-     const loadCouponPage = async (req, res)=>{
+    /***********************coupon management******************************/
+   
+    const loadCouponPage = async (req, res)=>{
         try {
             const coupon = await Coupon.find().sort({'created':-1}).exec()
 
@@ -237,6 +246,8 @@ const Order = require('../model/order')
             console.log(err.message);
         }
     }
+
+    //load new coupon page
 
     const addCoupon = async (req,res) =>{
         try{
@@ -255,8 +266,17 @@ const Order = require('../model/order')
         }
     }
 
+    // add new coupon to collection
+
     const addCouponDetails = async (req,res)=>{
         try{
+
+            let stat = true
+
+            if((req.body.end < new Date())||(req.body.end < req.body.start)){
+                stat = false
+            }
+
             console.log(req.body);
             const newCoupon = new Coupon({
                     coupon_code:req.body.coupon,
@@ -265,21 +285,23 @@ const Order = require('../model/order')
                     expire_date:req.body.end,
                     minimum_purchase:req.body.min_purch,
                     maximum_discount_amt:req.body.max_amt,
-                    status : true
+                    status : stat
             })
             await newCoupon.save();
             if(newCoupon){
                 req.flash("successMessage", "New coupon created successfully!!");
-                res.redirect('/getCoupon')
+                res.json({success:true})
             } else {
                 req.flash("errorMessage", "Coupon creation failed.. Try again!!");
-                res.redirect('/newCoupon')
+                res.json({success:false})
             }
         }
         catch(err){
             console.log(err.message);
         }
     }
+
+    //load coupon change page
 
     const getUpdatePage = async (req,res) =>{
         try{
@@ -298,18 +320,17 @@ const Order = require('../model/order')
         }
     }
 
+    //change coupon details
+
     const updateCouponDetails = async (req,res) =>{
         try{
             const id = req.params.id
             console.log(req.body);
             let stat = true
-            if(req.body.end < new Date()){
+            if((req.body.end < new Date())||(req.body.end < req.body.start)){
                 stat = false
             }
-            if(req.body.end < req.body.start){
-                req.flash("errorMessage", "Invali dates.. Try again!!");
-                res.redirect(`/getUpdate/${id}'`)
-            }
+           
             const coupon = await Coupon.updateOne(
                 {_id:id},
                 {$set :{
@@ -321,18 +342,21 @@ const Order = require('../model/order')
                     maximum_discount_amt:req.body.max_amt,
                     status:stat                    
                 }}).exec()
+
                 if(coupon){
                     req.flash("successMessage", "Coupon details updated successfully!!");
-                    res.redirect('/getCoupon')
+                    res.json({success:true})
                 } else {
                     req.flash("errorMessage", "Coupon updation failed.. Try again!!");
-                    res.redirect(`/getUpdate/${id}'`)
+                    res.json({succes:false})
                 }
         }
         catch(err){
             console.log(err.message);
         }
     }
+
+    //delete existing coupon
 
     const deleteCouponDetails = async (req,res) =>{
         try{
@@ -344,10 +368,10 @@ const Order = require('../model/order')
                 }}).exec()
                 if(coupon){
                     req.flash("successMessage", "Coupon deleted successfully!!");
-                    res.redirect('/getCoupon')
+                    res.json({success:true})
                 } else {
                     req.flash("errorMessage", "Coupon deletion failed.. Try again!!");
-                    res.redirect(`/getUpdate/${id}`)
+                    res.json({success:false})
                 }
         }
         catch(err){
@@ -389,6 +413,7 @@ const Order = require('../model/order')
             console.log(err.message);
         }
     }
+// load add offer page
 
     const addOffer = async (req,res) =>{
         try{
@@ -405,56 +430,63 @@ const Order = require('../model/order')
         }
     }
 
-    const storeOfferType =async(req,res)=>{
-        try{
-            console.log("dropdwn",req.body);
-            const offertypeobject = req.body.offer_type;
-            console.log("offer",req.body.offer_type);
-            console.log("offer", offertypeobject);
-            // Store dropdown values in session
-            req.session.offertype =  offertypeobject
+// load offer name based on selected offer type
+
+    const addNames =  async (req, res) => {
+        try {
+            const type =decodeURIComponent(req.params.type);
             
-            console.log(req.session.offertype); 
-            res.sendStatus(200);    
-    
+            // Fetch names based on type from the collections
+            let names = [];
+            
+            if (type === 'Product Offer') {
+                names = await Product.find({ isListing : true }).distinct('product_name').exec();
+            } else if (type === 'Category Offer') {
+                names = await Category.find().distinct('category_name').exec();
+            }
+            
+            res.json({ names });
+            
+        } catch (error) {
+            console.error('Error fetching names:', error);
+            res.status(500).json({ message: 'Internal server error' });
         }
-        catch(err){
-            console.log(err.message);
-        }
-    }
+    };
+
+// add new offer to collection
 
     const addOfferDetails = async (req,res)=>{
         try{
-            console.log("session value",req.session.offertype);
-            const offer_type = req.session.offertype
-           console.log("get dropdown",offer_type);
-
-           if(req.body.end < new Date()){
-            req.flash("errorMessage", "Select date after current date!!");
-            res.redirect('/newOffer')
-           } else {           
+        
+        console.log("req.body :",req.body)
+            let setStatus = true
+           if((req.body.end < new Date())||(req.body.end < req.body.start)||(req.body.offer_name==='No Selection')){
+            setStatus = false
+           }           
             const newOffer = new Offer({
-                    offer_name:req.body.name,
-                    offer_type:offer_type,
+                    offer_name:req.body.offer_name,
+                    offer_type:req.body.offer_type,
                     discount_per:req.body.percentage,
                     start_date:req.body.start,
                     expire_date:req.body.end,
-                    status : true
+                    status : setStatus
             })
             await newOffer.save();
             if(newOffer){
                 req.flash("successMessage", "New Offer created successfully!!");
-                res.redirect('/getOffer')
+                res.json({success:true})
             } else {
                 req.flash("errorMessage", "Offer creation failed.. Try again!!");
-                res.redirect('/newOffer')
+                res.json({success:false})
             }
         }
-        }
+        
         catch(err){
             console.log(err.message);
         }
     }
+
+    //load offer change page
 
     const getUpdateOfferPage = async (req,res) =>{
         try{
@@ -473,61 +505,44 @@ const Order = require('../model/order')
         }
     }
 
-    const changeOfferType =async(req,res)=>{
-        try{
-            console.log(req.body.offer_type);
-            const offerTypeChange = req.body.offer_type;
-            console.log(offerTypeChange);
-            // Store dropdown values in session
-            req.session.offer_type_change = offerTypeChange 
-            console.log("session values in stateCountry:");
-            console.log(req.session.offer_type_change); 
-            res.sendStatus(200);    
-    
-        }
-        catch(err){
-            console.log(err.message);
-        }
-    }
+    //update offer details
 
     const updateOfferDetails = async (req,res) =>{
         try{
-            const id = req.params.id
-            const  offerTypeChange = req.session.offer_type_change 
+            const id = req.params.id          
             let stat = true;
-            let flag =0
-            if(req.body.end < new Date()){
+            
+            if((req.body.end < new Date())||(req.body.end < req.body.start)||(req.body.offer_name==='No Selection')){
                 stat = false
             }
-            if(req.body.end < req.body.start){                
-                flag = 1
-            }
-            console.log("flag",flag)
-            if(flag == 0){
+           
+           
                 const offer = await Offer.updateOne(
                     {_id:id},
                     {$set :{
-                        offer_name:req.body.name,
-                        offert_type:offerTypeChange,
+                        offer_name:req.body.offer_name,
+                        offert_type:req.body.offer_type,
                         discount_per:req.body.percentage,
                         start_date:req.body.start,
                         expire_date:req.body.end, 
                         status : stat                                   
                     }}).exec()
+
                     if(offer){
                         req.flash("successMessage", "Offer details updated successfully!!");
-                        return res.redirect('/getOffer')
-                    } 
-                } else {
-                    req.flash("errorMessage", "Offer updation failed.. Invalid dates.. Try again!!");
-                    return res.redirect(`/getUpdateOffer/${id}'`)
-                }
-            
-        }
+                        res.json({success:true})
+                    } else {                
+                        req.flash("errorMessage", "Offer updation failed.. Try again!!");
+                        res.json({success:false})
+                    }
+                }    
+    
         catch(err){
             console.log(err.message);
         }
     }
+
+    //delete existing offer
 
     const deleteOfferDetails = async (req,res) =>{
         try{
@@ -539,10 +554,10 @@ const Order = require('../model/order')
                 }}).exec()
                 if(offer){
                     req.flash("successMessage", "Offer deleted successfully!!");
-                    res.redirect('/getOffer')
+                    res.json({success:true})
                 } else {
                     req.flash("errorMessage", "Offer deletion failed.. Try again!!");
-                    res.redirect(`/getUpdateOffer/${id}`)
+                    res.json({success:false})
                 }
         }
         catch(err){
@@ -675,12 +690,15 @@ const Order = require('../model/order')
 
         loadOfferPage,
         addOffer,
-        storeOfferType,
+       // storeOfferType,
         addOfferDetails,
-        changeOfferType,
+       // changeOfferType,
         getUpdateOfferPage,
         updateOfferDetails,
         deleteOfferDetails,
+        addNames,
+
+
         // loadBanner,
         loadSalesReport,
         // loadSettings,

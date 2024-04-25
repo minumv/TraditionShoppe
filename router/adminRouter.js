@@ -43,12 +43,16 @@ adminRoute.post("/deleteCoupon/:id",adminController.deleteCouponDetails)
 
 adminRoute.get("/getOffer",adminController.loadOfferPage) 
 adminRoute.get("/newOffer",adminController.addOffer)
-adminRoute.post("/getOfferType",adminController.storeOfferType) 
+// adminRoute.post("/getOfferType",adminController.storeOfferType) 
 adminRoute.post("/newOffer",adminController.addOfferDetails)
 adminRoute.get("/getUpdateOffer/:id",adminController.getUpdateOfferPage)
-adminRoute.post("/updateOfferType",adminController.changeOfferType) 
+// adminRoute.post("/updateOfferType",adminController.changeOfferType) 
 adminRoute.post("/updateOffer/:id",adminController.updateOfferDetails)
 adminRoute.post("/deleteOffer/:id",adminController.deleteOfferDetails)
+
+adminRoute.get("/getNames/:type",adminController.addNames)
+
+
 
 /****************sales report*********************/
 adminRoute.get("/salesreport",adminController.loadSalesReport) 

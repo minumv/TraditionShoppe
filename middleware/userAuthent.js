@@ -1,7 +1,7 @@
 
 const isAuthenticated = async (req, res, next)=>{
     try {
-      if (req.session && req.session.user) {
+      if ((req.session.verified || req.session.user)&& !req.session.blocked) {
         // User is logged in, proceed to the next middleware
         next();
       } else {
