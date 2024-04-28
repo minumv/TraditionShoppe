@@ -1434,7 +1434,7 @@ const addQtyToCart = async(req,res)=>{
 
                 if(qty >=stock.stock){
                     req.flash("errorMessage", "Stock exceeds!!");
-                    res.redirect('/cart')
+                    res.json({ success: false });
                 } else{
                     amount = parseFloat(user_cart.total_amount);  
                     await Cart.updateOne({
@@ -1453,17 +1453,19 @@ const addQtyToCart = async(req,res)=>{
                     await getQtyCount(req,res);
                     console.log('successful');
                     req.flash("successMessage", "Product is successfully updated to cart...");
-                    res.redirect('/cart')
+                    res.json({ success: true });
                 }
                 
         } else {
             req.flash("errorMessage", "Out of the stock!!");
-            res.redirect('/cart')
+            res.json({ success: false });
         }
 
     }
     catch(err){
         console.log(err.message);
+        req.flash("errorMessage", "Adding to cart failed !!");
+        res.json({ success: false });
     }
 }
 
@@ -1509,7 +1511,7 @@ const subQtyFromCart = async(req,res)=>{
             await getQtyCount(req,res);
             console.log('successful');
             req.flash("successMessage", "Product is successfully updated to cart...");
-            res.redirect('/cart')
+            res.json({ success: true });
 
         } else if (qty<=1){
             if( user_cart.product_list.length === 1 ){
@@ -1518,7 +1520,7 @@ const subQtyFromCart = async(req,res)=>{
                 console.log('successful');
                 await getQtyCount(req,res);
                 req.flash("successMessage", "User is deleted from cart...");
-                res.redirect('/cart')
+                res.json({ success: true });
         } else{
             await Cart.updateOne(
                 {  _id:cartid },
@@ -1530,12 +1532,14 @@ const subQtyFromCart = async(req,res)=>{
             console.log('successful');
             await getQtyCount(req,res);
             req.flash("successMessage", "Product is deleted from cart...");
-            res.redirect('/cart')
+            res.json({ success: true });
         }
     }
     }
     catch(err){
         console.log(err.message);
+        req.flash("errorMessage", "Deletion process failed !!...");
+        res.json({ success: false });
     }
 }
 
@@ -1567,10 +1571,12 @@ const deleteFromCart = async(req,res)=>{
             await getQtyCount(req,res);
         console.log('successful');
         req.flash("successMessage", "Product is deleted from cart...");
-        res.redirect('/cart')
+        res.json({success:true})
     }
     catch(err){
         console.log(err.message);
+        req.flash("errorMessage", "An error occured while deleting the product from cart!!...");
+        res.json({ success: false });
     }
 }
 
@@ -1582,17 +1588,26 @@ const addToWishlist = async(req,res)=>{
         let pdt_id = req.params.id;
         const user = req.session.user
         const user_id = await User.findOne({email:user},{_id:1}).exec()
-        const user_list_id = await List.findOne({user:user_id},{_id:1}).exec()
+        const user_list = await List.findOne({user:user_id}).exec()
 
-        if (user_list_id){
-
-            await List.updateOne({_id:user_list_id},
-                { $push: { product_list: pdt_id }})
-
-                console.log('successful');
-                req.flash("successMessage", "Product is successfully updated to cart...");
+        if (user_list){
+            let pdt_check = false
+            user_list.product_list.forEach((pdt)=>{
+                if(pdt.equals(pdt_id)){
+                    pdt_check = true
+                }
+            })
+            if(pdt_check){
+                req.flash("successMessage", "Product is already in the list!!");
                 res.redirect(`/viewProduct/${pdt_id}`)
+            } else {
+                await List.updateOne({_id:user_list._id},
+                    { $push: { product_list: pdt_id }})
 
+                    console.log('successful');
+                    req.flash("successMessage", "Product is successfully added to wishlist...");
+                    res.redirect(`/viewProduct/${pdt_id}`)
+            }
         } else {
             const list = new List({
                  user:user_id,
@@ -1600,13 +1615,13 @@ const addToWishlist = async(req,res)=>{
             })
             const listData = await list.save()
             if(listData){
-                console.log('successful');
-                req.flash("successMessage", "Product is successfully added to cart...");
+                console.log('successfully added to list');
+                req.flash("successMessage", "Product is successfully added to wishlist...");
                 res.redirect(`/viewProduct/${pdt_id}`)
             } else {
-                console.log('failed');
-                req.flash("errorMessage", "Product is not added to cart... Try again!!");
-                res.redirect("/newProducts");
+                console.log('failed to add to wishlist');
+                req.flash("errorMessage", "Product is not added to wishlist... Try again!!");
+                res.redirect("/viewProduct/${pdt_id}");
             }  
 
         }

@@ -1,7 +1,7 @@
 <%- include('../layout/profileHeader') %>
 
 <div class="d-block" style="width:1250px;">
-  <% if(!list || list.length === 0) {%>
+  <% if(!list || list.length === 0 || productlist_length === 0) {%>
     <div class="d-flex justify-content-center align-items-center" style="margin-top:40px;">
       <div class="d-block"> 
            <div>
@@ -20,7 +20,7 @@
       <% if(lst.product_list.includes(pdt._id.toString())) { %>
         
 
-    <div class="mb-4 ms-5 bg-success" data-aos="fade-up" style="margin-left:20px;padding:20px;">
+    <div class="mb-4 ms-5 " data-aos="fade-up" style="margin-left:20px;padding:20px;">
       <!-- <a href="/viewProduct/<%= pdt._id %>"> -->
         <div class="block-4 text-center border" style="width:250px;height:450px;">     
 
@@ -101,7 +101,7 @@
       .then(res=>res.json())
       .then(data=>{
         if(data.success){
-          location.href = '/getList'
+          removeFromList(pdtid)
         } else {
           location.href = '/getList'
         }

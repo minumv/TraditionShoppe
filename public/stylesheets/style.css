@@ -22,21 +22,26 @@ align-content: center;
 }
 
 .card{
+position: absolute;
+top:20%;
+left:38%;
 height: 370px;
 margin-top: auto;
 margin-bottom: auto;
 width: 400px;
-background-color: rgba(220, 150, 150, 0.4) !important;
+background-color:transparent;
+border:none;
+box-shadow:  0 4px 8px 0 rgba(94, 6, 89, 0.2), 0 6px 20px 0 rgba(89, 5, 94, 0.316);
 }
 
 .social_icon span{
 font-size: 60px;
 margin-left: 10px;
-color:#FFC312 ;
+color:#4F0341;
 }
 
 .social_icon span:hover{
-color: white;
+color: #eb47cd;
 cursor: pointer;
 }
 
@@ -52,8 +57,8 @@ top: -45px;
 
 .input-group-prepend span{
 width: 50px;
-background-color: #FFC312;
-color: black;
+background-color: #4F0341;
+color: white;
 border:0 !important;
 }
 
@@ -64,7 +69,7 @@ box-shadow: 0 0 0 0 !important;
 }
 
 .remember{
-color: white;
+color: #8921a1
 }
 
 .remember input
@@ -76,18 +81,18 @@ margin-right: 5px;
 }
 
 .login_btn{
-color: black;
-background-color: #FFC312;
+color: white;
+background-color: #4F0341;
 width: 100px;
 }
 
 .login_btn:hover{
-color: black;
-background-color: white;
+color: white;
+background-color: #eb47cd;
 }
 
 .links{
-color: white;
+color: #4F0341;
 }
 
 .links a{

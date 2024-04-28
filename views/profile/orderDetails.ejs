@@ -5,14 +5,41 @@
         
           
       
+        <%orders.forEach((odr)=>{%> 
 
-
-        <div>
-            <p class="text-dark text-uppercase">My Recent Orders</p>
-        </div>
-       
-       <div> 
-        <div class="row ord-box">
+        <div style="margin-top: 20px;margin-left: 25px;">
+            <%if (odr.orderstatus === 'delivered' || odr.orderstatus ===  'cancelled' ||odr.orderstatus ===  'refund received'){ %>
+            <p class="text-dark text-uppercase" style="font-size: 20px;font-weight: 600;"><strong>Order Completed</strong></p>
+            <%} else {%>
+            <p class="text-dark text-uppercase" style="font-size: 20px;font-weight: 600;"><strong>Track your Order</strong></p>
+           
+                <div class="d-flex mb-4">            
+                    <%if(odr.orderstatus === 'pending' || odr.orderstatus === 'processing'){%>
+                        
+                    <span class="ord-active">Placed-----</span><span class="ord-active">Processing-----</span>
+                    <span>Packed----</span><span>Dispatched----</span><span>Shipped----</span><span>Arrived at destination</span>
+                    
+                    <%} else if(odr.orderstatus === 'packed'){%>
+                        <span class="ord-active">Placed-----</span><span class="ord-active">Processing-----</span>
+                        <span class="ord-active">Packed-----</span><span>Dispatched----</span><span>Shipped----</span><span>Arrived at destination</span>
+                    
+                    <%} else if(odr.orderstatus === 'dispatched'){%>
+                        <span class="ord-active">Placed-----</span><span class="ord-active">Processing-----</span>
+                        <span class="ord-active">Packed-----</span><span class="ord-active">Dispatched-----</span><span>Shipped----</span><span>Arrived at destination</span>
+                    
+                    <%} else if(odr.orderstatus === 'shipped'){%>
+                        <span class="ord-active">Placed-----</span><span class="ord-active">Processing-----</span>
+                        <span class="ord-active">Packed-----</span><span class="ord-active">Dispatched-----</span><span class="ord-active">Shipped-----</span><span>Arrived at destination</span>
+                    
+                    <%} else if(odr.orderstatus === 'delivered' || odr.orderstatus === 'refund received'){%>
+                        <span class="ord-active">Placed-----</span><span class="ord-active">Processing-----</span>
+                        <span class="ord-active">Packed-----</span><span class="ord-active">Dispatched-----</span><span class="ord-active">Shipped-----</span><span class="ord-active">Arrived at destination</span>
+                    <%}%>
+             
+            </div>
+            <%}%> 
+        </div> 
+        <div class="row ord-box" style="width: 900px;">
                 
                 <div>
                     <img src="../upload/<%=odr.productDetails.images[0]%>" class="pdt-img rounded border" >
@@ -61,25 +88,16 @@
                     <div><span><%=odr.addressDetails.city%></span></div>
                 </div>
                    
-                <div class="pdt-det box-wid">
-                    <p class="text-dark text-uppercase mb-0">Status:</p>
-                    <p><%=odr.orderstatus%></p>
-                </div>
+               
 
-                <div class="d-block">
-                    <div><a href="/viewProduct/<%= odr.productDetails._id %>"><button class="use-but ord-but bg-light text-center text-dark">Buy Again</button></a></div>
-                    <div><a href="/review"><button type="submit" class="use-but ord-but bg-light text-center text-dark">Write a review</button></a></div>
-                    <% if (odr.orderstatus === 'pending'){%>
-                        <div><a href="/cancelPage/<%= odr._id %>"><button type="submit" class="use-but ord-but bg-light text-center text-dark">Cancel Order</button></a></div>
-                    <%} else if(odr.orderstatus === 'delivered'){%> 
-                        <div><a href="/returnPage/<%= odr._id %>"><button type="submit" class="use-but ord-but bg-white text-dark">Return Product</button></a></div>  
-                    <%}%>
-                </div>   
+                
             </div>
 
+            <%if (odr.orderstatus === 'delivered' || odr.orderstatus ===  'cancelled' ||odr.orderstatus ===  'refund received'){ %>
+                <div><a href="/viewProduct/<%= odr.productDetails._id %>"><button class="use-but ord-but bg-light text-center text-dark">Buy Again</button></a></div>
+            <%}%> 
 
-
-            
+            <%})%>
         
 
 
@@ -87,7 +105,7 @@
 
  </div>
 
-</div>
+
 </div>
 
 

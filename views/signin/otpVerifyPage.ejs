@@ -9,36 +9,67 @@
                     
                 </div>
                 <div class="card-body " tyle="background-color: white">
-                    <form action="/verify/<%=userId %>" method="post">
+                   
                         <div class="row">
                             <!-- 4 boxes for digits -->
                             <div class="col">
-                                <input type="password" class="form-control" name="digit1" >
+                                <input type="password" class="form-control" name="otp" >
                             </div>                          
-                            <div class="col">
-                                <input type="password" class="form-control" name="digit2" >
-                            </div>
-                            <div class="col">
-                                <input type="password" class="form-control" name="digit3" >
-                            </div>
-                            <div class="col">
-                                <input type="password" class="form-control" name="digit4" >
-                            </div>                       
+                                         
                         </div>
                         <div class="row justify-content-end">
                             <div class="col text-dark"><label for="">Time Remaining :  <p id="countdown">1:00</p></label></div>
                             <div class="col text-info">
-                                <input id="resend" type="submit" formaction="/resendOTP/<%=userId%>/<%=email%>" value="Resend" class="bg-transparent text-info text-center">
+                                <button id="resend" type="button" onclick="otpResending('<%=userId%>','<%=email%>')" class="bg-transparent text-info text-center">Resend</button>
                             </div>
                         </div>
                         <div class="form-group">
-                            <input type="submit" formaction="/verifyOTP/<%=userId%>" value="Verify" class="btn float-right login_btn">
+                            <button type="button" onclick="otpVerification('<%=userId%>')"  class="btn float-right login_btn">Verify</button>
                         </div>
                         <!-- resend timer add -->
-                    </form>
+                   
                 </div>
             </div>
         </div>
     </div>
-    
+    <script>
+        function otpVerification(userid){
+
+            const otp = document.querySelector('input[name="otp"]').value
+            console.log("otp :",otp)
+            
+            fetch(`/verifyOTP/${userid}`,{
+                method:"post",
+                headers:{
+                    'Content-Type':'application/json'
+                },
+                body:JSON.stringify({otp})
+            })
+            .then((res)=>res.json())
+            .then((data)=>{
+                if(data.success){
+                    location.href = '/signin/userLogin'
+                } else {
+                    loation.href=`/loatOTP/${userId}/${email}`
+                }
+            })
+        }
+
+        function otpResending(userid,email){
+            fetch(`/resendOTP/${userid}/${email}`,{
+                method:"post",
+                headers:{
+                    'Content-Type':'application/json'
+                }
+            })
+            .then((res)=>res.json())
+            .then((data)=>{
+                if(data.success){
+                    loation.href=`/loatOTP/${userid}/${email}`
+                } else {
+                    location.href = '/signin/userLogin'
+                }
+            })
+        }
+    </script>
     <%- include('../layout/authfooter') %>

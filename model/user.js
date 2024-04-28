@@ -5,6 +5,14 @@ const userSchema = new mongoose.Schema({
         type : String,
         required : true
     },
+    // gender:{
+    //     type : String,
+    //     // required : true
+    // },
+    // dob:{
+    //     type:Date,
+    //     // required:true,
+    // },
     email:{
         type : String,
         required : true,
@@ -12,11 +20,11 @@ const userSchema = new mongoose.Schema({
     },
     phone:{
         type : Number,
-        required : true,
+        // required : true,
     },
     password:{
         type : String,
-        required : true,
+        // required : true,
     },
     address:
     [{
@@ -48,7 +56,7 @@ const userSchema = new mongoose.Schema({
     },
     isVerifiedByOtp:{
         type: Boolean,
-        require: true
+        // require: true
     },
     created:{
         type:Date,

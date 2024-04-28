@@ -1,16 +1,34 @@
 <%- include('../layout/profileHeader') %>
 <div class="overview d-block">
-<div class="profile d-flex justify-content-center">
-  <div class="prof-det"> 
-       
-    <div><span id="name"><%= users.name %></span></div>
-    <div><span id="contact"><%= users.phone %></span></div>
-    <div><span id="mail"><%= users.email%></span></div>
-  
-  </div>
-  <div class="prof-edit d-flex justify-content-center align-items-center">
-    <a href="/geteditprofile"><button class="prof-edit-but">Edit Profile</button></a>
-  </div>
+<div class="profile d-block">
+ <div class="  d-flex justify-content-center ">
+    <div class="prof-det">        
+      <div><span id="name" style="text-transform: capitalize;"><%= users.name %></span></div>
+      <div><span id="contact"><%= users.phone %></span></div>
+      <div><span id="mail"><%= users.email%></span></div>
+    
+    </div>
+    <div class="prof-edit ">
+      <a href="/geteditprofile"><button class="prof-edit-but">Edit Profile</button></a>
+    </div>
+ </div>
+ <div class="  d-flex justify-content-center ">
+  <div class="prof-det">
+   <div class=" d-flex justify-content-around">
+    <div class="referal-box">
+      <span ><strong>REFERAL CODE</strong></span>&nbsp;:&nbsp;<br>
+      <span ><%= users.referalCode %></span>
+    </div>
+    <div class="referal-box">
+      <span id="refCode"><strong>REFERAL LINK</strong></span>&nbsp;:&nbsp;
+      <span id="refLink" style="text-decoration: underline;"><a href="">http://localhost:4000/signin/signup/?referalCode=<%= users.referalCode %></a></span>
+    </div>
+   </div>
+    <div>
+      <span style="font-size:14px; font-weight: 500;">*Share your referal code or referal link to your friends and earn RS.100/- credit in your wallet</span>
+    </div>
+ </div>
+ </div>
 </div>
 <div class="profile-row">
   <div class="box-div first">

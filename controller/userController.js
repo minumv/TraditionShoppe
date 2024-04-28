@@ -12,6 +12,7 @@ const Cart = require('../model/cart')
 const List = require('../model/wishlist')
 const Order = require('../model/order')
 const Address = require('../model/address')
+const mongoose = require('mongoose');
 
 //other controllers
 const content = require('../controller/contentController')
@@ -69,7 +70,7 @@ const verifyLogin = async(req,res)=>{
             const passwordMatch = await bcrypt.compare(password,userData.password)
             if(passwordMatch){
                 req.session.user = userData.email ;
-
+                req.session.blocked = false
                 req.flash("successMessage","You are successfully logged in.")
                 res.redirect('/home')
             } else {
@@ -89,35 +90,54 @@ const verifyLogin = async(req,res)=>{
 
 //login using google
 const successGoogleLogin = async (req,res)=>{
-    if(!req.user){
-        res.redirect('/signin/userLogin')
+    
+    let firstFourChars = req.user.email.substring(0, 4).toUpperCase();
+    // Generate four random numbers between 0 and 9
+    let randomNumbers = '';
+    for (let i = 0; i < 4; i++) {
+        randomNumbers += Math.floor(Math.random() * 10);
     }
-    //console.log(req.user);
-    const productQuery = Products.find({status:{$ne:'inactive'},isListing:true}).exec()
-    const categoryQuery = Category.find({status:true}).exec()
-    const sellerQuery = Seller.find({status:{$ne:'inactive'}}).exec()
-    const discountQuery = Discount.find({status:true}).exec()
-    console.log( productQuery);
-    const [products, categories, sellers, discounts] = await Promise.all([productQuery, categoryQuery, sellerQuery, discountQuery]);
-    req.session.user = req.user.email ;
-    res.render('user/home',{
-        title:"Home | TraditionShoppe",
-        user : req.session.user,
-        products:products,
-        categories:categories,
-        sellers:sellers,
-        discounts:discounts,
-        qtyCount:req.session.qtyCount,
-            listCount:req.session.listCount, 
-        errorMessage:req.flash('errorMessage'),
-        successMessage:req.flash('successMessage')
-    })
+    // Concatenate the first four characters and four random numbers
+    let referCode = firstFourChars + randomNumbers;
+    console.log("referCode :",referCode)
+    const newUser = await new User({
+        name : req.user.displayName,
+        email: req.user.email,       
+        role : 'user',
+        status: 'Pending', 
+        wallet : 0, 
+        referalCode: referCode            
+        
+
+    }).save()
+    
+    console.log("user :",req.user);
+    if(newUser){
+        console.log("new user :",newUser);
+    }
+    req.session.user = req.user.email 
+    res.redirect('/home')
+    
 }
 
 //google login failed
 const failureGoogleLogin = async (req,res)=>{
     res.redirect('/signin/userLogin')
 }
+
+//google signup
+
+const successGoogleSignup = async (req,res)=>{
+   console.log("Google user :",req.user)
+}
+
+//google login failed
+const failureGoogleSignup = async (req,res)=>{
+    res.redirect('/signin/signup')
+}
+
+
+
 
 //login using facebook
 const facebookSignin = async (req,res)=>{
@@ -158,8 +178,12 @@ const loadChangePassword = async (req,res)=>{
 //load signup page
 const loadSignup = async (req,res)=>{
     try{
+        const referalCode = req.query.referalCode
+        req.session.signup = true
+        console.log("session :", req.session.signup)
         res.render('signin/signup',{
             title: "Sign Up | TraditionShoppe",
+            referalCode,
             errorMessage:req.flash('errorMessage'),
             successMessage:req.flash('successMessage')
         })
@@ -189,81 +213,110 @@ const loadOtp = async (req,res)=>{
     try{
        
           
-        let {name,email,phone,password} = req.body
-        console.log(name,email,phone,password);
+        let {name,email,phone,password,confirmpassword,refferal} = req.body
+        console.log(name,email,phone,password,confirmpassword,refferal);
         
-        //checking if user already exists
+       
         User.find({email})
         .then((result)=>{
             if(result.length){
                 //A user already exists
-                res.json({
-                    status: "FAILED",
-                    message: "User with the proveded email already exists",
-                })
-            } else {
-                //try to create new user
-
+                console.log("user exist error!")
+                req.flash("errorMessage", "User with the provided email already exists!!");    
+                res.json({success:false})
+               
+            } else {               
+                if(password !== confirmpassword){
+                    console.log("Password mismatch error!!")
+                    req.flash("errorMessage", "Confirm password should match with password  !!");    
+                    res.json({success:false})
+                } else {
                 //password hashing
                 bcrypt.hash(password,10)
                 .then((hashedPassword)=>{
+                    console.log("set values to add into database..")
+                    //creating referal code
+                    let firstFourChars = email.substring(0, 4).toUpperCase();
+                    // Generate four random numbers between 0 and 9
+                    let randomNumbers = '';
+                    for (let i = 0; i < 4; i++) {
+                        randomNumbers += Math.floor(Math.random() * 10);
+                    }
+                    // Concatenate the first four characters and four random numbers
+                    let referCode = firstFourChars + randomNumbers;
+                    console.log("refercode generated :",referCode)
+                    //apply referal use credit
+                    let referCredit = 0
+                    if(refferal !== 'No'){
+                      referCredit = 100
+                      referalUserUpdate(req,res,{referCredit,refferal})  
+                    }
                     const newUser = new User({
                         name,
                         email,
                         phone,
                         password : hashedPassword,
                         role : 'user',
-                        status: 'Pending',
+                        status: 'Pending', 
+                        wallet : referCredit, 
+                        referalCode: referCode,                   
                         isVerifiedByOtp : false
                     })
                     newUser
                     .save()
                     .then((result)=>{
-                        //handle otp verification
-
-                        // const { _id: userId, email } = result;
-                        // sendOtpEmail({ userId, email }, res);
-
-
-                         sendOtpEmail(result,res)
-
-                        
-                        res.redirect(`/verifyOTP/${result._id}/${result.email}`)
+                        console.log("User data :",newUser)
+                        sendOtpEmail(result,res)
+                        console.log("result :",result) 
+                        console.log("mail sent successfully..") 
+                        res.json({success:true, 
+                             data:{ 
+                                _id:result._id ,
+                                email:result.email
+                            }})   
+                                               
+                        //res.redirect(`/loadOTP/${result._id}/${result.email}`)
                     })
                     .catch((err)=>{
                         console.log(err);
-                        res.json({
-                            status:"FAILED",
-                            message: "An error occured while saving user account!"
-                        })
+                        req.flash("errorMessage", "An error occured while saving user account !!");    
+                        res.json({success:false })
                     })
                 })
                 .catch((err)=>{
-                    res.json({
-                        status: "FAILED",
-                        message: "An error occured while hasing password!"
-                    })
+                    req.flash("errorMessage", "An error occured while hasing password !!");    
+                    res.json({success:false })                    
                 })
             }
+        }
 
         })
         .catch((err)=>{
             console.log(err);
-            res.json({
-                status:"FAILED",
-                message: "An error occured while checking for existing user!"
-            })
+            req.flash("errorMessage", "An error occured while checking for existing user !!");    
+            res.json({success:false })               
         })
         
     } catch(err){
         console.log(err);
-        res.json({
-            status:"FAILED",
-            message:"An error occured in saving try block"
-           })
+        req.flash("errorMessage", "An error occured in saving try block!!");    
+        res.json({success:false })        
     }
 }
 
+const referalUserUpdate = async(req,res,obj)=>{
+    try{
+            console.log("referal code is used")
+            req.session.refferalUsed = true;           
+                        
+            const referUser = await User.findOne({referalCode:obj.refferal})
+            referUser.wallet += obj.referCredit;
+            referUser.save()
+            console.log("referal user :",referUser) 
+    } catch(err){
+        console.log(err.message)
+    }
+}
 //request otp
 const sendOtpEmail = async({_id,email},res)=>{
     try{
@@ -278,6 +331,7 @@ const sendOtpEmail = async({_id,email},res)=>{
             html:`<p><b> ${otp}</b> is your OTP to verify your email and complete the signup process.<br> OTP will expires in 5 minutes..</p>`,
         }
 
+        console.log("mail :",mailOptions)
         //hash the otp
         const hashedOTP = await bcrypt.hash(otp,10)
         const newOTP = new Otp({
@@ -289,15 +343,13 @@ const sendOtpEmail = async({_id,email},res)=>{
 
         //save new otp
         await newOTP.save();
-        console.log(newOTP);
+        console.log("otp generation :",newOTP);
         await transporter.sendMail(mailOptions)
              
     }
     catch(err){
-       res.json({
-        status:"FAILED",
-        message:err.message
-       })
+        req.flash("errorMessage", "An error occured while sending otp mail to user !!");    
+        res.json({success:false })   
     }
 }
 const loadverifyOTPMail = async(req,res)=>{
@@ -322,14 +374,16 @@ const verifyOTPMail = async(req,res)=>{
         let userId = req.params.id;
         console.log("userId at  verify : "+userId);
         // let email = req.params.email
-        let{ digit1,digit2,digit3,digit4 }=req.body
-        let otp = digit1+digit2+digit3+digit4
-
+        let otp =req.body.otp
+        
         // let {otp} = [...req.body.digit1,...req.body.digit2,...req.body.digit3,...req.body.digit4];
         console.log("userid : "+userId +" otp : "+otp);
         
         if(!userId || !otp){
-            throw new error("Empty otp details are not allowed")
+            //throw new error("Empty otp details are not allowed")
+            req.flash("errorMessage", "Empty otp details are not allowed!!");    
+            res.json({success:false })     
+
         } else {
             const userOtpNumber = await Otp.find({user_id:userId})
         
@@ -338,9 +392,11 @@ const verifyOTPMail = async(req,res)=>{
 
             if(userOtpNumber.length <= 0){
                 //no record found
-                throw new Error(
-                    "Account record doesn't exist or has been verified already. Please sign up or check your email! "
-                )
+                // throw new Error(
+                //     "Account record doesn't exist or has been verified already. Please sign up or check your email! "
+                // )
+                req.flash("errorMessage", "Account record doesn't exist or has been verified already. Please sign up or check your email!!!");    
+                res.json({success:false })     
             } else {
                 //user otp record exists
                 const { expiresAt } = userOtpNumber[0].expiresAt
@@ -349,19 +405,26 @@ const verifyOTPMail = async(req,res)=>{
                 if(expiresAt < Date.now()){
                     //user otp record has expired
                     await Otp.deleteMany({user_id:userId})
-                    throw new Error("Code has expired. Please request again!")
+                    //throw new Error("Code has expired. Please request again!")
+                    req.flash("errorMessage", "Code has expired. Please request again!!!");    
+                    res.json({success:false })    
+
                 } else {
                     const validOTP = await bcrypt.compare(otp,hashedOTP)
                     
                     if(!validOTP){
                         //supplied otp is wrong
-                        throw new Error("Invalid code passed. Check your inbox!")
+                        //throw new Error("Invalid code passed. Check your inbox!")
+                        req.flash("errorMessage", "Invalid code passed. Check your inbox!!!");    
+                        res.json({success:false })   
                         // res.redirect(`/verifyOTP/${userId}/${email}`)
                     } else {
                         //success
                         await User.updateOne({_id:userId},{isVerifiedByOtp:true})
                         Otp.deleteMany({userId})
-                        res.redirect('/signin/userLogin')
+                        req.flash("successMessage", "Your registration successfull, Sign in to the system..");  
+                        res.json({success:true})
+                       // res.redirect('/signin/userLogin')
                         // res.json({
                         //     status: "VERIFIED",
                         //     message: `User email verified successfully`
@@ -374,10 +437,8 @@ const verifyOTPMail = async(req,res)=>{
     }
     catch(error){
         console.log(error.message);
-        res.json({
-            status: "FAILED",
-            message: error.message
-        })
+        req.flash("errorMessage", "An error occured on otp verification!!!");    
+        res.json({success:false })  
     }
 }
 
@@ -404,7 +465,8 @@ const loadOTPSuccess = async(req,res)=>{
             await Otp.deleteMany({user_id:_id})
             console.log("at resend after delete userid : " + _id + " email : "+ email);
             sendOtpEmail({_id, email},res)
-            res.redirect(`/verifyOTP/${_id}/${email}`)
+            res.json({success:true})
+           // res.redirect(`/verifyOTP/${_id}/${email}`)
         }
         catch(err){
             console.log(err.message);
@@ -577,23 +639,24 @@ const loadeditProfile = async(req,res)=>{
 }
 const editProfile = async(req,res)=>{
     try{
+        console.log("edit details")
         const id = req.params.id
         console.log("userid : ",id);
         const profile = await User.updateOne(
             { _id:id},
             { $set : {
                 name : req.body.name,
-                phone : req.body.contact,
-                email : req.body.mail
+                phone : req.body.phone,
+                email : req.body.email
             }
         })
 
         if(profile){
             req.flash("successMessage", "You profile changed successfully..");        
-            res.redirect("/userprofile");  
+            res.json({success:true})  
         } else {
             req.flash("errorMessage", "Profile Updation Failed !!");        
-            res.redirect("/geteditprofile");  
+            res.json({success:false})  
         }
 
     } catch(err){
@@ -693,7 +756,43 @@ const loadOrderView = async (req,res)=>{
     try{
         const odrid = req.params.id
         const users = await User.findOne({email:req.session.user}).exec()
-        const order = await Order.findOne({_id:odrid}).exec()
+        const objectId = new mongoose.Types.ObjectId(odrid);
+        console.log("order id :",odrid)
+        const orders = await Order.aggregate([
+            {
+                $match: { _id: objectId }
+            },
+            {
+                $lookup: {
+                    from: "addresses", // Assuming 'addresses' is the name of your Address collection
+                    localField: "address", // Field in the 'orders' collection
+                    foreignField: "_id", // Field in the 'addresses' collection
+                    as: "addressDetails"
+                }
+            },
+            {
+                $unwind: {
+                    path: "$addressDetails",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $lookup: {
+                    from: "products", // Assuming 'addresses' is the name of your Address collection
+                    localField: "product_list.productId", // Field in the 'orders' collection
+                    foreignField: "_id", // Field in the 'addresses' collection
+                    as: "productDetails"
+                }
+            },
+            {
+                $unwind: {
+                    path: "$productDetails",
+                    preserveNullAndEmptyArrays: true
+                }
+            }
+        ])
+
+        console.log("orderdetails :",orders)
         await getQtyCount(req,res);
         await getListCount(req,res);
         
@@ -704,7 +803,7 @@ const loadOrderView = async (req,res)=>{
             qtyCount:req.session.qtyCount,
             listCount:req.session.listCount,
             users,
-            order,
+            orders,
             errorMessage:req.flash('errorMessage'),
             successMessage:req.flash('successMessage')
 
@@ -1295,7 +1394,7 @@ const loadWallet = async (req,res)=>{
 const loadList = async (req,res)=>{
     try{
         
-        const products = await content.getProducts(req,res)
+        const products = await content.getProducts(req,res) //get products from contentController 
         const users = await User.findOne({email:req.session.user}).exec()
         console.log("user :",users)
         const pageNum = req.query.page || 1
@@ -1330,7 +1429,12 @@ const loadList = async (req,res)=>{
             $limit: perPage
         }])
         console.log("wishlist :",list)
-
+        let productlist_length = 0
+        list.forEach((lst)=>{
+            console.log("product list :",lst.product_list.length)
+            productlist_length= lst.product_list.length
+        })
+        
         await getQtyCount(req,res);
         await getListCount(req,res);
         
@@ -1339,7 +1443,8 @@ const loadList = async (req,res)=>{
             user : req.session.user,
             page:'Your Wishlist',
             qtyCount:req.session.qtyCount,
-            listCount:req.session.listCount,               
+            listCount:req.session.listCount, 
+            productlist_length,              
             products,
             pageNum,
             perPage,
@@ -1383,6 +1488,9 @@ module.exports = {
     successGoogleLogin,
     failureGoogleLogin,
 
+    successGoogleSignup,
+    failureGoogleSignup,
+
     facebookSignin,
 
     loadMobile,
@@ -1394,6 +1502,7 @@ module.exports = {
     loadIndex,
 
     customerSignup,
+    referalUserUpdate,
 
     sendOtpEmail,
     loadverifyOTPMail,

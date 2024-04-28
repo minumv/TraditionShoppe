@@ -22,7 +22,8 @@ userRoute.use(bodyParser.urlencoded({extended:true}))
 // userRoute.get("/login",userAuthent.isLoggedOut,userController.loadLogin)
 // userRoute.post("/login",userController.verifyLogin)
 
-//Auth
+/*******************login using Google account**************/
+
 userRoute.get('/auth/google',passport.authenticate('google',{scope:
     [ 'email','profile' ]
 }))
@@ -40,7 +41,28 @@ userRoute.get('/success',userController.successGoogleLogin)
 //failure
 userRoute.get('/failure',userController.failureGoogleLogin)
 
-//logout routing
+/***********************signup using google A/c************************* */
+
+
+// userRoute.get('/authSign/google', passport.authenticate('google', {
+//     scope: ['email', 'profile']
+// }));
+userRoute.get('/authSign/google', (req, res, next) => {
+    req.session.signup = true; // Set signup flag in session
+    next();
+}, passport.authenticate('google', {
+        scope: ['email', 'profile']
+    }));
+
+
+
+//success
+userRoute.get('/successSign',userController.successGoogleSignup)
+
+//failure
+userRoute.get('/failureSign',userController.failureGoogleSignup)
+
+/*******************signup and login using credentials*************************/
 userRoute.get("/signin/userLogin",userAuthent.isLoggedOut,userController.loadLogin)
 userRoute.get("/signin/forgetPassword",userController.loadMobile)
 userRoute.get("/signin/changePassword",userController.loadChangePassword)
@@ -66,7 +88,7 @@ userRoute.post("/addcustomer",userController.customerSignup)
 userRoute.post('/send-otp',userController.sendOtpEmail)
 
 //load verify page
-userRoute.get('/verifyOTP/:id/:email',userController.loadverifyOTPMail)
+userRoute.get('/loadOTP/:id/:email',userController.loadverifyOTPMail)
 
 //verify otp
 userRoute.post('/verifyOTP/:id',userController.verifyOTPMail)
@@ -92,7 +114,7 @@ userRoute.post("/changeprofile/:id",userAuthent.isAuthenticated,userController.e
 
 /************order**************/
 userRoute.get("/getOrder",userAuthent.isAuthenticated,userController.loadOrder)
-userRoute.get("/getOrderView",userAuthent.isAuthenticated,userController.loadOrderView)
+userRoute.get("/getOrderView/:id",userAuthent.isAuthenticated,userController.loadOrderView)
 userRoute.get("/orderlast30",userAuthent.isAuthenticated,userController.loadbuyLast30)
 userRoute.get("/order2023",userAuthent.isAuthenticated,userController.load2023)
 userRoute.get("/order2022",userAuthent.isAuthenticated,userController.load2022)

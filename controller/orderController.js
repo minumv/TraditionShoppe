@@ -556,7 +556,7 @@ const OrderReturned = async (req,res)=>{
                     } } 
                 )
                 //update wallet(Add paymentamount) based on payment method
-                if(orders.payment === 'Razorpay'){
+                if(orders.payment === 'Razorpay' || orders.payment === 'Wallet'){
                     if(orders.user.wallet != null){
                         let amount = orders.user.wallet + orders.payment_amount
                         await User.updateOne(

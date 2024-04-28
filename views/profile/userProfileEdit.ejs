@@ -1,13 +1,13 @@
 <%- include('../layout/profileHeader') %>
 <div class="overview d-block">
  
-        <form action="/changeprofile/<%= usr._id%>" method="post"></form> 
+        <form action="/changeprofile/<%= users._id%>" method="post"></form> 
         <div class="edit-box">  
             <div class="edit-head"><p>Edit Details</p></div>      
             <div><input class="edit-text" type="text" name="name" value="<%= users.name %>"></div>
-            <div><input class="edit-text" type="text" name="contact" value="<%= users.phone %>"></div>
-            <div><input class="edit-text" type="text" name="mail" value="<%= users.email %>"></div>
-            <div><button class="edit-but" type="submit">Save Details</button></div>
+            <div><input class="edit-text" type="text" name="phone" value="<%= users.phone %>"></div>
+            <div><input class="edit-text" type="text" name="email" value="<%= users.email %>"></div>
+            <div><button class="edit-but" type="button" onclick="editDetails('<%= users._id%>')">Save Details</button></div>
         </div>
         </form>    
 
@@ -16,5 +16,31 @@
 </div>
 
   </div>
+  <script>
+    function editDetails(userid){
+      const name = document.querySelector('input[name="name"]').value
+      const phone = document.querySelector('input[name="phone"]').value
+      const email = document.querySelector('input[name="email"]').value
+      const formData={
+        name,phone,email
+      }
+      console.log("form data :",formData)
+      fetch(`/changeprofile/${userid}`,{
+        method:"post",
+        headers:{
+          'Content-Type':'application/json'
+        },
+        body:JSON.stringify(formData)
+      })
+      .then((res)=>res.json())
+      .then((data)=>{
+        if(data.success){
+          location.href='/userprofile'
+        } else {
+          location.href='/geteditprofile'
+        }
+      })
+    }
+  </script>
 
   <%- include('../layout/userFooter') %>

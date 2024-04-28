@@ -28,14 +28,14 @@
                                         <img src="../upload/<%= pdt.images[0] %>" alt="" class="cart-image">
                                         <p class="cart-name"><%=pdt.product_name %></p>
                                     </div>
-                                    <div class="cart-details">
-                                       
+                                    <div class="cart-details">                                       
                                         <div class="cart-opert but">
-                                            <a href="/subCart/<%=user_cart._id%>/<%=user_cart.user%>/<%=cart.productId%>/<%=pdt.discountedsalePrice%>"><div class="p-1 m-0 side">-</div></a>
+                                            <button onclick="subtractingFromCart('<%=user_cart._id%>','<%=user_cart.user%>','<%=cart.productId%>','<%=pdt.discountedsalePrice%>')" class="p-1 m-0 side border-0" style="background: transparent;">-</button>
                                             <div class="p-1 m-0"><button><%=cart.quantity %></button></div>
-                                            <a href="/addCart/<%=user_cart._id%>/<%=user_cart.user%>/<%=cart.productId%>/<%=pdt.discountedsalePrice%>"><div class="p-1 m-0 side">+</div></a>
+                                          <button onclick="addingToCart('<%=user_cart._id%>','<%=user_cart.user%>','<%=cart.productId%>','<%=pdt.discountedsalePrice%>')" class="p-1 m-0 side border-0" style="background: transparent;">+</button>
+                                          
                                         </div>
-                                        <a href="/deleteCart/<%=user_cart._id%>/<%=user_cart.user%>/<%=cart.productId%>"><span class="icon icon-trash cart-trash-icon"></span></a>
+                                        <button onclick="deletingFromCart('<%=user_cart._id%>','<%=user_cart.user%>','<%=cart.productId%>')" class="border-0" style="background: transparent;"><span class="icon icon-trash cart-trash-icon"></span></button>
 
                                     </div>
                                     <div class="cart-price">
@@ -113,4 +113,60 @@
 
 
 </main>
+
+<script>
+    function addingToCart(cartid,userid,pdtid,discountprice){
+
+        fetch(`/addCart/${cartid}/${userid}/${pdtid}/${discountprice}`,{
+            method:"post",
+            headers:{
+                'Content-Type':'application/json'
+            }
+        })
+        .then((res)=>res.json())
+        .then((data)=>{
+            if(data.success){
+                location.href='/cart'
+            } else {
+                location.href='/cart'
+            }
+        })
+    }
+
+    function subtractingFromCart(cartid,userid,pdtid,discountprice){
+
+        fetch(`/subCart/${cartid}/${userid}/${pdtid}/${discountprice}`,{
+            method:"post",
+            headers:{
+                'Content-Type':'application/json'
+            }
+        })
+        .then((res)=>res.json())
+        .then((data)=>{
+            if(data.success){
+                location.href='/cart'
+            } else {
+                location.href='/cart'
+            }
+        })
+    }
+
+    function deletingFromCart(cartid,userid,pdtid){
+
+        fetch(`/deleteCart/${cartid}/${userid}/${pdtid}`,{
+            method:"post",
+            headers:{
+                'Content-Type':'application/json'
+            }
+        })
+        .then((res)=>res.json())
+        .then((data)=>{
+            if(data.success){
+                location.href='/cart'
+            } else {
+                location.href='/cart'
+            }
+        })
+    }
+</script>
 <%- include('../layout/userFooter') %>

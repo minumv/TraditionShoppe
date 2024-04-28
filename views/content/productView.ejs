@@ -87,7 +87,7 @@
             </div>
             <div class="wish-save d-flex">
                 <a class = "link-wish"href="/addtowishlist/<%= pdt._id %>"><span class="icon icon-heart-o">&nbsp;Add to wishlist</span></a>&ensp;&ensp;&ensp;&nbsp;
-                <a class= "link-wish" href="/saveforlater"><span class="icon icon-save">&nbsp;Save for later</span></a>
+               
             </div>           
             <br>          
             <div class="nav-but-div">
@@ -167,9 +167,9 @@
     .then(res=>res.json())
     .then(data=>{
       if(data.success){
-        location.href = `/viewProduct/${pdt_id}`
+        location.href = `/viewProduct/${pdtid}`
       } else {
-        location.href = `/viewProduct/${pdt_id}`
+        location.href = `/viewProduct/${pdtid}`
       }
     })
   }
