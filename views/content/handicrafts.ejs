@@ -1,3 +1,31 @@
 <%- include('../layout/userHeader') %>
+<div class="container">
+    <div class="row mb-5">       
 
+        <div class="col-sm-6 col-lg-4 mb-4" data-aos="fade-up">
+          <!-- <a href="/viewProduct/<%= pdt._id %>"> -->
+            <div class="div-box div-height text-center border">
+            
+              <figure class="div-image">
+                <button id="wish-but" class="icon icon-heart" type="button" onclick="clickWishButton(event)">
+                  <!-- &#10084; -->
+                </button>
+                <a href="/viewProduct/<%= pdt._id %>"><img src="../upload/<%= pdt.images[0]%>" alt="Image placeholder" class="img-fluid"></a>
+              </figure>
+              <div class="div-text p-4">
+                <h3><a href="/viewProduct/<%= pdt._id %>"><%= pdt.product_name %></a></h3>
+                <div class="d-flex justify-content-around mt-2 ">
+                  <p class=" mb-0 text-danger font-weight-light"><del>RS.<%= pdt.price_unit %></del></p>
+                  <p class="text-black font-weight-light">Rs.<%=mrp %></p>
+                </div>
+              </div>
+            </div>
+          <!-- </a> -->
+        </div>
+     
+       
+        <% })%>
+
+      </div>
+</div>
 <%- include('../layout/userFooter') %>

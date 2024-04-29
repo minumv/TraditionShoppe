@@ -11,6 +11,11 @@
     <div class="prof-edit ">
       <a href="/geteditprofile"><button class="prof-edit-but">Edit Profile</button></a>
     </div>
+    <%if(users.password){%>
+    <div class="prof-edit" style="margin-left: 20px;">
+      <a href="/signin/changePassword/<%=users._id%>"><button class=" prof-edit-but border-0" style="background: transparent;width:50px;font-size: 30px;margin-top:61px;"><span class="icon icon-settings"></button></a>
+    </div>
+    <%}%>
  </div>
  <div class="  d-flex justify-content-center ">
   <div class="prof-det">

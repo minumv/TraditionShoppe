@@ -7,6 +7,7 @@ const Discount = require('../model/discount')
 const Coupon = require('../model/coupon')
 const Offer = require('../model/offer')
 const Order = require('../model/order')
+const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
 
 // const userAuthent = require('../middleware/userAuthent')
 
@@ -588,50 +589,168 @@ const Order = require('../model/order')
     // }
 
      //load Sales report page
+     const storeFromdate = async(req,res)=>{
+        try{
+            const fromdate = req.body.fromdate
+            const todate = req.body.todate
+            req.session.todate = todate
+            req.session.fromdate = fromdate
+            res.json({succes:true})
+        } catch(err){
+            console.log(err.message);
+        }
+     }
+     const storeTodate = async(req,res)=>{
+        try{
+            const todate = req.body.todate
+            req.session.todate = todate
+            res.json({succes:true})
+        } catch(err){
+            console.log(err.message);
+        }
+     }
+
+     const storeFilterValue = async(req,res)=>{
+        try{
+            const todate = req.body.todate
+            req.session.todate = todate
+            res.json({succes:true})
+        } catch(err){
+            console.log(err.message);
+        }
+     }
+
      const loadSalesReport= async (req, res)=>{
         try {
 
-            // const orderData = await Order.aggregate([
-            //     {$match:{orderstatus :{$in:["delivered","cancelled","refund received"]}}},
-            //     { $unwind:"$product_list"} ,
-            //     {$lookup:{
-            //         from:"products",
-            //         localField:"product_list.product_id",
-            //         foreignField: "_id",
-            //         as: "productInfo",
-            //     }},
-            //     { $unwind:"$productInfo"} ,
-            //     {$project : {
-            //         prodname : "$productInfo.product_name",
-            //         qty : "$product_list.quantity",
-            //         delivery_dat : "$delivered_date ",
-            //         total_cost : "$payment_amount",
-            //         method:"$payment",
-            //         status:"$orderstatus"
-            //     }}                         
-            // ])
-            
+            const fromdate = req.session.fromdate
+            const todate = req.session.todate
+            console.log("dates",fromdate,todate)
+            const filter = req.query.filter
+            console.log("filter",filter)
+            let matchCondition = ''
+            if(fromdate && todate){
+                matchCondition={
+                $and: [
+                    { orderstatus: 'delivered' },
+                    { order_date: { $gte: new Date(fromdate), $lte: new Date(todate) } }
+                ] }           
+            } else if(filter){
+                const currentDate = new Date();
+                if(filter === 'today'){
+                    
+                    matchCondition={
+                        $and: [
+                            { orderstatus: 'delivered' },
+                            { order_date: currentDate }
+                        ] }    
+                } else if(filter === 'yesterday'){
+                   
+                    const yesterday = new Date(currentDate);
+                    yesterday.setDate(currentDate.getDate() - 1); // Subtract 1 day
+                    // Set hours, minutes, seconds, and milliseconds to 0 to get the start of yesterday
+                    yesterday.setHours(0, 0, 0, 0);
+                    console.log("yesterday",yesterday)
+                    matchCondition = {
+                        $and: [
+                            { orderstatus: 'delivered' },
+                            { order_date: { $gte: yesterday, $lt: currentDate } } // Using $lt to exclude today's orders
+                        ]
+                    };
 
-            const orders = await Order.find({orderstatus:{$in:["delivered","cancelled","refund received"]}})
-            .populate('product_list')
-            .populate('user')
-            .exec()
-            orders.forEach((ord)=>{
-                console.log("inside order");
-                console.log(ord.user.name,ord.payment_amount,ord.product_list)
-            })  
-            const products = await Product.find({status:'active',isListing:true}).exec()           
+                } else if(filter === 'lastweek'){
+                    
+                    // Calculate the start date of last week
+                    const lastWeekStartDate = new Date(currentDate);
+                    lastWeekStartDate.setDate(currentDate.getDate() - currentDate.getDay() - 6); // Go back to the previous Sunday and subtract 6 days to get the start of last week
+                    // Set hours, minutes, seconds, and milliseconds to 0 to get the start of the day
+                    lastWeekStartDate.setHours(0, 0, 0, 0);
+                    // Calculate the end date of last week
+                    const lastWeekEndDate = new Date(lastWeekStartDate);
+                    lastWeekEndDate.setDate(lastWeekStartDate.getDate() + 6); // Add 6 days to get the end of last week
+                    console.log("lastWeek",lastWeekStartDate,lastWeekEndDate,)
+                    matchCondition = {
+                        $and: [
+                            { orderstatus: 'delivered' },
+                            { order_date: { $gte: lastWeekStartDate, $lte: lastWeekEndDate } }
+                        ]
+                    };
+                    
+                } else if(filter === 'lastmonth'){
+                    // Calculate the start date of last month
+                    const lastMonthStartDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
+                    // Calculate the end date of last month
+                    const lastMonthEndDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0);                    
+                    console.log("lastMonth",lastMonthStartDate ,lastMonthEndDate,)
+                    matchCondition = {
+                        $and: [
+                            { orderstatus: 'delivered' },
+                            { order_date: { $gte: lastMonthStartDate, $lte: lastMonthEndDate } }
+                        ]
+                    };
+
+                }
+
+            } else {
+                matchCondition={orderstatus: 'delivered'};
+            }
+            const orders = await getOrders(req,res,matchCondition)
+            delete req.session.fromdate  
+            delete req.session.todate  
+            console.log("order details :",orders)
+
+                
             res.render('admin/salesReport',{
                 title : "Sales Report - TraditionShoppe",
                 page:"Sales Report",
-                orders:orders,
-                products:products,
+                orders:orders,                
                 errorMessage : req.flash('errorMessage'),
                 successMessage : req.flash('successMessage')
             })
             
         } catch (err) {
             console.log(err.message);
+        }
+    }
+    const getOrders = async (req,res,matchCondition)=>{
+        try{
+            const orders = await Order.aggregate([
+                {
+                    $match: matchCondition
+                },
+                {
+                    $lookup: {
+                        from: "users", // Assuming 'addresses' is the name of your Address collection
+                        localField: "user", // Field in the 'orders' collection
+                        foreignField: "_id", // Field in the 'addresses' collection
+                        as: "userDetails"
+                    }
+                },
+                {
+                    $unwind: {
+                        path: "$userDetails",
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "products", // Assuming 'addresses' is the name of your Address collection
+                        localField: "product_list.productId", // Field in the 'orders' collection
+                        foreignField: "_id", // Field in the 'addresses' collection
+                        as: "productDetails"
+                    }
+                },
+                {
+                    $unwind: {
+                        path: "$productDetails",
+                        preserveNullAndEmptyArrays: true
+                    }
+                }
+            ])
+            return orders
+    
+        } catch(err){
+            console.log(err.message)
         }
     }
 
@@ -700,7 +819,10 @@ const Order = require('../model/order')
 
 
         // loadBanner,
+        storeTodate,
+        storeFromdate,
         loadSalesReport,
+        getOrders,
         // loadSettings,
         // logOut
         

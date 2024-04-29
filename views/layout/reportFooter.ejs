@@ -76,7 +76,7 @@
   </div>
  
   <!--   Core JS Files   -->
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
   <!-- <script src="/plugin/cropper/jquery-cropper.js"></script> -->
   <script src="/assets/js/core/popper.min.js"></script>
   <script src="/assets/js/core/bootstrap.min.js"></script>
@@ -84,7 +84,7 @@
   <script src="/assets/js/plugins/perfect-scrollbar.min.js"></script>
   <script src="/assets/js/plugins/smooth-scrollbar.min.js"></script>
   <!-- <script type='text/javascript' src="./node_modules/cropperjs/dist/cropper.min.js"></script> -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.7/cropper.min.js" integrity="sha512-N4T9zTrqZUWCEhVU2uD0m47ADCWYRfEGNQ+dx/lYdQvOn+5FJZxcyHOY68QKsjTEC7Oa234qhXFhjPGQu6vhqg==" crossorigin="anonymous"></script>
+  
   <script src="/js/scripts.js"></script>
   <script src="/js/script-modal.js"></script>
   <script>
@@ -101,12 +101,51 @@
   <!-- Control Center for Material Dashboard: parallax effects, scripts for the example pages etc -->
   <script src="/assets/js/material-dashboard.min.js?v=3.1.0"></script>
 
-<script src="https://cdn.datatables.net/2.0.5/js/dataTables.min.js"></script>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+  <script src="https://cdn.datatables.net/2.0.5/js/dataTables.js"></script>
+  <script src="https://cdn.datatables.net/buttons/3.0.2/js/dataTables.buttons.js"></script>
+  <script src="https://cdn.datatables.net/buttons/3.0.2/js/buttons.dataTables.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+  <script src="https://cdn.datatables.net/buttons/3.0.2/js/buttons.html5.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/3.0.2/js/buttons.html5.min.js"></script>
+  <!-- <script src=""></script> -->
+
   <script>
- $(document).ready( function () {
-    $('#myTable').DataTable();
-} );
-</script> 
+    new DataTable('#example', {
+    layout: {
+        topStart: {
+            buttons: ['copy', 'csv', 'excel', 'pdf', 'print']
+        }
+    }
+});
+</script>
+
+<script>
+    // Get references to the date inputs
+    const fromDateInput = document.getElementById('fromDateInput');
+    const toDateInput = document.getElementById('toDateInput');
+
+    // Add event listeners to the date inputs
+    fromDateInput.addEventListener('change', handleDateChange);
+    toDateInput.addEventListener('change', handleDateChange);
+
+    function handleDateChange() {
+        // Get the selected dates
+        const fromDate = fromDateInput.value;
+        const toDate = toDateInput.value;       
+
+        // Construct the new URL with query parameters
+        const newUrl = new URL('/salesreport', window.location.origin);
+        newUrl.searchParams.set('fromdate', fromDate);
+        newUrl.searchParams.set('todate', toDate);
+
+        // Redirect the page to the new URL
+        window.location.href = newUrl.toString();
+    }
+</script>
 
 </body>
 

@@ -12,7 +12,7 @@
                 <% let action = ''%>
             <% if(orders != '') {%>
                 
-            <table class="table align-items-center mb-0">
+            <table class="table align-items-center mb-0" id="myTable">
                 <thead>
                 <tr>
                     <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">S.No</th>
@@ -34,15 +34,15 @@
                           </div>
                         </div>
                       </td>
-                    
+                      
                                     
                             <td>
-                            <p class="text-xs font-weight-bold mb-0" style="width:100px; overflow:hidden ;"><%= row.userDetails.name %> </p>
-                            <!-- <p class="text-xs text-secondary mb-0">Organization</p> -->
+                            <p class="text-xs font-weight-bold mb-0" style="width:100px; overflow:hidden ;"> <%= row.userDetails?.name || 'N/A' %> </p>
+                            
                             </td>                        
                     
                             <td class="align-middle  text-sm">                
-                                <p class="text-xs font-weight-bold mb-0"><%= row.addressDetails.house %>,<%= row.addressDetails.house.city %>,<%= row.addressDetails.house.state %></p>
+                                <p class="text-xs font-weight-bold mb-0"><%= row.addressDetails.house %>,<%= row.addressDetails.city %>,<%= row.addressDetails.state %></p>
                             </td>
                         
                     <td class="align-middle  text-sm" >

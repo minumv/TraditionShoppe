@@ -55,6 +55,8 @@ adminRoute.get("/getNames/:type",adminController.addNames)
 
 
 /****************sales report*********************/
+adminRoute.post("/getdate",adminController.storeFromdate)
+adminRoute.get("/gettodate",adminController.storeTodate)
 adminRoute.get("/salesreport",adminController.loadSalesReport) 
 
 

@@ -91,30 +91,34 @@ const verifyLogin = async(req,res)=>{
 //login using google
 const successGoogleLogin = async (req,res)=>{
     
-    let firstFourChars = req.user.email.substring(0, 4).toUpperCase();
-    // Generate four random numbers between 0 and 9
-    let randomNumbers = '';
-    for (let i = 0; i < 4; i++) {
-        randomNumbers += Math.floor(Math.random() * 10);
-    }
-    // Concatenate the first four characters and four random numbers
-    let referCode = firstFourChars + randomNumbers;
-    console.log("referCode :",referCode)
-    const newUser = await new User({
-        name : req.user.displayName,
-        email: req.user.email,       
-        role : 'user',
-        status: 'Pending', 
-        wallet : 0, 
-        referalCode: referCode            
-        
+    const existUser = await User.findOne({email:req.user.email}).exec()
+    if(!existUser){
+        let firstFourChars = req.user.email.substring(0, 4).toUpperCase();
+        // Generate four random numbers between 0 and 9
+        let randomNumbers = '';
+        for (let i = 0; i < 4; i++) {
+            randomNumbers += Math.floor(Math.random() * 10);
+        }
+        // Concatenate the first four characters and four random numbers
+        let referCode = firstFourChars + randomNumbers;
+        console.log("referCode :",referCode)
+        const newUser = await new User({
+            name : req.user.displayName,
+            email: req.user.email,       
+            role : 'user',
+            status: 'Pending', 
+            wallet : 0, 
+            referalCode: referCode            
+            
 
-    }).save()
-    
-    console.log("user :",req.user);
-    if(newUser){
-        console.log("new user :",newUser);
+        }).save()
+        
+        console.log("user :",req.user);
+        if(newUser){
+            console.log("new user :",newUser);
+        }
     }
+    
     req.session.user = req.user.email 
     res.redirect('/home')
     
@@ -122,7 +126,9 @@ const successGoogleLogin = async (req,res)=>{
 
 //google login failed
 const failureGoogleLogin = async (req,res)=>{
-    res.redirect('/signin/userLogin')
+    if(!req.user){
+        res.redirect('/signin/userLogin')
+    }   
 }
 
 //google signup
@@ -149,8 +155,10 @@ const facebookSignin = async (req,res)=>{
 //load mobile number
 const loadMobile= async (req,res)=>{
     try{
+        const userid = req.params.id        
         res.render('user/forgetPassword',{
             title: "Reset Password | TraditionShoppe",
+            
             errorMessage:req.flash('errorMessage'),
             successMessage:req.flash('successMessage')
         })
@@ -164,8 +172,10 @@ const loadMobile= async (req,res)=>{
 //load new password page
 const loadChangePassword = async (req,res)=>{
     try{
-        res.render('user/changePassword',{
+        const userid = req.params.id   
+        res.render('signin/changePassword',{           
             title: "Change your password| TraditionShoppe",
+            userid,
             errorMessage:req.flash('errorMessage'),
             successMessage:req.flash('successMessage')
         })
@@ -174,6 +184,48 @@ const loadChangePassword = async (req,res)=>{
         console.log(err.message);
     }
 }
+//save new password page
+const changingPassword = async (req,res)=>{
+    try{
+        const userid = req.params.id 
+        const user = await User.findOne({_id:userid}).exec() 
+        if(user){
+            const passwordMatch = bcrypt.compare(req.body.password,user.password)
+            if(passwordMatch){
+                if(req.body.newpassword === req.body.confirmpassword){
+                    const hashPassword = bcrypt.hash(req.body.newpassword,10)
+                    await User.updateOne(
+                        {_id:userid},
+                        {$set : {
+                            password : hashPassword
+                        }}
+                    )
+                    console.log("password change successfull!")
+                    req.flash("errorMessage", "Password changed successfully..");    
+                    res.json({success:true})
+
+                } else {
+                    console.log("password mismatch!")
+                    req.flash("errorMessage", "New password should match with confirm password!!");    
+                    res.json({success:false})
+                }
+            } else {
+                console.log("password mismatch!")
+                req.flash("errorMessage", "Enter your current password correctly!!");    
+                res.json({success:false})
+            }
+        } else {
+            console.log("user not exist!")
+            req.flash("errorMessage", "User is not exists!!");    
+            res.json({success:false})
+        }
+        
+
+    } catch(err){
+        console.log(err.message);
+    }
+}
+
 
 //load signup page
 const loadSignup = async (req,res)=>{
@@ -1497,6 +1549,8 @@ module.exports = {
     loadChangePassword,
     loadSignup,
     loadOtp,
+
+    changingPassword,
 
     loadHome,
     loadIndex,

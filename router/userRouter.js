@@ -65,9 +65,11 @@ userRoute.get('/failureSign',userController.failureGoogleSignup)
 /*******************signup and login using credentials*************************/
 userRoute.get("/signin/userLogin",userAuthent.isLoggedOut,userController.loadLogin)
 userRoute.get("/signin/forgetPassword",userController.loadMobile)
-userRoute.get("/signin/changePassword",userController.loadChangePassword)
+userRoute.get("/signin/changePassword/:id",userController.loadChangePassword)
 userRoute.get("/signin/signup",userAuthent.isLoggedOut,userController.loadSignup)
 userRoute.get("/signin/otpPage",userController.loadOtp)
+
+userRoute.post("/changePassword/:id",userController.changingPassword)
 
 /************user home navigation****************/
 

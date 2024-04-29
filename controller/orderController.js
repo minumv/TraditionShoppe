@@ -17,12 +17,7 @@ const mongoose = require('mongoose');
 /****************load order page*******************/
     const loadOrder = async (req,res)=>{
         try{
-           // console.log("controller");
-            // const orders = await Order.find().sort({'created':-1}).exec() 
-            // const cart =await Cart.find().exec()
-            // const users = await User.find({status : {$nin:["deleted","blocked"]}}).exec()
-            // const products = await Product.find({isListing:true}).exec()
-
+           
             const orders = await Order.aggregate([
             
             {
@@ -37,6 +32,22 @@ const mongoose = require('mongoose');
             {
                 $unwind: {
                     path: "$productDetails",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+           
+            {
+                $lookup:{
+                    from:'users',
+                    localField:'user',
+                    foreignField:'_id',
+                    as:'userDetails'
+                    
+                }
+            },
+            {
+                $unwind: {
+                    path: "$userDetails",
                     preserveNullAndEmptyArrays: true
                 }
             },
@@ -56,27 +67,11 @@ const mongoose = require('mongoose');
                 }
             },
             {
-                $lookup:{
-                    from:'users',
-                    localField:'user',
-                    foreignField:'_id',
-                    as:'userDetails'
-                    
-                }
-            },
-            {
-                $unwind: {
-                    path: "$userDetails",
-                    preserveNullAndEmptyArrays: true
-                }
-            },
-            {
                 $sort : { 'created' : -1 }
             }
-            ])
-          
-
-            const address = await Address.find().exec()
+            ])        
+            console.log("orders",orders)
+           
             res.render('admin/orderManage',{
                 title: "Order Management | TraditionShoppe",
                 page:"Orders",
@@ -182,12 +177,7 @@ const loadReturnPage = async(req,res)=>{
 
 const selectCancelReason = async(req,res)=>{
     try{
-        const cancel_reason = req.body.cancel_reason
-        // console.log("dropdwn",req.body);
-        // const offertypeobject = req.body.offer_type;
-        // console.log("offer",req.body.offer_type);
-        // console.log("offer", offertypeobject);
-        // Store dropdown values in session
+        const cancel_reason = req.body.cancel_reason       
         req.session.cancelReason =  cancel_reason
         
         console.log( req.session.cancelReason); 

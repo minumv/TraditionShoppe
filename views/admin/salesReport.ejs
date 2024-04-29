@@ -1,35 +1,23 @@
-<%- include('../layout/adminHeader') %>
+<%- include('../layout/reportHeader') %>
 
 <div class="container-fluid py-4">
-  <div class="d-flex justify-space-between">
+  <div class="d-flex justify-space-around">
         
-        <div class="d-flex justify-space-between">
-            <div>
-                <form action="/downloadxlx" method="post">
-                    <input type = 'submit' value = 'Download xlsx' class="btn bg-gradient-info" >
-                </form>
-            </div>
-            
-            <div>
-                <form action="/downloadpdf" method="post">
-                    <input type = 'submit' value = 'Download pdf' class="btn bg-gradient-info" >
-                </form>
-            </div>
-        </div>
-        <div class="d-block">
-            From:<input type="date" name="fromdate" class="form-control" placeholder="dd-mm-yyyy">
-            To:<input type="date" name="todate" class="form-control" placeholder="dd-mm-yyyy">
-        </div>
-        <div>
+        <div class="d-block" style="margin-left:150px ;" >
+            <div class="d-flex" ><span>From</span>&nbsp;&nbsp;<input type="date" name="fromdate"  style="margin-top: 0px;margin-left: 5px;" placeholder="dd-mm-yyyy"></div>
+            <div class="d-flex" style="margin-top: 5px;margin-left: 18px;"><span>To</span>&nbsp;&nbsp;<input type="date" name="todate" style="margin-top: 0px;margin-left: 5px;" placeholder="dd-mm-yyyy"></div>
+            <button onclick="getdate()">go</button>
+          </div>
+        <div style="margin-left:100px;">
             <div class="dropdown mr-1 ml-md-auto">
-                <button type="button" class="btn btn-secondary btn-sm dropdown-toggle" id="dropdownMenuOffset" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              <button type="button" class="btn btn-secondary btn-sm dropdown-toggle" id="dropdownMenuReference" data-toggle="dropdown">
                 Filter
                 </button>
                 <div class="dropdown-menu" aria-labelledby="dropdownMenuOffset">
-                <a class="dropdown-item" href="/todayReport">Today</a>
-                <a class="dropdown-item" href="/yesterdayReport">Yesterday</a>
-                <a class="dropdown-item" href="/lastWeek">Last Week</a>
-                <a class="dropdown-item" href="/lastMonth">Last Month</a>
+                <a class="dropdown-item" href="/salesreport/?filter=today">Today</a>
+                <a class="dropdown-item" href="/salesreport/?filter=yesterday">Yesterday</a>
+                <a class="dropdown-item" href="/salesreport/?filter=lastweek">Last Week</a>
+                <a class="dropdown-item" href="/salesreport/?filter=lastmonth">Last Month</a>
                 </div>
             </div>
         </div>
@@ -43,18 +31,20 @@
           <div class="card-body px-0 pb-2">
             <div class="table-responsive p-0">
               <% if(orders != '') {%>
-              <table class="table align-items-center mb-0">
+              <table class="table align-items-center mb-0" id="example">
                 <thead>
                   <tr>
                     <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">S.No</th>
-                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Customer Name</th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Customer</th>
                     <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Date</th>
                     <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Product</th>
                     <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">No.of items</th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Stock</th>
                     <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Total Cost</th>
                     <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Method</th>
                     <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
-                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7"></th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Payment Status</th>
+                   
                   </tr>
                 </thead>
                 <tbody>
@@ -71,46 +61,48 @@
                         </div>
                       </div>
                     </td>
-                    <td>
-                      <p class="text-xs font-weight-bold mb-0" style="width:100px; overflow:hidden ;"><%= row.user.name %> </p>
+                    <td class="align-middle  text-sm ">
+                      <p class="text-xs font-weight-bold mb-0" style="width:100px; overflow:hidden ;"><%= row.userDetails.name %> </p>
                       <!-- <p class="text-xs text-secondary mb-0">Organization</p> -->
                     </td>
-                    
-                    <td class="align-middle  text-sm">
+                    <%let dateString =  row.order_date %>
+                    <%let date = new Date(dateString)%>
+
+                    <%let options = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }%>
+                    <%let formattedDate = date.toLocaleDateString('en-US', options)%>
+                    <td class="align-middle  text-sm " >
                        
-                          <p class="text-xs font-weight-bold mb-0"><%= row.order_date%></p>
+                          <p class="text-xs font-weight-bold mb-0"><%= formattedDate%></p>
                     </td>
-                    <td class="align-middle  text-sm" >
-                        <%let pdtname = ''%>
-                        <% row.product_list.forEach((list, index) => { %>
-                           <%products.forEach((pdt)=>{%>
-                              <%if(pdt._id.equals( list.productId )) {%>
-                                <p class="text-xs font-weight-bold mb-0" style="width:150px; overflow:hidden ;"><%= pdt.product_name %> </p>
-                              <% } %>
-                          <% })%>
-                        <%})%>
-                     
-                  </td>
                     <td class="align-middle  text-sm">
+                        <p class="text-xs font-weight-bold mb-0" style="width:250px; overflow:hidden ;"><%= row.productDetails.product_name %> </p>
+                    </td>
+                    <td class=" align-start text-sm" style="width: 80px;">
                         <% row.product_list.forEach((list, index) => { %>
                             
-                                 <p class="text-xs font-weight-bold mb-0" style="width:150px; overflow:hidden ;"><%= list.quantity %> </p>
+                                 <p class="text-xs font-weight-bold mb-0" ><%= list.quantity %> </p>
                                
                          <%})%>
                      
                   </td>
                   <td class="align-middle  text-sm">
-                    <p class="text-xs font-weight-bold mb-0"> <%= row.payment_amount %> </p>
+                    <p class="text-xs font-weight-bold mb-0"> <%= row.productDetails.stock %> </p>
+                </td>
+                  <td class="align-middle  text-sm">
+                    <p class="text-xs font-weight-bold mb-0" style="width: 80px;"> <%= row.payment_amount %> </p>
                 </td>
                 <td class="align-middle  text-sm">
                   
-                    <p class="text-xs font-weight-bold mb-0" style="width:150px; overflow:hidden ;"><%= row.payment %> </p>
+                    <p class="text-xs font-weight-bold mb-0"><%= row.payment %> </p>
                   
                   <!-- <p class="text-xs font-weight-bold mb-0"> <%=row.image %> </p> -->
               </td>
               <td class="align-middle  text-sm">
                 <p class="text-xs font-weight-bold mb-0"> <%= row.orderstatus %> </p>
             </td>
+            <td class="align-middle  text-sm">
+              <p class="text-xs font-weight-bold mb-0"> <%= row.paymentstatus %> </p>
+          </td>
                   <!-- <td class="align-middle">
                        
                             <span class="badge badge-sm bg-gradient-success">Verified</span>
@@ -124,7 +116,7 @@
                 </tbody>
             </table>
             <% } else {%>
-              <h1 class="text-center text-secondary mt-5">No user found in the database</h1>
+              <h1 class="text-center text-secondary mt-5">No Report available</h1>
           <% } %>
           </div>
         </div>
@@ -132,5 +124,46 @@
     </div>
    
   </div>
-
-  <%- include('../layout/adminFooter') %>
+<script>
+  function getdate(){
+    const fromdate = document.querySelector('input[name="fromdate"]').value
+    const todate = document.querySelector('input[name="todate"]').value
+    const dateset ={
+      fromdate,todate
+    }
+    fetch('/getdate',{
+      method:"post",
+      headers:{
+        'Content-Type':'application/json'
+      },
+      body:JSON.stringify(dateset)
+    })
+    .then((res)=>res.json())
+    .then((data)=>{
+      if(data.success){
+        location.href = '/salesreport'
+      } else {
+        location.href = '/salesreport'
+      }
+    })
+  }
+  // function getTodate(){
+    
+  //   fetch('/gettodate',{
+  //     method:"post",
+  //     headers:{
+  //       'Content-Type':'application/json'
+  //     },
+  //     body:JSON.stringify({todate})
+  //   })
+  //   .then((res)=>res.json())
+  //   .then((data)=>{
+  //     if(data.success){
+  //       location.href = '/salesreport'
+  //     } else {
+  //       location.href = '/salesreport'
+  //     }
+  //   })
+  // }
+</script>
+  <%- include('../layout/reportFooter') %>

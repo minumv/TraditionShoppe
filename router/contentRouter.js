@@ -27,7 +27,7 @@ contentRoute.get("/allproducts",userAuthent.isAuthenticated,contentController.lo
 contentRoute.get("/searchProducts",userAuthent.isAuthenticated,contentController.loadSearchProducts)
 contentRoute.get("/viewProduct/:id",userAuthent.isAuthenticated,contentController.loadProductDetail)
 
-// contentRoute.get("/handicratfs",userAuthent.isAuthenticated,contentController.loadHandicrafts)
+contentRoute.get("/handicratfs",userAuthent.isAuthenticated,contentController.loadSearchProducts)
 // contentRoute.get("/antiques",userAuthent.isAuthenticated,contentController.loadAntiques)
 // contentRoute.get("/spices",userAuthent.isAuthenticated,contentController.loadSpices)
 // contentRoute.get("/apparels",userAuthent.isAuthenticated,contentController.loadApparels)
@@ -53,19 +53,19 @@ contentRoute.get("/ascending",userAuthent.isAuthenticated,contentController.geta
 contentRoute.get("/descending",userAuthent.isAuthenticated,contentController.getdescending)
 
 
-contentRoute.get("/toycategory",userAuthent.isAuthenticated,contentController.gettoyCategory)
-contentRoute.get("/ecofriendly",userAuthent.isAuthenticated,contentController.getecoFriendly)
-contentRoute.get("/giftcategory",userAuthent.isAuthenticated,contentController.getgiftCategory)
+// contentRoute.get("/toycategory",userAuthent.isAuthenticated,contentController.gettoyCategory)
+// contentRoute.get("/ecofriendly",userAuthent.isAuthenticated,contentController.getecoFriendly)
+// contentRoute.get("/giftcategory",userAuthent.isAuthenticated,contentController.getgiftCategory)
 
 contentRoute.get("/brassmaterial",userAuthent.isAuthenticated,contentController.getbrassMaterial)
 contentRoute.get("/metalmaterial",userAuthent.isAuthenticated,contentController.getmetalMaterial)
 contentRoute.get("/woodmaterial",userAuthent.isAuthenticated,contentController.getwoodMaterial)
 
-/*********price slider********** */
-contentRoute.get("/lowCost",userAuthent.isAuthenticated,contentController.getlowcost)
-contentRoute.get("/averageCost",userAuthent.isAuthenticated,contentController.getaverage)
-contentRoute.get("/costly",userAuthent.isAuthenticated,contentController.getcostly)
-contentRoute.get("/highcostly",userAuthent.isAuthenticated,contentController.gethighcostly)
+// /*********price slider********** */
+// contentRoute.get("/lowCost",userAuthent.isAuthenticated,contentController.getlowcost)
+// contentRoute.get("/averageCost",userAuthent.isAuthenticated,contentController.getaverage)
+// contentRoute.get("/costly",userAuthent.isAuthenticated,contentController.getcostly)
+// contentRoute.get("/highcostly",userAuthent.isAuthenticated,contentController.gethighcostly)
 
 /****************to cart table*********************/
 contentRoute.post("/addtocart/:id/:mrp",contentController.addToCartTable)

@@ -4,15 +4,7 @@ const userSchema = new mongoose.Schema({
     name:{
         type : String,
         required : true
-    },
-    // gender:{
-    //     type : String,
-    //     // required : true
-    // },
-    // dob:{
-    //     type:Date,
-    //     // required:true,
-    // },
+    },    
     email:{
         type : String,
         required : true,
@@ -57,6 +49,9 @@ const userSchema = new mongoose.Schema({
     isVerifiedByOtp:{
         type: Boolean,
         // require: true
+    },
+    isGoogleAuthenticated:{
+        type: Boolean
     },
     created:{
         type:Date,

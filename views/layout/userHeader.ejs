@@ -49,11 +49,14 @@
     
                 <div class="col-6 col-md-4 order-2 order-md-1 site-search-icon text-left d-flex">
                  
-                  <form action="/searchProducts" class="site-block-top-search d-flex" method="get">
-                    <input  type="text" name="search" class="form-control border-1 search" >
-                    <a href="/searchProducts"><button type="submit" class="search-but">search</button></a>
+                  
+                  <form action="/allproducts" id="searchForm" class="site-block-top-search d-flex" method="get" onsubmit="updateAction()">
+                    <input type="text" name="search" class="form-control border-1 search">
+                    <button type="submit" class="search-but">Search</button>
+                </form>
+                
                     
-                  </form>
+                  
                 </div>
     
                 <div class="col-12 mb-3 mb-md-0 col-md-4 order-1 order-md-2 text-center">

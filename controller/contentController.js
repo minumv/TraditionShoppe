@@ -197,7 +197,10 @@ const getProducts = async(req,res)=>{
         const products = await Products.aggregate([
             {
                 $match : {
-                    $and : [{status : 'active', isListing : true}]
+                    $and : [
+                        { status: { $ne: 'inactive' } },
+                        { isListing : true}
+                        ]
                 }
             },
             {
@@ -341,13 +344,11 @@ const listSearchProduct = async(req,res)=>{
     }
 }
 
-const getPaginatedProducts = async(req,res,perPage,pageNum)=>{
+const getPaginatedProducts = async(req,res,perPage,pageNum,matchCondition)=>{
     try{
         const products = await Products.aggregate([
             {
-                $match : {
-                    $and : [{status : 'active', isListing : true}]
-                }
+                $match : matchCondition 
             },
             {
                 $lookup : {
@@ -487,21 +488,258 @@ const getPaginatedProducts = async(req,res,perPage,pageNum)=>{
         console.log(err.message);
     }
 }
+const getSortedProducts = async(req,res,perPage,pageNum,matchCondition,sortCondition)=>{
+    try{
+        const products = await Products.aggregate([
+            {
+                $match : matchCondition 
+            },
+            {
+                $lookup : {
+                    from : 'discounts',
+                    localField : 'discount',
+                    foreignField : '_id',
+                    as : 'discountInfo'
+                }
+            },
+            {
+                $addFields: {
+                    discountInfo: { $arrayElemAt: ['$discountInfo', 0] },
+                    discountedPrice: {
+                        $cond: {
+                            if: { $gt: [{ $size: "$discountInfo" }, 0] },
+                            then: {
+                                $multiply: [
+                                    "$price_unit",
+                                    { $subtract: [1, { $divide: [{ $toDouble: { $arrayElemAt: ["$discountInfo.percentage", 0] } }, 100] }]}
+                                ]
+                            },
+                            else: "$price_unit"
+                        }
+                    }
+                }
+                
+            },
+            {
+                $lookup : {
+                    from : 'categories',
+                    localField : 'category',
+                    foreignField : '_id',
+                    as : 'categoryInfo'
+                }
+            },
+            {
+                $addFields: {
+                    categoryInfo: { $arrayElemAt: ['$categoryInfo', 0]},
+                    categoryName: "$categoryInfo.category_name"
+                }
+            },
+            {
+                $lookup : {
+                    from : 'offers',
+                    localField : 'product_name',
+                    foreignField : 'offer_name',
+                    as : 'productoffer'
+                }
+            },
+            {
+                $addFields: {
+                    productoffer: { $arrayElemAt: ['$productoffer', 0]},
+                    pdtoffer: {
+                        $cond: {
+                            if: { $gt: [{ $size: "$productoffer" }, 0] },
+                            then: {
+                                $multiply: [
+                                    "$price_unit",
+                                    { $divide: [{ $toDouble: { $arrayElemAt: ["$productoffer.discount_per", 0] } }, 100] }
+                                ]
+                            },
+                            else: 0
+                        }
+                    }
+                }
+            },
+            {
+                $lookup : {
+                    from : 'offers',
+                    localField : 'categoryName',
+                    foreignField : 'offer_name',
+                    as : 'categoryoffer'
+                }
+            },
+            {
+                $addFields: {
+                    categoryoffer: { $arrayElemAt: ['$categoryoffer', 0]},
+                    categoffer: {
+                        $cond: {
+                            if: { $gt: [{ $size: "$categoryoffer" }, 0] },
+                            then: {
+                                $multiply: [
+                                    "$price_unit",
+                                    { $divide: [{ $toDouble: { $arrayElemAt: ["$categoryoffer.discount_per", 0] } }, 100] }
+                                ]
+                            },
+                            else: 0
+                        }
+                    }
+                }
+            },
+            {
+                $addFields: {
+                    discountInfo: {
+                        $cond: {
+                            if: { $isArray: "$discountInfo" }, // Check if discountInfo is an array
+                            then: { $arrayElemAt: ["$discountInfo", 0] }, // If it's an array, extract the first element
+                            else: null // If it's not an array, set it to null
+                        }
+                    },
+                    discountedsalePrice: {
+                        $cond: {
+                            if: {
+                                $and: [
+                                    { $ne: ["$discountInfo", null] }, // Check if discountInfo is not null
+                                    { $or: [ // Check if either pdtoffer or categoffer is not 0
+                                        { $ne: ["$pdtoffer", 0] },
+                                        { $ne: ["$categoffer", 0] }
+                                    ]}
+                                ]
+                            },
+                            then: {
+                                $subtract: [
+                                    "$discountedPrice", // Subtract the offer price from the discountedPrice
+                                    { $max: ["$pdtoffer", "$categoffer"] } // Use $max to get the higher offer value
+                                ]
+                            },
+                            else: "$discountedPrice" // If no offer is applicable or discountInfo is null, keep the original discountedPrice
+                        }
+                    }
+                }
+            },
+            {
+                $sort : sortCondition
+            },
+            {
+                $skip: ( pageNum - 1 ) * perPage
+            },
+            {
+                $limit: perPage
+            }
+
+            
+        ])
+        return products
+    }
+    catch(err){
+        console.log(err.message);
+    }
+}
 
 //load all products
 const loadAllProducts = async (req,res)=>{
     try{    
+            
+            let matchCondition = ''
+
+            const search = req.query.search 
+            console.log("search :",search)
+
+            const categ = req.query.categ
+            console.log("categ :",categ)
+
+            const trend = req.query.trend
+            console.log("trend :",trend)
+
+            const price = req.query.price
+            console.log("price :",price)
+
+            if(search){
+                matchCondition = {
+                    $and: [
+                        { status: { $ne: 'inactive' } },
+                        { isListing: true },                       
+                        { "product_name": { $regex: ".*" + search + ".*", $options: 'i' } }
+                    ]
+                };
+            } else if(categ) {
+                matchCondition = {
+                    $and : [
+                        { status: { $ne: 'inactive' } },
+                         {isListing : true},
+                          {product_type:categ}]
+                }
+                
+                
+            }else if(trend){
+                req.session.trend = trend
+                if(trend === 'best'){
+                    matchCondition = {
+                        $and : [{status : 'active', isListing : true}]
+                    }
+                } else if(trend === 'pop'){
+                    matchCondition = {
+                        $and : [{status : 'active', isListing : true}]
+                    }
+
+                } else if(trend === 'new'){
+                    matchCondition = {
+                        $and : [
+                            { status: { $ne: 'inactive' } },
+                            { isListing : true}
+                            ]
+                    }
+                }
+            }else if(price){
+                let price_range =''
+                if(price === 'low') price_range = { $lt: 500 }
+                else if(price === 'avrg') price_range = {$gt:500,$lt:10000}
+                else if(price === 'costly') price_range = {$gt:10000,$lt:50000}
+                else if(price === 'high') price_range = {$gt:50000} 
+
+                matchCondition =  {
+                        $and: [
+                            { status: { $ne: 'inactive' } },
+                            { isListing: true },                       
+                            {  price_unit:  price_range }
+                        ]
+                      }
+                sortCondition = {'price_unit':-1}   
+                
+            }else {
+                matchCondition = {
+                    $and : [{status : 'active',status : 'new', isListing : true}]
+                }
+            }
+            console.log("matchcondition :",matchCondition)
             const pageNum = req.query.page || 1
             const perPage = 9
-            const totalCount = await Products.countDocuments({status:'active',isListing:true})
-            const pages = Math.ceil( totalCount / perPage )
-            console.log("count",totalCount);
+            let totalCount =0
+            let pages =0
+            const total = await Products.aggregate([
+                {
+                  $match: matchCondition
+                },
+                {
+                  $group: {
+                    _id: null,
+                    count: { $sum: 1 }
+                  }
+                }
+              ]);
+              if(total.length>0){
+                console.log("total :",total)
+                totalCount = total[0].count
+                pages = Math.ceil( totalCount / perPage )
+                console.log("count",totalCount);
+              }
+              
 
-            
-            const products = await getPaginatedProducts(req,res,perPage,pageNum)
-            
+           
+            const products = await getPaginatedProducts(req,res,perPage,pageNum,matchCondition)
+           // console.log("products :",products)
+           
 
-           console.log( products);    
+
+           console.log("products",products);    
            res.render('content/allproducts',{
             title : "All Products| TraditionShoppe",
             user : req.session.user,
@@ -525,12 +763,37 @@ const loadAllProducts = async (req,res)=>{
 
 const loadSearchProducts = async (req,res)=>{
     try{
-            const search = req.query.search       
-            console.log("search value: "+search)
-            // Query the database to find products matching the search term
-            const products = await Products.find({ "product_name":{$regex:".*"+search+".*",$options:'i'}  });            
-            const discounts = await Discount.find({status:true}).exec()
+        let matchCondition = {
+            $and : [{status : 'active',status : 'new', isListing : true}]
+        }
+    
+        console.log("matchcondition :",matchCondition)
+        const pageNum = req.query.page || 1
+        const perPage = 9
+        let totalCount =0
+        let pages =0
+        const total = await Products.aggregate([
+            {
+            $match: matchCondition
+            },
+            {
+            $group: {
+                _id: null,
+                count: { $sum: 1 }
+            }
+            }
+        ]);
+        if(total.length>0){
+            console.log("total :",total)
+            totalCount = total[0].count
+            pages = Math.ceil( totalCount / perPage )
+            console.log("count",totalCount);
+        }
+      
 
+   
+    const products = await getPaginatedProducts(req,res,perPage,pageNum,matchCondition)
+   // console.log("products :",products)
        
             
                 res.render('content/allproducts',{
@@ -854,177 +1117,6 @@ const  getdescending = async (req,res)=>{
     }
 }
 
-
-
-
-const  getlowcost = async (req,res)=>{
-    try{
-            const products = await Products.find({isListing: true,price_unit:{$lt:500} }).sort({'price_unit':-1}).exec();      
-            const discounts = await Discount.find({status:true}).exec()
-           
-            let qtyCount = await getQtyCount(req,res)
-            let listCount = await getListCount(req,res)
-            
-            res.render('content/allproducts',{
-            title : "All Products| TraditionShoppe",
-            user : req.session.user,
-            page : 'All products',
-            listCount:listCount,
-            qtyCount:qtyCount,            
-            products : products,
-             discounts : discounts,
-            errorMessage:req.flash('errorMessage'),
-            successMessage:req.flash('successMessage')
-
-            
-        })
-
-    }
-    catch(err){
-        console.log(err.message);
-    }
-}
-
-const  getaverage = async (req,res)=>{
-    try{
-            const products = await Products.find({isListing: true,price_unit:{$gt:500,$lt:10000} }).sort({'price_unit':-1}).exec();      
-            const discounts = await Discount.find({status:true}).exec()
-           
-            let qtyCount = await getQtyCount(req,res)
-            let listCount = await getListCount(req,res)
-            
-            res.render('content/allproducts',{
-            title : "All Products| TraditionShoppe",
-            user : req.session.user,
-            page : 'All products',
-            listCount:listCount,
-            qtyCount:qtyCount,            
-            products : products,
-             discounts : discounts,
-            errorMessage:req.flash('errorMessage'),
-            successMessage:req.flash('successMessage')
-
-            
-        })
-
-    }
-    catch(err){
-        console.log(err.message);
-    }
-}
-
-const  getcostly = async (req,res)=>{
-    try{
-            const products = await Products.find({isListing: true,price_unit:{$gt:10000,$lt:50000} }).sort({'price_unit':-1}).exec();      
-            const discounts = await Discount.find({status:true}).exec()
-           
-            let qtyCount = await getQtyCount(req,res)
-            let listCount = await getListCount(req,res)
-            
-            res.render('content/allproducts',{
-            title : "All Products| TraditionShoppe",
-            user : req.session.user,
-            page : 'All products',
-            listCount:listCount,
-            qtyCount:qtyCount,            
-            products : products,
-             discounts : discounts,
-            errorMessage:req.flash('errorMessage'),
-            successMessage:req.flash('successMessage')
-
-            
-        })
-
-    }
-    catch(err){
-        console.log(err.message);
-    }
-}
-
-const  gethighcostly = async (req,res)=>{
-    try{
-            const products = await Products.find({isListing: true,price_unit:{$gt:50000} }).sort({'price_unit':-1}).exec();      
-            const discounts = await Discount.find({status:true}).exec()
-           
-            let qtyCount = await getQtyCount(req,res)
-            let listCount = await getListCount(req,res)
-            
-            res.render('content/allproducts',{
-            title : "All Products| TraditionShoppe",
-            user : req.session.user,
-            page : 'All products',
-            listCount:listCount,
-            qtyCount:qtyCount,            
-            products : products,
-             discounts : discounts,
-            errorMessage:req.flash('errorMessage'),
-            successMessage:req.flash('successMessage')
-
-            
-        })
-
-    }
-    catch(err){
-        console.log(err.message);
-    }
-}
-
-
-//load all new handicrafts products
-async function gettoyCategory(req, res) {
-    try {
-        const products = await Products.find({ product_type: 'toys', status: { $ne: 'inactive' }, isListing: true }).exec();
-        const discounts = await Discount.find({ status: true }).exec();
-
-        let qtyCount = await getQtyCount(req, res);
-        let listCount = await getListCount(req, res);
-
-        res.render('content/allproducts', {
-            title: "All Products| TraditionShoppe",
-            user: req.session.user,
-            page: 'All products',
-            listCount: listCount,
-            qtyCount: qtyCount,
-            products: products,
-            discounts: discounts,
-            errorMessage: req.flash('errorMessage'),
-            successMessage: req.flash('successMessage')
-        });
-
-    }
-    catch (err) {
-        console.log(err.message);
-    }
-}
-
-//load all new handicrafts products
-const  getecoFriendly = async (req,res)=>{
-    try{
-            const products = await Products.find({ product_type : 'eco-friendly' , status:{ $ne:'inactive'} , isListing: true }).exec();          
-            const discounts = await Discount.find({status:true}).exec()
-            
-            let qtyCount = await getQtyCount(req,res)
-            let listCount = await getListCount(req,res)
-            
-            res.render('content/allproducts',{
-            title : "All Products| TraditionShoppe",
-            user : req.session.user,
-            listCount:listCount,
-            qtyCount:qtyCount,
-            page : 'All products',            
-            products : products,
-             discounts : discounts,
-            errorMessage:req.flash('errorMessage'),
-            successMessage:req.flash('successMessage')
-
-            
-        })
-
-    }
-    catch(err){
-        console.log(err.message);
-    }
-}
 //load all new handicrafts products
 const  getbrassMaterial= async (req,res)=>{
     try{
@@ -1110,34 +1202,7 @@ const  getwoodMaterial = async (req,res)=>{
     }
 }
 
-const  getgiftCategory = async (req,res)=>{
-    try{
-            const products = await Products.find({ product_type : 'gift' , status:{ $ne:'inactive'} , isListing: true }).exec();       
-            const discounts = await Discount.find({status:true}).exec()
-            
 
-            let qtyCount = await getQtyCount(req,res)
-            let listCount = await getListCount(req,res)
-            
-            res.render('content/allproducts',{
-            title : "All Products| TraditionShoppe",
-            user : req.session.user,
-            page : 'All products',
-            listCount:listCount,
-            qtyCount:qtyCount,            
-            products : products,
-             discounts : discounts,
-            errorMessage:req.flash('errorMessage'),
-            successMessage:req.flash('successMessage')
-
-            
-        })
-
-    }
-    catch(err){
-        console.log(err.message);
-    }
-}
 //load all new handicrafts products
 const  getpriceRange = async (req,res)=>{
     try{
@@ -1271,12 +1336,14 @@ const loadCart = async(req,res)=>{
         const user_id = await User.findOne({email:user},{_id:1}).exec()        
         
         const products = await getProducts(req,res)
+        console.log("user",user_id)
         const user_cart = await Cart.findOne({
             user:user_id,
             status:"listed",
-            "product_list.productId" : { $in : products.map(pdt => pdt._id)}        
+            //"product_list.productId" : { $in : products.map(pdt => pdt._id)}        
         }).exec()
         let mrpTotal = 0;
+        console.log("cart :",user_cart)
         if(user_cart){
             if(user_cart.product_list == ''){
                 await Cart.deleteOne( { 
@@ -1284,8 +1351,11 @@ const loadCart = async(req,res)=>{
                 })
             } else {
                 user_cart.product_list.forEach((cart)=>{
+                    console.log("check pdt")
                     products.forEach((pdt)=>{
+                        console.log("pdt tracking", pdt._id)
                         if(cart.productId.equals(pdt._id) ){
+                            console.log("pdt equal",cart.quantity,pdt.price_unit)
                              mrpTotal += parseFloat(cart.quantity * pdt.price_unit)
                         }
                     })
@@ -1294,7 +1364,7 @@ const loadCart = async(req,res)=>{
             req.session.mrpTotal = mrpTotal           
             
         }      
-         //console.log(products);
+        
          console.log("user cart : ",user_cart);
          console.log( "mrptotal: ",mrpTotal)
         res.render('content/myCart',{
@@ -2286,6 +2356,7 @@ module.exports = {
     getPaginatedProducts,
     getProductById,
     getProducts,
+    getSortedProducts,
 
     loadAllProducts,
     loadSearchProducts,
@@ -2303,15 +2374,6 @@ module.exports = {
     getHightoLow,
     getascending,
     getdescending,
-
-    getecoFriendly,
-    getgiftCategory,
-    gettoyCategory,
-
-    getlowcost,
-    getaverage,
-    getcostly,
-    gethighcostly,
 
     getbrassMaterial,
     getmetalMaterial,
