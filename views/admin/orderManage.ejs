@@ -16,11 +16,13 @@
                 <thead>
                 <tr>
                     <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">S.No</th>
-                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Name</th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" style="width:100px">Name</th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Product</th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" style="width:60px">Quantity</th>
                     <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Delivery Address</th>
-                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Price</th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" style="width:80px">Price</th>
                     <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
-                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Action</th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" style="width:80px">Action</th>
                     <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7"></th>
                 </tr>
                 </thead>
@@ -37,68 +39,76 @@
                       
                                     
                             <td>
-                            <p class="text-xs font-weight-bold mb-0" style="width:100px; overflow:hidden ;"> <%= row.userDetails?.name || 'N/A' %> </p>
+                            <p class="text-xs font-weight-bold mb-0" style="width:100px"> <%= row.userDetails?.name || 'N/A' %> </p>
                             
+                            </td>  
+                            <td>
+                                <p class="text-xs font-weight-bold mb-0" style="width:200px; overflow:hidden ;"> <%= row.productDetails?.product_name || 'N/A' %> </p>
                             </td>                        
+                            <td>
+                                <p class="text-xs font-weight-bold mb-0" style="width:60px"> <%= row.product_list.quantity %> </p>
+                            </td>                        
+                                                      
                     
                             <td class="align-middle  text-sm">                
-                                <p class="text-xs font-weight-bold mb-0"><%= row.addressDetails.house %>,<%= row.addressDetails.city %>,<%= row.addressDetails.state %></p>
+                                <p class="text-xs font-weight-bold mb-0" style="width:150px; overflow:hidden ;"><%= row.addressDetails.house %>,<%= row.addressDetails.city %>,<%= row.addressDetails.state %></p>
                             </td>
                         
                     <td class="align-middle  text-sm" >
-                    <p class="text-xs font-weight-bold mb-0" style="width:150px; overflow:hidden ;"><%= row.payment_amount %> </p>
+                    <p class="text-xs font-weight-bold mb-0" style="width:80px"><%= row.product_list.total %> </p>
                 </td>
+                
                 <td class="align-middle  text-sm">
-                    <% if (row.orderstatus === 'delivered'){ %>
+                    <% if (row.product_list.orderstatus === 'delivered'){ %>
                         <span class="badge badge-sm bg-gradient-success">delivered</span>
-                    <% } else if (row.orderstatus === 'packed'){ %>
+                    <% } else if (row.product_list.orderstatus === 'packed'){ %>
                         <span class="badge badge-sm bg-gradient-success">packed</span>
-                    <% } else if (row.orderstatus === 'dispatched'){ %>
+                    <% } else if (row.product_list.orderstatus === 'dispatched'){ %>
                         <span class="badge badge-sm bg-gradient-success">dispatched</span>
-                    <% } else if (row.orderstatus === 'shipped'){ %>
+                    <% } else if (row.product_list.orderstatus === 'shipped'){ %>
                         <span class="badge badge-sm bg-gradient-success">shipped</span>
-                    <% } else if(row.orderstatus === 'pending') { %> 
+                    <% } else if(row.product_list.orderstatus === 'pending') { %> 
                         <span class="badge badge-sm bg-gradient-warning">pending</span> 
-                        <% } else if(row.orderstatus === 'cancel request') { %> 
+                        <% } else if(row.product_list.orderstatus === 'cancel request') { %> 
                             <span class="badge badge-sm bg-gradient-warning">cancel request</span>                           
-                    <% } else if(row.orderstatus === 'cancelled') { %> 
+                    <% } else if(row.product_list.orderstatus === 'cancelled') { %> 
                         <span class="badge badge-sm bg-gradient-danger">cancelled</span> 
-                    <% } else if(row.orderstatus === 'return request') { %> 
+                    <% } else if(row.product_list.orderstatus === 'return request') { %> 
                         <span class="badge badge-sm bg-gradient-warning">return request</span>                    
-                    <% } else if(row.orderstatus === 'refund received') { %> 
+                    <% } else if(row.product_list.orderstatus === 'refund received') { %> 
                         <span class="badge badge-sm bg-gradient-success">refund received</span>   
-                    <% } else if(row.orderstatus === 'processing') { %> 
+                    <% } else if(row.product_list.orderstatus === 'processing') { %> 
                         <span class="badge badge-sm bg-gradient-warning">processing</span>   
                     <% } %>    
                 </td>
                
                 <td class="align-middle  text-sm">
                   
-                    <% if(row.orderstatus === 'shipped') { %>                                               
+                    <% if(row.product_list.orderstatus === 'shipped') { %>                                               
                         <button  type="button" onclick="pendingOrder('<%=row._id%>','<%=row.productDetails._id%>','<%=row.userDetails._id%>')" class="badge badge-sm bg-gradient-warning">complete</button>                
-                    <% } else if(row.orderstatus === 'cancel request') { %> 
-                       <button type="button" onclick="approveCancel('<%=row._id%>')" class="badge badge-sm bg-gradient-warning">approve cancel</button>
-                    <% } else if(row.orderstatus === 'return request') { %> 
-                       <button  type="button" onclick="approveReturn('<%=row._id%>')" class="badge badge-sm bg-gradient-warning">approve return</button>              
-                    <% } else if(row.orderstatus === 'pending') { %> 
+                    <% } else if(row.product_list.orderstatus === 'cancel request') { %> 
+                       <button type="button" onclick="approveCancel('<%=row._id%>','<%=row.productDetails._id%>')" class="badge badge-sm bg-gradient-warning">approve cancel</button>
+                    <% } else if(row.product_list.orderstatus === 'return request') { %> 
+                       <button  type="button" onclick="approveReturn('<%=row._id%>','<%=row.productDetails._id%>')" class="badge badge-sm bg-gradient-warning">approve return</button>              
+                    <% } else if(row.product_list.orderstatus === 'pending') { %> 
                         <% action = 'approve'%>                        
-                        <button type="submit" onclick="changeStatus('<%=row._id%>','<%=action%>')"   class="badge badge-sm bg-gradient-warning">approve</button>              
-                    <% } else if(row.orderstatus === 'processing') { %> 
+                        <button type="submit" onclick="changeStatus('<%=row._id%>','<%=row.productDetails._id%>','<%=action%>')"   class="badge badge-sm bg-gradient-warning">approve</button>              
+                    <% } else if(row.product_list.orderstatus === 'processing') { %> 
                         <% action = 'to pack'%>  
-                      <button  type="button"  onclick="changeStatus('<%=row._id%>','<%=action%>')" class="badge badge-sm bg-gradient-warning">To pack</button>                   
-                    <% } else if(row.orderstatus === 'packed') { %> 
+                      <button  type="button"  onclick="changeStatus('<%=row._id%>','<%=row.productDetails._id%>','<%=action%>')" class="badge badge-sm bg-gradient-warning">To pack</button>                   
+                    <% } else if(row.product_list.orderstatus === 'packed') { %> 
                         <% action = 'to dispatch'%>  
-                       <button  type="button"  onclick="changeStatus('<%=row._id%>','<%=action%>')" class="badge badge-sm bg-gradient-warning">To dispatch</button>                    
-                    <% } else if(row.orderstatus === 'dispatched') { %> 
+                       <button  type="button"  onclick="changeStatus('<%=row._id%>','<%=row.productDetails._id%>','<%=action%>')" class="badge badge-sm bg-gradient-warning">To dispatch</button>                    
+                    <% } else if(row.product_list.orderstatus === 'dispatched') { %> 
                         <% action = 'to ship'%>  
-                       <button  type="button"  onclick="changeStatus('<%=row._id%>','<%=action%>')" class="badge badge-sm bg-gradient-warning">To ship</button>                   
-                    <% } else if (row.orderstatus === 'delivered' || row.orderstatus ===  'cancelled' ||row.orderstatus ===  'refund received'){ %>
+                       <button  type="button"  onclick="changeStatus('<%=row._id%>','<%=row.productDetails._id%>','<%=action%>')" class="badge badge-sm bg-gradient-warning">To ship</button>                   
+                    <% } else if (row.product_list.orderstatus === 'delivered' ||row.product_list.orderstatus ===  'cancelled' ||row.product_list.orderstatus ===  'refund received'){ %>
                         <span class="badge badge-sm bg-gradient-success">No Action</span>
                     <% }%>                         
                 </td>
-                
+               
                     <td class="align-middle">
-                    <a href="/orderDetails/<%= row._id %>" class="text-secondary font-weight-bold text-xs" data-toggle="tooltip" data-original-title="Edit user">
+                    <a href="/orderDetails/<%= row._id %>/<%=row.productDetails._id%>" class="text-secondary font-weight-bold text-xs" data-toggle="tooltip" data-original-title="Edit user">
                     Show more
                     </a>
                     </td>
@@ -145,8 +155,8 @@
     });
 }
 
-     function changeStatus(odrid,action){
-        fetch(`/statusChanging/${odrid}/${action}`,{
+     function changeStatus(odrid,pdtid,action){
+        fetch(`/statusChanging/${odrid}/${pdtid}/${action}`,{
             method:'post',
             headers : {
                 'Content-Type' : 'application/json'
@@ -163,8 +173,8 @@
 
     }
 
-    function approveCancel(ordrid){
-        fetch(`/cancelapprove/${ordrid}`,{
+    function approveCancel(ordrid,pdtid){
+        fetch(`/cancelapprove/${ordrid}/${pdtid}`,{
             method:'post',
             headers : {
                 'Content-Type' : 'application/json'
@@ -180,8 +190,8 @@
         })
 
     }
-    function approveReturn(ordrid){
-        fetch(`/returnapprove/${ordrid}`,{
+    function approveReturn(ordrid,pdtid){
+        fetch(`/returnapprove/${ordrid}/${pdtid}`,{
             method:'post',
             headers : {
                 'Content-Type' : 'application/json'

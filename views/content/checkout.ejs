@@ -94,30 +94,7 @@
                 </div>          
                 <div class="modal-body">
                  <div class="address-body">
-                    <div>
-                        <select name="country" id="country">Country
-                            <option value="Not selected">Country</option>
-                            <option value="Afghanisthan">Afghanisthan</option>
-                            <option value="Australia">Australia</option>
-                            <option value="Belgium">Belgium</option>
-                            <option value="Bhutan">Bhutan</option>
-                            <option value="Chili">Chili</option>
-                            <option value="China">China</option>
-                            <option value="Denmark">Denmark</option>                        
-                            <option value="India">India</option>
-                            <option value="Japan">Japan</option>
-                            <option value="Kuwait">Kuwait</option>
-                            <option value="Malaysia">Malaysia</option>
-                            <option value="Nepal">Nepal</option>
-                            <option value="New Zealand">New Zealand</option>
-                            <option value="Oman">Oman</option>
-                            <option value="Sri Lanka">Sri Lanka</option>
-                            <option value="UAE">UAE</option>
-                            <option value="USA">USA</option>
-                            <option value="UK">UK</option>
-                        </select>
-    
-                    </div>
+                    
                     <div>
                         <input type="text" name="name" id="" placeholder="Fullname">
                     </div>
@@ -140,21 +117,10 @@
                         <input type="text" name="city" id="" placeholder="Town/City">
                     </div>
                     <div>
-                      <select name="state" id="state">
-                        <option value="Not Selected">States</option>
-                        <option value="Arunachal Pradesh">Arunachal Pradesh</option>
-                        <option value="Assam">Assam</option>
-                        <option value="Delhi">Delhi</option>
-                        <option value="Gujarath">Gujarath</option>
-                        <option value="Karnataka">Karnataka</option>
-                        <option value="Kerala">Kerala</option>
-                        <option value="Maharashtra">Maharashtra</option>
-                        <option value="Telangana">Telangana</option>
-                        <option value="Tamilnadu">Tamilnadu</option>                   
-                        <option value="Uthar Pradesh">Uthar Pradesh</option>
-                        <option value="West Bengal">West Bengal</option>
-                        
-                      </select>
+                        <input type="text" name="state" id="" placeholder="State">
+                    </div>
+                    <div>
+                        <input type="text" name="country" id="" placeholder="Country">
                     </div>
                  </div>
                 </div>
@@ -202,7 +168,7 @@
                 <div class="checkout boredr-shadow">
                     <% ordr_tot = cart.total_amount %>
                     <div class="d-flex justify-content-center">                      
-                        <button id="payButton" type="button" onclick="checkoutHandle(event,'<%=amount%>','<%=cart._id%>','<%=cart.user%>')" class="use-but font-weight-bold">Use this payment method</button>
+                        <button id="payButton" type="button" onclick="validateDetails(event,'<%=amount%>','<%=cart._id%>','<%=cart.user%>')" class="use-but font-weight-bold">Use this payment method</button>
                     </div>
                     <div class="bottom-line ">
                         <p class="text-center text-dark">Choose a payment method to continue checking out.
@@ -266,8 +232,8 @@
 
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <script>
-alert("checking script")
-console.log("script is working")
+// alert("checking script")
+// console.log("script is working")
     function applyCoupon( amount , userid , cartid ){
         const couponCode = document.getElementById('couponCode').value
         const totalAmount = amount
@@ -302,26 +268,36 @@ console.log("script is working")
 
   
     
-   function checkoutHandle(event,amnt,cart_ID,user_ID){
-    alert("inside script")
+   function validateDetails(event,amnt,cart_ID,user_ID){
+    // alert("inside script")
         const paymentMethod = document.querySelector('input[name="paymethods"]:checked');
         const address = document.querySelector('input[name="address"]:checked');
         const total = amnt;
         const cartid = cart_ID;
-        const userid = user_ID
-        //const deliveryCharge = document.getElementById('dlvcharge').textContent;
-
-
-        const checkoutData = {
-            paymentMethod: paymentMethod.value,
-            address: address.value,
-            total,
-            cartid,
-            userid
-        }
-       console.log(checkoutData)
+        const userid = user_ID 
+console.log("pay :",paymentMethod,"total :",total)
         
-           
+    //make alert a popup box
+        if(address === null){
+            alert("Select a valid address !!")
+        }else if(total < 1000 && paymentMethod.value === "COD"){
+            alert("COD is only applicable for 1000 above purchase!!")
+        } else {
+                const checkoutData = {
+                paymentMethod: paymentMethod.value,
+                address: address.value,
+                total,
+                cartid,
+                userid
+            }
+            checkoutHandle(checkoutData,cartid,total)
+        }
+    }
+
+
+        
+    function checkoutHandle(checkoutData,cartid,total){ 
+        console.log(checkoutData)      
         $.ajax({           
             url:`/makeOrder`,
             method:'post',
@@ -330,6 +306,8 @@ console.log("script is working")
            
                 if(res.cod_success){ 
                     location.href='/paymentSuccess'
+                } else if(res.wallet_empty){ 
+                    location.href=`/checkout/${cartid}/${total}`
                 }
                 else {                
                     var options = {
@@ -366,18 +344,14 @@ console.log("script is working")
                         console.log('error:', resp.error.reason);
                         console.log('error:', resp.error.metadata.order_id);
                         console.log('error:', resp.error.metadata.payment_id);
-                        
+                        paymentFailed(resp)
                         location.href = `/checkout/${cartid}/${total}`
                     });             
                     
                     rzp1.open();
                 } 
                     
-                // } else {
-                //     alert(res)
-                //     alert(res.msg)
-                // }
-
+             
             },
             error: function(xhr, status, error){
             // Handle any errors that occur during the AJAX request
@@ -388,6 +362,20 @@ console.log("script is working")
         })
    
    }
+function paymentFailed(){
+   fetch('/failedPayment',{
+    method: 'get',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+   })
+   .then(res => res.json())
+    .then(data => {
+            if (data.success) {
+                location.href = `/checkout/${cartid}/${total}`
+            }
+        })
+    }
 
 
 async function verifyPayment(payment, order) {
@@ -400,8 +388,8 @@ async function verifyPayment(payment, order) {
                 body: JSON.stringify({ payment: payment, razorOrder: order })
             })
                 .then(res => res.json())
-                .then(status => {
-                    if (status.status) {
+                .then(data => {
+                    if (data.success) {
                          location.href='/paymentSuccess'
                     }
                 })}

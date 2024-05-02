@@ -21,8 +21,6 @@ contentRoute.post("/getSearchProduct",contentController.listSearchProduct)
 /*************navigation****************/
 contentRoute.get("/cart",userAuthent.isAuthenticated,contentController.loadCart)
 contentRoute.get("/checkout/:cartid/:amount",userAuthent.isAuthenticated,contentController.loadCheckout)
-contentRoute.get("/wishlist",userAuthent.isAuthenticated,contentController.loadWishlist)
-contentRoute.get("/saveforlater",userAuthent.isAuthenticated,contentController.loadSaved)
 contentRoute.get("/allproducts",userAuthent.isAuthenticated,contentController.loadAllProducts)
 contentRoute.get("/searchProducts",userAuthent.isAuthenticated,contentController.loadSearchProducts)
 contentRoute.get("/viewProduct/:id",userAuthent.isAuthenticated,contentController.loadProductDetail)
@@ -74,10 +72,9 @@ contentRoute.post("/subCart/:cartid/:userid/:pdtid/:price",contentController.sub
 contentRoute.post("/deleteCart/:cartid/:userid/:pdtid",contentController.deleteFromCart)
 
 /****************add address *********************/
-contentRoute.post ("/getStateCountry",contentController.storeStateCountry)
+
 contentRoute.post("/addAddress/:userid/:cartid/:amount",contentController.addNewAddress)
 contentRoute.get("/loadeditAddress/:addressid/:cartid/:amount",userAuthent.isAuthenticated,contentController.loadEditAddress)
-contentRoute.post ("/editStateCountry",contentController.changeStateCountry)
 contentRoute.post("/editAddress/:userid/:cartid/:amount",contentController.changeAddress)
 
 /*******set session for checkout**********/
@@ -89,6 +86,7 @@ contentRoute.post("/applyCoupon/:userid",contentController.couponApply)
 
 /**********************make cod payment********************* */
 contentRoute.post("/makeOrder",contentController.makeCODPayment)
+contentRoute.get('/failedPayment',contentController.verifyFailedPayment)
 contentRoute.post('/verifyPayment',contentController.verifyPayment)
 contentRoute.get("/paymentSuccess",contentController.loadPaymentSuccess)
 
@@ -98,6 +96,6 @@ contentRoute.get("/paymentSuccess",contentController.loadPaymentSuccess)
 /****************wishlist and save for later******************/
 
 contentRoute.get("/addtowishlist/:id",contentController.addToWishlist)
-contentRoute.get("/addtosave/:id",contentController.addToSave)
+
 
 module.exports = contentRoute;

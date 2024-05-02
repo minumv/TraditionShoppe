@@ -50,7 +50,7 @@ const userSchema = new mongoose.Schema({
         type: Boolean,
         // require: true
     },
-    isGoogleAuthenticated:{
+    isGoogleAuth:{
         type: Boolean
     },
     created:{

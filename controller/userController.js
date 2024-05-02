@@ -69,7 +69,7 @@ const verifyLogin = async(req,res)=>{
         if(userData){
             const passwordMatch = await bcrypt.compare(password,userData.password)
             if(passwordMatch){
-                req.session.user = userData.email ;
+                req.session.user = userData._id ;
                 req.session.blocked = false
                 req.flash("successMessage","You are successfully logged in.")
                 res.redirect('/home')
@@ -108,8 +108,8 @@ const successGoogleLogin = async (req,res)=>{
             role : 'user',
             status: 'Pending', 
             wallet : 0, 
-            referalCode: referCode            
-            
+            referalCode: referCode,            
+            isGoogleAuth:true
 
         }).save()
         
@@ -117,10 +117,16 @@ const successGoogleLogin = async (req,res)=>{
         if(newUser){
             console.log("new user :",newUser);
         }
+        req.session.user = newUser._id
+        req.session.blocked = false
+        res.redirect('/home')
+
+    } else {
+        req.flash("errorMessage","You are authenticated..Please login!!")
+        res.redirect('/signin/userLogin')
     }
     
-    req.session.user = req.user.email 
-    res.redirect('/home')
+    
     
 }
 
@@ -131,31 +137,15 @@ const failureGoogleLogin = async (req,res)=>{
     }   
 }
 
-//google signup
-
-const successGoogleSignup = async (req,res)=>{
-   console.log("Google user :",req.user)
-}
-
-//google login failed
-const failureGoogleSignup = async (req,res)=>{
-    res.redirect('/signin/signup')
-}
-
-
-
-
 //login using facebook
 const facebookSignin = async (req,res)=>{
 
 }
 
-
-
 //load mobile number
-const loadMobile= async (req,res)=>{
+const loadForget= async (req,res)=>{
     try{
-        const userid = req.params.id        
+        const userid = req.session.user     
         res.render('user/forgetPassword',{
             title: "Reset Password | TraditionShoppe",
             
@@ -172,7 +162,7 @@ const loadMobile= async (req,res)=>{
 //load new password page
 const loadChangePassword = async (req,res)=>{
     try{
-        const userid = req.params.id   
+        const userid = req.session.user  
         res.render('signin/changePassword',{           
             title: "Change your password| TraditionShoppe",
             userid,
@@ -187,52 +177,39 @@ const loadChangePassword = async (req,res)=>{
 //save new password page
 const changingPassword = async (req,res)=>{
     try{
-        const userid = req.params.id 
+        const userid = req.session.user
         const user = await User.findOne({_id:userid}).exec() 
-        if(user){
-            const passwordMatch = bcrypt.compare(req.body.password,user.password)
-            if(passwordMatch){
-                if(req.body.newpassword === req.body.confirmpassword){
-                    const hashPassword = bcrypt.hash(req.body.newpassword,10)
-                    await User.updateOne(
-                        {_id:userid},
-                        {$set : {
-                            password : hashPassword
-                        }}
-                    )
-                    console.log("password change successfull!")
-                    req.flash("errorMessage", "Password changed successfully..");    
-                    res.json({success:true})
-
-                } else {
-                    console.log("password mismatch!")
-                    req.flash("errorMessage", "New password should match with confirm password!!");    
-                    res.json({success:false})
-                }
+        const passwordMatch = bcrypt.compare(req.body.password,user.password)
+        if(passwordMatch){
+            if(req.body.newpassword === req.body.confirmpassword){
+                const hashPassword = bcrypt.hash(req.body.newpassword,10)
+                await User.updateOne(
+                {_id:userid},
+                    {$set : {
+                        password : hashPassword
+                }})
+                console.log("password change successfull!")
+                req.flash("errorMessage", "Password changed successfully..");    
+                res.json({success:true})
             } else {
                 console.log("password mismatch!")
-                req.flash("errorMessage", "Enter your current password correctly!!");    
+                req.flash("errorMessage", "New password should match with confirm password!!");    
                 res.json({success:false})
             }
         } else {
-            console.log("user not exist!")
-            req.flash("errorMessage", "User is not exists!!");    
+            console.log("password mismatch!")
+            req.flash("errorMessage", "Enter your current password correctly!!");    
             res.json({success:false})
-        }
-        
-
+        }  
     } catch(err){
         console.log(err.message);
     }
 }
 
-
 //load signup page
 const loadSignup = async (req,res)=>{
     try{
-        const referalCode = req.query.referalCode
-        req.session.signup = true
-        console.log("session :", req.session.signup)
+        const referalCode = req.query.referalCode     
         res.render('signin/signup',{
             title: "Sign Up | TraditionShoppe",
             referalCode,
@@ -258,7 +235,6 @@ const loadOtp = async (req,res)=>{
         console.log(err.message);
     }
 }
-
 
  //insert user details into database
  const customerSignup = async (req,res)=>{
@@ -311,23 +287,20 @@ const loadOtp = async (req,res)=>{
                         role : 'user',
                         status: 'Pending', 
                         wallet : referCredit, 
-                        referalCode: referCode,                   
+                        referalCode: referCode, 
+                        isGoogleAuth:false,                  
                         isVerifiedByOtp : false
                     })
                     newUser
                     .save()
-                    .then((result)=>{
-                        console.log("User data :",newUser)
-                        sendOtpEmail(result,res)
-                        console.log("result :",result) 
-                        console.log("mail sent successfully..") 
+                    .then((result)=>{                        
+                        sendOtpEmail(result,res)                        
                         res.json({success:true, 
                              data:{ 
                                 _id:result._id ,
                                 email:result.email
                             }})   
-                                               
-                        //res.redirect(`/loadOTP/${result._id}/${result.email}`)
+                       
                     })
                     .catch((err)=>{
                         console.log(err);
@@ -355,16 +328,14 @@ const loadOtp = async (req,res)=>{
         res.json({success:false })        
     }
 }
-
+//updating wallet amount of refered user
 const referalUserUpdate = async(req,res,obj)=>{
     try{
             console.log("referal code is used")
-            req.session.refferalUsed = true;           
-                        
+            req.session.refferalUsed = true;
             const referUser = await User.findOne({referalCode:obj.refferal})
             referUser.wallet += obj.referCredit;
-            referUser.save()
-            console.log("referal user :",referUser) 
+            referUser.save()            
     } catch(err){
         console.log(err.message)
     }
@@ -374,7 +345,6 @@ const sendOtpEmail = async({_id,email},res)=>{
     try{
         const otp = `${Math.floor(1000+Math.random()*9000)}`;
         
-        console.log("at send : id"+_id,email,otp);
         //mail options
         const mailOptions = {
             from: process.env.AUTH_EMAIL,
@@ -383,7 +353,6 @@ const sendOtpEmail = async({_id,email},res)=>{
             html:`<p><b> ${otp}</b> is your OTP to verify your email and complete the signup process.<br> OTP will expires in 5 minutes..</p>`,
         }
 
-        console.log("mail :",mailOptions)
         //hash the otp
         const hashedOTP = await bcrypt.hash(otp,10)
         const newOTP = new Otp({
@@ -442,11 +411,7 @@ const verifyOTPMail = async(req,res)=>{
            // res.json({message:userOtpNumber})
             console.log("user at otp table" + userOtpNumber);
 
-            if(userOtpNumber.length <= 0){
-                //no record found
-                // throw new Error(
-                //     "Account record doesn't exist or has been verified already. Please sign up or check your email! "
-                // )
+            if(userOtpNumber.length <= 0){                
                 req.flash("errorMessage", "Account record doesn't exist or has been verified already. Please sign up or check your email!!!");    
                 res.json({success:false })     
             } else {
@@ -465,22 +430,17 @@ const verifyOTPMail = async(req,res)=>{
                     const validOTP = await bcrypt.compare(otp,hashedOTP)
                     
                     if(!validOTP){
-                        //supplied otp is wrong
-                        //throw new Error("Invalid code passed. Check your inbox!")
+                       
                         req.flash("errorMessage", "Invalid code passed. Check your inbox!!!");    
-                        res.json({success:false })   
-                        // res.redirect(`/verifyOTP/${userId}/${email}`)
+                        res.json({success:false })  
+                       
                     } else {
                         //success
                         await User.updateOne({_id:userId},{isVerifiedByOtp:true})
                         Otp.deleteMany({userId})
                         req.flash("successMessage", "Your registration successfull, Sign in to the system..");  
                         res.json({success:true})
-                       // res.redirect('/signin/userLogin')
-                        // res.json({
-                        //     status: "VERIFIED",
-                        //     message: `User email verified successfully`
-                        // })
+                      
                     }
                 }
             }
@@ -494,31 +454,18 @@ const verifyOTPMail = async(req,res)=>{
     }
 }
 
-//load otp success page
-const loadOTPSuccess = async(req,res)=>{
-    try{
-        res.render('signin/otpSuccess',{
-            title:"OTP Verified | TraditionShoppe"
-        })
-    }
-    catch(err){
-        console.log(err.message);
-    }
-}
+
    // resend otp
     const resendOTP = async(req,res)=>{
         try{
             let _id=req.params.id
             let email=req.params.email
             console.log("at resend userid : " + _id + " email : "+ email);
-            // if(!userId || !email){
-            //     throw Error("Empty user details are not allowed!!")
-            // }
+           
             await Otp.deleteMany({user_id:_id})
             console.log("at resend after delete userid : " + _id + " email : "+ email);
             sendOtpEmail({_id, email},res)
-            res.json({success:true})
-           // res.redirect(`/verifyOTP/${_id}/${email}`)
+            res.json({success:true})           
         }
         catch(err){
             console.log(err.message);
@@ -556,7 +503,7 @@ const loadIndex = async (req,res)=>{
 //load homepage
 const loadHome = async (req,res)=>{
     try{
-        const email =  req.session.user
+        
         const products = await Products.find({status:{$ne:'inactive'},isListing:true}).exec()
         const categories = await Category.find({status:true}).exec()
         const sellers = await Seller.find({status:{$ne:'inactive'}}).exec()
@@ -567,7 +514,7 @@ const loadHome = async (req,res)=>{
    
         res.render('user/home',{
             title: "Home | TraditionShoppe", 
-            user : email, 
+            user :req.session.user, 
             qtyCount:req.session.qtyCount,
             listCount:req.session.listCount,
             products:products,
@@ -603,16 +550,12 @@ const getQtyCount = async(req,res)=>{
     try{
 
         let qtyCount = 0;
-        const users = await User.findOne({email:req.session.user},{_id:1}).exec()
-        //console.log("user cart: "+users)
-        const user_cart = await Cart.findOne({user:users,status:"listed"}).exec()
-       // console.log("cart : "+user_cart)
         
-        if(user_cart){
-            // console.log("inside cart");
-            // console.log( user_cart.total_amount);
+        const user_cart = await Cart.findOne({user:req.session.user,status:"listed"}).exec()
+     
+        if(user_cart){            
             user_cart.product_list.forEach(product => { 
-                console.log(product.quantity);       
+               // console.log(product.quantity);       
                 qtyCount += product.quantity; })
         }
         req.session.qtyCount = qtyCount
@@ -625,11 +568,9 @@ const getQtyCount = async(req,res)=>{
 const getListCount = async(req,res)=>{
     try{
         let listCount = 0;
-        const users = await User.findOne({email:req.session.user},{_id:1}).exec()
-        // console.log("user : "+users)
-        const user_list = await List.findOne({user:users}).exec()
-
-        if(user_list){           
+       
+        const user_list = await List.findOne({user:req.session.user}).exec()
+        if(user_list){          
             
             listCount = user_list.product_list.length;
         }
@@ -645,8 +586,7 @@ const getListCount = async(req,res)=>{
 
 const loadProfile = async (req,res)=>{
     try{
-        const email = req.session.user
-        const users = await User.findOne({email}).exec()    
+        const users = await User.findOne({_id:req.session.user}).exec()    
         await getQtyCount(req,res);
         await getListCount(req,res);
         console.log("user: ",users);
@@ -669,7 +609,7 @@ const loadProfile = async (req,res)=>{
 
 const loadeditProfile = async(req,res)=>{
     try{
-        const users = await User.findOne({email:req.session.user}).exec()    
+        const users = await User.findOne({_id:req.session.user}).exec()    
         await getQtyCount(req,res);
         await getListCount(req,res);
         
@@ -721,19 +661,35 @@ const editProfile = async(req,res)=>{
 const loadOrder = async (req,res)=>{
     try{
 
-        const email = req.session.user
-        const users = await User.findOne({email:email}).exec() 
+        const users = await User.findOne({_id:req.session.user}).exec()
+        
             const pageNum = req.query.page || 1
             const perPage = 9
-            const totalCount = await Order.countDocuments({user:users._id})
-            const pages = Math.ceil( totalCount / perPage )
+            const total = await Order.aggregate([
+                {
+                    $match: { user:users._id }
+                },
+                {
+                    $unwind : "$product_list"
+                },
+                {
+                    $group: {
+                        _id: null,
+                        count: { $sum: 1 }
+                    }
+                }
+            ])
+            const totalCount = total[0].count
+           const pages = Math.ceil( totalCount / perPage )
             console.log("count",totalCount);
-        //const orders = await Order.find({user:users[0]._id}).populate('address').exec()   
-
+        
         const orders = await Order.aggregate([
             {
-                $match: { user: users._id }
-            },
+                $match: { user:users._id }
+            }, 
+            {
+                $unwind: "$product_list"   
+            },          
             {
                 $lookup: {
                     from: "addresses", // Assuming 'addresses' is the name of your Address collection
@@ -770,10 +726,11 @@ const loadOrder = async (req,res)=>{
             },
             {
                 $limit: perPage
-            }
+            },
+           
         ]);
 
-        console.log("order details :",orders)         
+      //  console.log("order details :",orders)         
              
     
         
@@ -787,8 +744,8 @@ const loadOrder = async (req,res)=>{
             page:'Your Orders',
             qtyCount:req.session.qtyCount,
             listCount:req.session.listCount,
-            users,
             orders, 
+            users,
             pageNum,
             perPage,
             totalCount, 
@@ -806,14 +763,54 @@ const loadOrder = async (req,res)=>{
 
 const loadOrderView = async (req,res)=>{
     try{
-        const odrid = req.params.id
-        const users = await User.findOne({email:req.session.user}).exec()
-        const objectId = new mongoose.Types.ObjectId(odrid);
+        console.log("req :",req.params)
+        const odrid = new mongoose.Types.ObjectId(req.params.odrid)
+        console.log(odrid)
+        const pdtid = new mongoose.Types.ObjectId(req.params.pdtid)
+        console.log(pdtid)
+       const users = await User.findOne({_id:req.session.user}).exec()
         console.log("order id :",odrid)
         const orders = await Order.aggregate([
             {
-                $match: { _id: objectId }
+                $match: { 
+                    $and : [
+                        {_id: odrid} ,
+                        {"product_list.productId": pdtid }
+                    ]
+                }
+            }, 
+            {
+                $addFields: {
+                    product: {
+                        $filter: {
+                            input: "$product_list",
+                            as: "product",
+                            cond: { $eq: ["$$product.productId", pdtid] }
+                        }
+                    }
+                }
+            }, 
+            {
+                $unwind: {
+                    path: "$product",
+                    preserveNullAndEmptyArrays: true
+                }
+            }, 
+            {
+                $lookup: {
+                    from: "products",
+                    localField: "product.productId",
+                    foreignField: "_id",
+                    as: "productDetails"
+                }
             },
+            {
+                $unwind: {
+                    path: "$productDetails",
+                    preserveNullAndEmptyArrays: true
+                }
+            },  
+                    
             {
                 $lookup: {
                     from: "addresses", // Assuming 'addresses' is the name of your Address collection
@@ -827,24 +824,10 @@ const loadOrderView = async (req,res)=>{
                     path: "$addressDetails",
                     preserveNullAndEmptyArrays: true
                 }
-            },
-            {
-                $lookup: {
-                    from: "products", // Assuming 'addresses' is the name of your Address collection
-                    localField: "product_list.productId", // Field in the 'orders' collection
-                    foreignField: "_id", // Field in the 'addresses' collection
-                    as: "productDetails"
-                }
-            },
-            {
-                $unwind: {
-                    path: "$productDetails",
-                    preserveNullAndEmptyArrays: true
-                }
-            }
+            }           
         ])
 
-        console.log("orderdetails :",orders)
+        //console.log("orderdetails :",orders)
         await getQtyCount(req,res);
         await getListCount(req,res);
         
@@ -853,9 +836,9 @@ const loadOrderView = async (req,res)=>{
             user : req.session.user,
             page:'Change Address',
             qtyCount:req.session.qtyCount,
-            listCount:req.session.listCount,
-            users,
+            listCount:req.session.listCount,           
             orders,
+            users,
             errorMessage:req.flash('errorMessage'),
             successMessage:req.flash('successMessage')
 
@@ -1157,11 +1140,8 @@ const loadcancelList = async (req,res)=>{
 /**************handle my address******************/
 const loadAddress = async (req,res)=>{
     try{
-
-        const users = await User.findOne({email:req.session.user}).exec()
-
-        const address= await Address.find({user_id:users._id}).exec()
-
+        const users = await User.findOne({_id:req.session.user}).exec()
+        const address= await Address.find({user_id:users._id}).exec()        
         await getQtyCount(req,res);
         await getListCount(req,res);
         
@@ -1171,8 +1151,8 @@ const loadAddress = async (req,res)=>{
             page:'Your Address',
             qtyCount:req.session.qtyCount,
             listCount:req.session.listCount,     
-            address,
-            users,        
+            address, 
+            users,      
             errorMessage:req.flash('errorMessage'),
             successMessage:req.flash('successMessage')
 
@@ -1187,16 +1167,14 @@ const loadnewAddress = async (req,res)=>{
     try{
         await getQtyCount(req,res);
         await getListCount(req,res);
-
-        const users = await User.findOne({email:req.session.user}).exec()
-        
+        const users = await User.findOne({_id:req.session.user}).exec()
         res.render('profile/newAddress',{
             title:"My Address | TraditionShoppe",
             user : req.session.user,
             page:'aAd Address',
+            users,
             qtyCount:req.session.qtyCount,
             listCount:req.session.listCount,
-            users,
             errorMessage:req.flash('errorMessage'),
             successMessage:req.flash('successMessage')
 
@@ -1208,8 +1186,7 @@ const loadnewAddress = async (req,res)=>{
 }
 const storeAddress = async (req,res)=>{
     try{
-        const user = await User.findOne({email:req.session.user}).exec()
-        const user_addr = await Address.find({user_id:user._id}).exec()
+        const user_addr = await Address.find({user_id:req.session.user}).exec()
         console.log("form body :",req.body)
 
         let setDefault = true
@@ -1217,7 +1194,7 @@ const storeAddress = async (req,res)=>{
             setDefault = false
         }
         const addrData =await new Address({
-            user_id:user._id,
+            user_id:req.session.user,
             name: req.body.name,
             mobile:req.body.mobile,
             house:req.body.house,
@@ -1231,13 +1208,13 @@ const storeAddress = async (req,res)=>{
         }).save()
 
         if(addrData){
-            const address = await Address.find({user_id:user._id}).exec()
+            const address = await Address.find({user_id:req.session.user}).exec()
             
             const lastAddedAddress = address[address.length - 1]; // Retrieve the last address in the array
             console.log(lastAddedAddress._id);
           
             
-            await User.updateOne({_id:user._id},
+            await User.updateOne({_id:req.session.user},
                 { $push: { address: lastAddedAddress._id }})
  
             console.log('successful');
@@ -1258,7 +1235,7 @@ const storeAddress = async (req,res)=>{
 const loadeditAddress = async (req,res)=>{
     try{
         const addrid = req.params.id
-        const users = await User.findOne({email:req.session.user}).exec()
+        const users = await User.findOne({_id:req.session.user}).exec()
         const address = await Address.findOne({_id:addrid}).exec()
         await getQtyCount(req,res);
         await getListCount(req,res);
@@ -1268,9 +1245,9 @@ const loadeditAddress = async (req,res)=>{
             user : req.session.user,
             page:'Change Address',
             qtyCount:req.session.qtyCount,
-            listCount:req.session.listCount,
-            users,
+            listCount:req.session.listCount,           
             address,
+            users,
             errorMessage:req.flash('errorMessage'),
             successMessage:req.flash('successMessage')
 
@@ -1318,7 +1295,6 @@ const changeAddress = async (req,res)=>{
 const deleteAddress = async (req,res)=>{
     try{
         const addrid = req.params.id
-        const user = await User.findOne({email:req.session.user}).exec()
         const defaultAddress = await Address.findOne({_id:addrid}).exec()
         if(defaultAddress.isDefault){
             req.flash("errorMessage", "Default address can't remove!!");
@@ -1327,7 +1303,7 @@ const deleteAddress = async (req,res)=>{
             await Address.deleteOne(
                 {_id:addrid}).exec()
             await User.updateOne(
-                {_id:user._id},
+                {_id:req.session.user},
                 {   $pull:{address:addrid}}
             ).exec()
             req.flash("successMessage", "Address changed successfully..");
@@ -1381,7 +1357,7 @@ const setAddressDefault = async (req,res)=>{
 const loadWallet = async (req,res)=>{
     try{
         
-            const users = await User.findOne({email:req.session.user}).exec() 
+            const users = await User.findOne({_id:req.session.user}).exec() 
             const pageNum = req.query.page || 1
             const perPage = 6
             const totalCount = await Order.countDocuments({user:users._id,payment:"Wallet"}).exec()               
@@ -1445,15 +1421,18 @@ const loadWallet = async (req,res)=>{
 /**************************************/
 const loadList = async (req,res)=>{
     try{
-        
-        const products = await content.getProducts(req,res) //get products from contentController 
-        const users = await User.findOne({email:req.session.user}).exec()
-        console.log("user :",users)
+        let  matchCondition = {
+            $and: [
+                { status: { $ne: 'inactive' } },
+                { isListing: true }
+             ]
+        }
+        const products = await content.getProducts(req,res,matchCondition) //get products from contentController 
         const pageNum = req.query.page || 1
         const perPage = 8
         const totalpdtCount = await List.aggregate([
             {
-                $match: { user: users._id }
+                $match: { user: req.session.user }
             },
             {
                 $unwind: "$product_list" 
@@ -1467,12 +1446,12 @@ const loadList = async (req,res)=>{
         ]);
 
         const totalCount = totalpdtCount.length > 0 ? totalpdtCount[0].count : 0;
-
+        const userid = new mongoose.Types.ObjectId(req.session.user)
         const pages = Math.ceil( totalCount / perPage )
         console.log("count",totalCount);
-
+        const users = await User.findOne({_id:req.session.user}).exec()
         const list = await List.aggregate([{
-            $match:{user:users._id}
+            $match:{user:userid}
         },
         {
             $skip: ( pageNum - 1 ) * perPage
@@ -1498,12 +1477,12 @@ const loadList = async (req,res)=>{
             listCount:req.session.listCount, 
             productlist_length,              
             products,
+            users,
             pageNum,
             perPage,
             totalCount, 
             pages,
-            list, 
-            users,         
+            list,     
             errorMessage:req.flash('errorMessage'),
             successMessage:req.flash('successMessage')
 
@@ -1518,9 +1497,8 @@ const loadList = async (req,res)=>{
 const removeProduct =async(req,res)=>{
     try{
         const pdtid = req.params.id
-        const users = await User.findOne({email:req.session.user}).exec()
         await List.updateOne(
-            {user:users._id},
+            {user:req.session.user},
             { $pull: { product_list: pdtid } }).exec()
         res.json({success:true})
     }
@@ -1538,14 +1516,11 @@ module.exports = {
     verifyLogin,
 
     successGoogleLogin,
-    failureGoogleLogin,
-
-    successGoogleSignup,
-    failureGoogleSignup,
+    failureGoogleLogin,   
 
     facebookSignin,
 
-    loadMobile,
+    loadForget,
     loadChangePassword,
     loadSignup,
     loadOtp,
@@ -1561,7 +1536,7 @@ module.exports = {
     sendOtpEmail,
     loadverifyOTPMail,
     verifyOTPMail,
-    loadOTPSuccess,
+   
     resendOTP,
 
     logoutFrom,

@@ -43,7 +43,7 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
                    
                     if(userData.role === 'admin'){
                         req.session.role = userData.role;
-                        req.session.user = userData.email ;
+                        req.session.user = userData._id ;
                         req.flash("successMessage", "You have successfully logged in.");
                         res.redirect('/admin/dashboard')
                     } else {

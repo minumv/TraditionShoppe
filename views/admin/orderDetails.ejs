@@ -6,46 +6,42 @@
                 <div class="d-block bottom-line">
                     <p class="text-dark font-weight-bold">Order by:</p>
                 
-                <%users.forEach((usr,index)=>{%>
-                    
-                    <% if(usr._id.equals(odr.user)){%>
                        
-                    <p class="ms-4"><%=usr.name%></p>
+                    <p class="ms-4"><%=odr.userDetails.name%></p>
                     
                 </div>
                 <div class="stat-box">
-                    <p><%=odr.status%></p>
-                </div>
-                <div>
+                    <p><%=odr.product_list.orderstatus%></p>
+                </div>              
+                <%let formattedDate = new Date(odr.order_date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })%>
+                <div class="d-flex">
                     <p>Order date:</p>
-                    <p><%=odr.order_date%></p>
+                    <p><%=formattedDate%></p>
                 </div>
-                <div>
+                <%formattedDate = new Date(odr.product_list.delivery_date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })%>
+                <div class="d-flex">
                     <p>Delivery date:</p>
-                    <p><%=odr.delivery_date%></p>
+                    <p><%=odr.product_list.delivery_date%></p>
                 </div>
                 <div class="but d-block bg-secondary text-white text-center font-weight-bold rounded">
                    <div class=""> <p>Payment</p></div>
                     <p><%=odr.payment%></p>
-                    <p>₹<%=odr. payment_amount%></p>
+                    <p>₹<%=odr. product_list.total%></p>
                 </div>
 
             </div>
             <div class="d-block ms-6 bottom-line ">
                 <p class="text-dark font-weight-bold">Delivery to:</p>
                 <span class="ms-4">
-                <%address.forEach((adr,index)=>{%>
-                    <%console.log("inside address")%>
-                    <% if(adr._id.equals(odr.address)){%>
-                        <p><%=adr.name%></p>
-                        <p><%=adr.mobile%></p>
-                        <p><%=adr.house%></p>
-                        <p><%=adr.street%></p>
-                        <p>Landmark:<%=adr.landmark%></p>
-                        <p><%=adr.state%></p>
-                        <p><%=adr.pincode%></p>
-                    <%}%>
-                <%})%>
+                
+                        <p><%=odr.addressDetails.name%></p>
+                        <p><%=odr.addressDetails.mobile%></p>
+                        <p><%=odr.addressDetails.house%></p>
+                        <p><%=odr.addressDetails.street%></p>
+                        <p><%=odr.addressDetails.landmark%></p>
+                        <p><%=odr.addressDetails.state%></p>
+                        <p><%=odr.addressDetails.pincode%></p>
+                   
                 </span>
             </div>
         </div>
@@ -53,60 +49,46 @@
             <p class="text-dark font-weight-bolder fs-4">Product details</p>
             <table class="table align-items-center mb-0">
                 <tbody>
-                <% cart.forEach((row,index)=>{%>
-                    <%if((row.user.equals(usr._id)) && (row.status == 'pending')){%>
-                        <%row.product_list.forEach((list)=>{%>
-                            <%products.forEach((pdt)=>{%>
-                                <%if(list.productId.equals(pdt._id)){%>
-                                    <tr>
-                                        <td>
-                                            <div class="d-flex px-2 py-1">
-                                                <div>
-                                                <img src="../upload/<%=pdt.images[0]%>" class="avatar avatar-lg me-3 border-radius-lg" >
-                                                </div>                           
-                                            </div>
-                                        </td>
-                                      
-                                                <td>
-                                                    <div class="d-block">
-                                                        <p class="text-dark font-weight-bold"><%=pdt.product_name%></p>
-                                                        <p>₹<%=list.price%></p>
-                                                    </div>
-                                                </td>
-                                      
-                                        <td>
-                                            <div>
-                                                <p><%=list.quantity%></p>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div>
-                                                <p>₹<%=list.total%></p>
-                                            </div>
-                                        </td>
-
-                                    </tr>
-                                <%}%>
-                            <%})%>
-                        <%})%>
-                    <%}%>
+                     <tr>
+                        <td>
+                             <div class="d-flex px-2 py-1">
+                                <div>
+                                    <img src="../upload/<%=odr.productDetails.images[0]%>" class="pdt-img rounded border" >
+                                </div>                         
+                            </div>
+                        </td>
+                        <td>
+                             <div class="d-block">
+                                <p class="text-dark font-weight-bold"><%=odr.productDetails.product_name%></p>
+                                <p>₹<%=odr.product_list.price%></p>
+                             </div>
+                        </td>
+                        <td>
+                            <div>
+                                <p><%=odr.product_list.quantity%></p>
+                            </div>
+                        </td>
+                        <td>
+                            <div>
+                                <p>₹<%=odr.product_list.total%></p>
+                            </div>
+                        </td>
+                    </tr>                                
                     <tr>
                         <td></td>
                         <td></td>
                         <td>Total</td>
                         <td>
                             <div>
-                                <p><%=row.total_amount%></p>
+                                <p>₹<%=odr.product_list.total%></p>
                             </div>
                         </td>
                     </tr>
-                    <%})%>
+                    
                 </tbody>
             
         </div>
-   
-        <%}%>
-    <%})%>
-<%})%>
+        <%})%>
+
 </div>
 <%- include('../layout/adminFooter') %>

@@ -23,7 +23,7 @@
           </div> 
           <%console.log("order id : ",orderid)%>        
           <div class="d-flex justify-content-end">
-              <button id="returnbut" type="button" class="use-but ord-but bg-white text-dark"  onclick="handleReturn('<%=orderid%>')">Continue</button>
+              <button id="returnbut" type="button" class="use-but ord-but bg-white text-dark"  onclick="handleReturn('<%=orderid%>','<%=pdtid%>')">Continue</button>
           </div>
       </div>
   </div>
@@ -37,7 +37,7 @@
 </div>
 <%- include('../layout/userFooter') %>
 <script>
-function handleReturn(orderid) {
+function handleReturn(orderid,pdtid) {
     alert("button clicked");
     
     // Get selected values from dropdowns
@@ -63,15 +63,15 @@ function handleReturn(orderid) {
     .then(data => {
         // Handle success response
         console.log('Server response:', data);
-        requestReturn(orderid);
+        requestReturn(orderid,pdtid);
     })
     .catch(error => {
         console.error('Fetch Error:', error);
     });
 }
     
-    function requestReturn(ordrid){
-      fetch(`/returnRequest/${ordrid}`,{
+    function requestReturn(ordrid,pdtid){
+      fetch(`/returnRequest/${ordrid}/${pdtid}`,{
           method:'post',
           headers : {
               'Content-Type' : 'application/json'

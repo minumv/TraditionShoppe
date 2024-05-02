@@ -30,57 +30,51 @@ const orderSchema = new mongoose.Schema({
           quantity: { type: Number, required: true, min: 1 },
           price: { type: Number, required: true },
           total: { type: Number, required: true },
+          orderstatus:{  type : String,
+            enum: ['pending','processing','packed','dispatched','shipped','cancel request','cancelled','delivered','return request','refund received'],
+            require : true
+          }, 
+          paymentstatus : {
+            type : String,
+            enum: ['pending','completed','cancelled','refund granted'],
+            require : true
+        },          
+        delivery_date:{ //expected delivery date
+            type : Date,
+            require : true,
         },
-    ], 
-   
+        return_date:{   //day limit for return request
+            type : Date,
+            require : true,
+        },   
+        
+        delivered_date : {  //delivered to customer
+            type : Date,
+            require : true,
+        },
+        returned_date : { //customer returned the product
+            type : Date,
+            require : true,
+        },
+        return_reason : {
+            type : String,
+            require : true
+        },
+        cancelled_date : { //customer cancelled the product
+            type : Date,
+            require : true,
+        },
+        cancel_reason : {
+            type : String,
+            require : true
+        },
+        }
+    ],    
     payment_amount : {
         type : Number,
         require : true
     },
-    delivery_date:{ //expected delivery date
-        type : Date,
-        require : true,
-    },
-    return_date:{   //day limit for return request
-        type : Date,
-        require : true,
-    },
-    paymentstatus : {
-        type : String,
-        enum: ['pending','completed','cancelled','refund granted'],
-        require : true
-    },
-    orderstatus : {
-        type : String,
-        enum: ['pending','processing','packed','dispatched','shipped','cancel request','cancelled','delivered','return request','refund received'],
-        require : true
-    }, 
-
-    adminaction : {
-        type : String,
-        enum: ['approve','to pack','to dispatch','to ship','approve cancel','complete','approve return',],
-        require : true
-    },
-    delivered_date : {  //delivered to customer
-        type : Date,
-        require : true,
-    },
-    returned_date : { //customer returned the product
-        type : Date,
-        require : true,
-    },
-    return_reason : {
-        type : String,
-        require : true
-    },
-    cancelled_date : { //customer cancelled the product
-        type : Date,
-        require : true,
-    },
-    cancel_reason : {
-        type : String,
-        require : true
-    },
+      
     created : {
         type : Date,
         require : true,

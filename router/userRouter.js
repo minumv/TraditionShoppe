@@ -18,11 +18,8 @@ const bodyParser = require('body-parser')
 userRoute.use(bodyParser.json())
 userRoute.use(bodyParser.urlencoded({extended:true}))
 
-//login routing
-// userRoute.get("/login",userAuthent.isLoggedOut,userController.loadLogin)
-// userRoute.post("/login",userController.verifyLogin)
 
-/*******************login using Google account**************/
+/*******************signup & login using Google account**************/
 
 userRoute.get('/auth/google',passport.authenticate('google',{scope:
     [ 'email','profile' ]
@@ -41,31 +38,11 @@ userRoute.get('/success',userController.successGoogleLogin)
 //failure
 userRoute.get('/failure',userController.failureGoogleLogin)
 
-/***********************signup using google A/c************************* */
-
-
-// userRoute.get('/authSign/google', passport.authenticate('google', {
-//     scope: ['email', 'profile']
-// }));
-userRoute.get('/authSign/google', (req, res, next) => {
-    req.session.signup = true; // Set signup flag in session
-    next();
-}, passport.authenticate('google', {
-        scope: ['email', 'profile']
-    }));
-
-
-
-//success
-userRoute.get('/successSign',userController.successGoogleSignup)
-
-//failure
-userRoute.get('/failureSign',userController.failureGoogleSignup)
 
 /*******************signup and login using credentials*************************/
 userRoute.get("/signin/userLogin",userAuthent.isLoggedOut,userController.loadLogin)
-userRoute.get("/signin/forgetPassword",userController.loadMobile)
-userRoute.get("/signin/changePassword/:id",userController.loadChangePassword)
+userRoute.get("/signin/forgetPassword",userController.loadForget)
+userRoute.get("/signin/changePassword",userController.loadChangePassword)
 userRoute.get("/signin/signup",userAuthent.isLoggedOut,userController.loadSignup)
 userRoute.get("/signin/otpPage",userController.loadOtp)
 
@@ -82,21 +59,20 @@ userRoute.get("/home",userAuthent.isAuthenticated,userController.loadHome)
 //login process
 userRoute.post('/checkLogin',userController.verifyLogin)
 
-//registration routing
-// userRoute.get("/register",userAuthent.isLoggedOut,userController.loadRegister)
+//registration process
 userRoute.post("/addcustomer",userController.customerSignup)
 
-//otp verification routes
+//otp send to mail
 userRoute.post('/send-otp',userController.sendOtpEmail)
 
-//load verify page
+//load otp verify page
 userRoute.get('/loadOTP/:id/:email',userController.loadverifyOTPMail)
 
-//verify otp
+//otp verification 
 userRoute.post('/verifyOTP/:id',userController.verifyOTPMail)
 
 //load otp success page
-userRoute.get('/otpSuccess',userController.loadOTPSuccess)
+
 userRoute.post('/otpSuccess',userController.loadLogin)
 
 //resend otp
@@ -116,7 +92,7 @@ userRoute.post("/changeprofile/:id",userAuthent.isAuthenticated,userController.e
 
 /************order**************/
 userRoute.get("/getOrder",userAuthent.isAuthenticated,userController.loadOrder)
-userRoute.get("/getOrderView/:id",userAuthent.isAuthenticated,userController.loadOrderView)
+userRoute.get("/getOrderView/:odrid/:pdtid",userAuthent.isAuthenticated,userController.loadOrderView)
 userRoute.get("/orderlast30",userAuthent.isAuthenticated,userController.loadbuyLast30)
 userRoute.get("/order2023",userAuthent.isAuthenticated,userController.load2023)
 userRoute.get("/order2022",userAuthent.isAuthenticated,userController.load2022)

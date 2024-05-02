@@ -23,7 +23,7 @@
                 </div>
                 
                 <div class="d-flex justify-content-end">
-                    <button id="cancelbut" type="button" class="use-but ord-but bg-white text-dark"  onclick="handleCancel('<%=orderid%>')">Continue</button>
+                    <button id="cancelbut" type="button" class="use-but ord-but bg-white text-dark"  onclick="handleCancel('<%=orderid%>','<%=pdtid%>')">Continue</button>
                 </div>
             </div>
         </div>
@@ -40,7 +40,7 @@
 
      // request for cancel   onclick="requestCancel(orderid)"
 
-     function handleCancel(orderid) {
+     function handleCancel(orderid,pdtid) {
     alert("button clicked");
     
     // Get selected values from dropdowns
@@ -66,15 +66,15 @@
     .then(data => {
         // Handle success response
         console.log('Server response:', data);
-        requestCancel(orderid);
+        requestCancel(orderid,pdtid);
     })
     .catch(error => {
         console.error('Fetch Error:', error);
     });
 }
 
-     function requestCancel(ordrid){
-        fetch(`/cancelRequest/${ordrid}`,{
+     function requestCancel(ordrid,pdtid){
+        fetch(`/cancelRequest/${ordrid}/${pdtid}`,{
             method:'post',
             headers : {
                 'Content-Type' : 'application/json'

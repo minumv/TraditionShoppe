@@ -46,14 +46,11 @@
         <div class="row ord-box">
                 
                 <div>
-                    <img src="../upload/<%=odr.productDetails.images[0]%>" class="pdt-img rounded border" >
+                    <img src="<%= `/upload/${odr.productDetails.images[0]}` %>" class="pdt-img rounded border" >
                 </div>
 
-                <%let dateString =  odr.order_date %>
-                <%let date = new Date(dateString)%>
-
-                <%let options = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }%>
-                <%let formattedDate = date.toLocaleDateString('en-US', options)%>
+                
+                <%let formattedDate = new Date(odr.order_date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })%>
                     
                 <div class="pdt-det">
                     <div class="d-flex">
@@ -65,12 +62,12 @@
                         <p class="text-dark text-uppercase mb-0">Order placed:</p>
                         <p><%= formattedDate%></p>
                     </div>
-
-                    <%  dateString =  odr.delivery_date %>
-                    <%  date = new Date(dateString)%>
-
-                    <%  options = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }%>
-                    <%  formattedDate = date.toLocaleDateString('en-US', options)%>
+                    
+                    
+                        
+                        <% formattedDate = new Date(odr.product_list.delivery_date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })%>
+                        
+              
                     <div class="d-flex">
                         <p class="text-dark fs-3 font-weight-bold mb-0">Expected Delivery:</p>
                         <p><%= formattedDate %></p>
@@ -82,7 +79,7 @@
                 </div>
                 <div class="pdt-det box-wid">
                     <p class="text-dark text-uppercase mb-0">Total:</p>
-                    <p><%= odr.payment_amount%></p>
+                    <p><%=odr.product_list.total%></p>
                 </div>
                 
                 <div class="pdt-det d-block box-wid">
@@ -91,28 +88,28 @@
                     <div><span><%=odr.addressDetails.house%></span></div>
                     <div><span><%=odr.addressDetails.city%></span></div>
                 </div>
-                   
+               
                 <div class="pdt-det box-wid">
                     <p class="text-dark text-uppercase mb-0">Status:</p>
-                    <p><%=odr.orderstatus%></p>
+                    <p><%=odr.product_list.orderstatus%></p>
                 </div>
 
                 <div class="d-block">
-                    <div><a href="/getOrderView/<%= odr._id %>"><button class="use-but ord-but bg-light text-center text-dark">View Details</button></a></div>
+                    <div><a href="/getOrderView/<%= odr._id %>/<%= odr.productDetails._id %>"><button class="use-but ord-but bg-light text-center text-dark">View Details</button></a></div>
                     <!-- <div><a href="/review"><button type="submit" class="use-but ord-but bg-light text-center text-dark">Write a review</button></a></div> -->
-                    <% if (odr.orderstatus === 'pending'){%>
-                        <div><a href="/cancelPage/<%= odr._id %>"><button type="submit" class="use-but ord-but bg-light text-center text-dark">Cancel Order</button></a></div>
-                    <%} else if(odr.orderstatus === 'delivered'){%> 
-                        <div><a href="/returnPage/<%= odr._id %>"><button type="submit" class="use-but ord-but bg-white text-dark">Return Product</button></a></div>  
-                    <%}%>
+                    <% if (odr.product_list.orderstatus === 'pending'){%>
+                        <div><a href="/cancelPage/<%= odr._id %>/<%= odr.productDetails._id %>"><button type="submit" class="use-but ord-but bg-light text-center text-dark">Cancel Order</button></a></div>
+                    <%} else if(odr.product_list.orderstatus === 'delivered'){%> 
+                        <div><a href="/returnPage/<%= odr._id %>/<%= odr.productDetails._id %>"><button type="submit" class="use-but ord-but bg-white text-dark">Return Product</button></a></div>  
+                        <%}%>
                 </div>   
             </div>
-
-
-
+            
+      
+            <%})%>
             
         
-<%})%> <!--  orders -->
+<!--  orders -->
 
 <div class="row" data-aos="fade-up">
     <div class="col-md-12 text-center">

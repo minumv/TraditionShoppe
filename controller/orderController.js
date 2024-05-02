@@ -14,12 +14,14 @@ const mongoose = require('mongoose');
 // const userAuthent = require('../middleware/userAuthent')
 
 
-/****************load order page*******************/
+/****************load admin order page*******************/
     const loadOrder = async (req,res)=>{
         try{
            
             const orders = await Order.aggregate([
-            
+            {
+                    $unwind: "$product_list"   
+            },
             {
                 $lookup:{
                     from:'products',
@@ -69,9 +71,9 @@ const mongoose = require('mongoose');
             {
                 $sort : { 'created' : -1 }
             }
-            ])        
-            console.log("orders",orders)
-           
+            ])  
+            console.log(orders)      
+            
             res.render('admin/orderManage',{
                 title: "Order Management | TraditionShoppe",
                 page:"Orders",
@@ -90,29 +92,86 @@ const mongoose = require('mongoose');
     const viewOrderMore = async (req,res)=>{
         try{
 
-            const orderid = req.params.orderid
-            //console.log(orderid);
-            const orders = await Order.find({_id:orderid}).exec() 
-           // console.log(orders.user);
-            const users = await User.find({status : {$nin:["deleted","blocked"]}}).exec()
-           // console.log(users);
-            const cart  = await Cart.find().exec()
-            console.log(cart);
-            const discount = await Discount.find({status:true}).exec()
-
-           // const productIds = cart.product_list.map(item => item.productId);
-            
-            const products = await Product.find({ isListing:true }).exec()
-            const address = await Address.find().exec()
+            const orderid = new mongoose.Types.ObjectId(req.params.orderid)
+            const pdtid = new mongoose.Types.ObjectId(req.params.pdtid)            
+            const orders = await Order.aggregate([
+                {
+                        $match:{
+                            $and : [
+                                {_id:orderid},
+                                {"product_list.productId":pdtid}
+                            ]
+                        }
+                },
+                {
+                    $addFields: {
+                        product: {
+                            $filter: {
+                                input: "$product_list",
+                                as: "product",
+                                cond: { $eq: ["$$product.productId", pdtid] }
+                            }
+                        }
+                    }
+                }, 
+                {
+                    $unwind: {
+                        path: "$product",
+                        preserveNullAndEmptyArrays: true
+                    }
+                }, 
+                {
+                    $lookup: {
+                        from: "products",
+                        localField: "product.productId",
+                        foreignField: "_id",
+                        as: "productDetails"
+                    }
+                },
+                {
+                    $unwind: {
+                        path: "$productDetails",
+                        preserveNullAndEmptyArrays: true
+                    }
+                },  
+                        
+                {
+                    $lookup: {
+                        from: "addresses", 
+                        localField: "address", 
+                        foreignField: "_id",
+                        as: "addressDetails"
+                    }
+                },
+                {
+                    $unwind: {
+                        path: "$addressDetails",
+                        preserveNullAndEmptyArrays: true
+                    }
+                } , 
+                {
+                    $lookup: {
+                        from: "users", 
+                        localField: "user", 
+                        foreignField: "_id",
+                        as: "userDetails"
+                    }
+                },
+                {
+                    $unwind: {
+                        path: "$addressDetails",
+                        preserveNullAndEmptyArrays: true
+                    }
+                }                 
+            ])
+             
+                console.log("orders",orders)
+           
+           
             res.render('admin/orderDetails',{
                 title: "Order Management | TraditionShoppe",
                 page:"View Order",
-                orders:orders,
-                users:users,
-                products:products,
-                address:address,
-                cart:cart,
-                discount:discount,
+                orders,
                 errorMessage:req.flash('errorMessage'),
                 successMessage:req.flash('successMessage')
             })
@@ -131,11 +190,13 @@ const mongoose = require('mongoose');
 const loadCancelPage = async(req,res)=>{
     try{
         const orderid = req.params.odrid
-        const users = await User.find({email:req.session.user}).exec()
+        const pdtid = req.params.pdtid
+        const users = await User.find({_id:req.session.user}).exec()
         res.render('profile/cancelRequest',{
             title : 'Cancel order | TraditioShoppe',
             page: 'Cancel Order',
             orderid,
+            pdtid,
             users,
             qtyCount:req.session.qtyCount,
             listCount:req.session.listCount,
@@ -154,12 +215,14 @@ const loadCancelPage = async(req,res)=>{
 const loadReturnPage = async(req,res)=>{
     try{
         const orderid = req.params.odrid
+        const pdtid = req.params.pdtid
         console.log("odr id : ",orderid)
-        const users = await User.find({email:req.session.user}).exec()
+        const users = await User.find({_id:req.session.user}).exec()
         res.render('profile/returnRequest',{
             title : 'Return Product | TraditioShoppe',
             page: 'Product Return',
             orderid,
+            pdtid,
             users,
             qtyCount:req.session.qtyCount,
             listCount:req.session.listCount,
@@ -209,16 +272,18 @@ const cancelOrder = async (req,res)=>{
     try{
         console.log("cancel request");        
         const odrid = req.params.odrid
+        const pdtid = req.params.pdtid
         const reason = req.session.cancelReason
         console.log("order id : ",odrid);
         console.log("cancel reason : ",odrid);
        
         const cancelled = await Order.updateOne(
-            { _id: odrid },
+            { _id: odrid,"product_list.productId":pdtid},
            { $set: { 
-                orderstatus: "cancel request",
-                cancel_reason: reason
-            } } 
+                "product_list.$[elem].orderstatus": "cancel request",
+                "product_list.$[elem].cancel_reason": reason
+            } } ,
+            { arrayFilters: [{ "elem.productId": pdtid }] }  
         )
         console.log('successful');
         if(cancelled){
@@ -241,17 +306,22 @@ const cancelOrder = async (req,res)=>{
 const returnOrder = async (req,res)=>{
     try{
         
-        const odrid = req.params.odrid  
+        const odrid = new mongoose.Types.ObjectId(req.params.odrid)
+        const pdtid = new mongoose.Types.ObjectId(req.params.pdtid)
+        // console.log("id :", odrid, pdtid)
         const reason = req.session.returnReason
-        const orderData = await Order.findById(odrid).exec()      
-        if(orderData.return_date >= new Date()){
+        const orderData = await Order.findOne({_id:odrid,"product_list.productId":pdtid},{ "product_list.$": 1 }).exec()  
+        console.log("orderData :",orderData)    
+        if(orderData.product_list[0].return_date >= new Date()){
+            console.log("request")
             const returned = await Order.updateOne(
-                { _id: odrid },
+                { _id: odrid, "product_list.productId":pdtid },
                { $set: { 
-                    orderstatus: "return request",
-                    return_reason: reason,
-                    returned_date : new Date()               
-                } } 
+                "product_list.$[elem].orderstatus": "return request",
+                "product_list.$[elem].return_reason": reason,
+                "product_list.$[elem].returned_date ": new Date()               
+                } } ,
+                { arrayFilters: [{ "elem.productId": pdtid }] }  
             )
             console.log('return request successful',returned);
             if( returned ){
@@ -277,82 +347,37 @@ const returnOrder = async (req,res)=>{
 
 /************admin action handle****************/
 
-const selectAdminAction = async(req,res)=>{
-    try{
-        const adminaction = req.body.adminaction
-        console.log("dropdwn",req.body.adminaction);
-        req.session.adminaction =  adminaction
-        console.log("dropdwn session : ",req.session.adminaction);
-        console.log( req.session.adminaction); 
-        res.status(200).send({success:true});   
-    }
-    catch(err){
-        console.log(err.message);
-    }
-}
-
-
-const applyAdminAction = async(req,res)=>{
-    try{
-        const pdtid = req.params.pdtid
-        const odrid = req.params.odrid
-        const userid = req.params.userid
-        //const cartid = req.params.cartid
-        const qty = req.params.qty
-        let result = false
-        let action = req.session.adminaction
-        console.log("action :",action)
-
-        if(action === 'complete'){
-             result = await OrderApproved(req,res,pdtid,odrid,userid,qty)
-        } else if(action === 'to pack'){
-             result = await changeOrderStatus(req,res,odrid,action)
-        } else if(action === 'to dispatch'){
-            result = await changeOrderStatus(req,res,odrid,action)
-        } else if(action === 'to ship'){
-            result = await changeOrderStatus(req,res,odrid,action)
-        } else if(action === 'approve cancel'){
-            result = await OrderCancelled(req,res,odrid)
-        } else if(action === 'approve'){
-            result = await changeOrderStatus(req,res,odrid,action)
-        } else if(action === 'approve return'){
-            result = await OrderReturned(req,res,odrid)
-        }
-
-        if( result ){
-            req.flash("successMessage", "Process successfull...");
-            res.status(200).send({success:true})
-        } else {
-            req.flash("errorMessage", "Process Failed !!");
-            res.status(400).send({success:false})
-        }
-    }
-    catch(err){
-        console.log(err.message);
-    }
-}
 
 const changeOrderStatus= async(req,res)=>{
     try{
         console.log("change status @",req.params.odrid)
         const odrid = req.params.odrid
+        const pdtid = req.params.pdtid
         let action = req.params.action
-        let orderstat = ''
-        if( action === 'to pack'){
-            orderstat = 'packed'
-        } else if( action === 'to dispatch'){
-            orderstat = 'dispatched'
-        } else if( action === 'to ship'){
-            orderstat = 'shipped'
-        } else if( action === 'approve'){
-            orderstat = 'processing'
+        let orderstat = ''        
+        switch (action) {
+            case 'to pack':
+                orderstat = 'packed';
+                break;
+            case 'to dispatch':
+                orderstat = 'dispatched';
+                break;
+            case 'to ship':
+                orderstat = 'shipped';
+                break;
+            case 'approve':
+                orderstat = 'processing';
+                break;
+            default:
+                break;
         }
         console.log("orderstatus :", orderstat , action)
+        const order = await Order.findOne({_id:odrid,"product_list.productId":pdtid}, { "product_list.$": 1 }).exec()
+        console.log("order detail :",order)
         const changeStat = await Order.updateOne(
-            {_id:odrid},
-            { $set : {
-                orderstatus : orderstat
-            }}
+            {_id:odrid,"product_list.productId":pdtid},           
+            { $set : { "product_list.$[elem].orderstatus" : orderstat } },
+            { arrayFilters: [{ "elem.productId": pdtid }] }
         )
         console.log("changed? :",changeStat)
         console.log("status changed successfully")
@@ -374,41 +399,38 @@ const OrderApproved = async (req,res)=>{
         const odrid = req.params.odrid
         const pdtid = req.params.pdtid
         const userid = req.params.userid
-        // console.log("order id :",odrid)
-        // console.log("order id :",odrid)
-        let qty = 0
-        const order = await Order.findOne({_id:odrid}).exec()
-        order.product_list.forEach((odr)=>{
-            qty = odr.quantity
-        })
+       
+        
+        const order = await Order.findOne({_id:odrid,"product_list.productId":pdtid}, { "product_list.$": 1 }).exec()
+        // order.product_list.forEach((odr)=>{
+        //     qty = odr.quantity
+        // })
         console.log("order det :",order)
-
+        let qty = order.product_list[0].quantity
+        console.log("qty :",qty);
         const products = await Product.findOne({_id:pdtid})
         let changeStock = 0
+        console.log("stock",products.stock)
         if(products){
-            // console.log("stock : "+products[0].stock );
-            // console.log("qty : "+qty+ typeof (qty) );
             changeStock = products.stock - parseFloat(qty) 
             console.log("stock : "+changeStock + typeof (changeStock) );
         }
-        console.log("ordrid: " + odrid);
-        console.log("usrrid: " + userid);
-
+       
         const currentDate = new Date();
         const returnDate = new Date(currentDate.setDate(currentDate.getDate() + 14));
         console.log ("return date :",returnDate)
 
 
         const orderStat = await Order.updateOne(
-            { _id: odrid },
+            { _id: odrid,"product_list.productId":pdtid},
            { $set: { 
-                orderstatus:"delivered",
-                paymentstatus:"completed",
-                adminaction:"delivered",
-                delivered_date:new Date(),
-                return_date: returnDate
+                "product_list.$[elem].orderstatus":"delivered",
+                "product_list.$[elem].paymentstatus":"completed",               
+                "product_list.$[elem].delivered_date":new Date(),
+                "product_list.$[elem].return_date": returnDate
                 // update delivery date
-            } } )
+            } },
+            { arrayFilters: [{ "elem.productId": pdtid }] } )
 
             console.log("order status ?",orderStat)
         
@@ -444,56 +466,38 @@ const OrderApproved = async (req,res)=>{
 
 const OrderReturned = async (req,res)=>{
     try{
-        // const pdtid = req.params.pdtid
-        const odrid = req.params.odrid
-        // const userid = req.params.userid
-        // const qty = req.params.qty
-        // const total = req.params.total
+       
+        const odrid = req.params.odrid 
+        const pdtid = req.params.pdtid     
+        const orders = await Order.findOne({_id:odrid,"product_list.productId":pdtid},{ "product_list.$": 1 }).populate('user').exec()       
+        console.log("orders",orders)
 
-        
-                
-         const orders = await Order.findOne({_id:odrid}).populate('user').exec()       
-        //console.log("orders",orders)
-
-        let pdtid = ''
+       
         let qty = 0
+        let total = 0
         orders.product_list.forEach((odr)=>{
-            pdtid = odr.productId
+            
             qty = odr.quantity
+            total = odr.total
         })
-
+        console.log("qty :",qty,"total :",total)
         const products = await Product.findOne({_id:pdtid}).exec()
         let newStock = products.stock + qty
         console.log("new stock :",newStock, "stock :",products.stock , "qty :",qty)
 
-        // if(orders.product_list.length>1){
-        //     await Order.updateOne(
-        //         { _id: odrid },
-        //         { $pull: { product_list:  pdtid  }},
-        //         { $set: { 
-        //             payment_amount : payment_amount - total,
-        //             status: "cancelled"                
-        //         } } 
-        //     )
-        // }
-        // else {
            const orderStat = await Order.updateOne(
-                { _id: odrid },              
+                { _id: odrid,"product_list.productId":pdtid},              
                 { $set: {     
-                    orderstatus: "refund received",
-                    adminaction:"approve return",
-                    paymentstatus:"refund granted"
-                } } 
-            )
-            const prodStat = await Product.updateOne(
-                { _id:pdtid },
-                { $set : {
-                    stock : newStock
-                }}
-            )
+                    "product_list.$[elem].orderstatus": "refund received",                    
+                   "product_list.$[elem].paymentstatus":"refund granted"
+                } },
+                { arrayFilters: [{ "elem.productId": pdtid }] } ) 
+             
+            products.stock = newStock
+            products.save()
             //add wallet to user collection
             if(orders.user.wallet != null){
-                let amount = orders.user.wallet + orders.payment_amount
+                let amount = orders.user.wallet + total
                 console.log("wallet :",orders.user.wallet,"amount :",amount)
                 await User.updateOne(
                     {_id:orders.user._id},
@@ -505,12 +509,12 @@ const OrderReturned = async (req,res)=>{
                 await User.updateOne(
                     {_id:orders.user._id},
                     { $set :{
-                        wallet : orders.payment_amount
+                        wallet : total
                     }}
                 )
             }
 
-            if(orderStat && prodStat){
+            if(orderStat && products){
                 req.flash("successMessage", "Process completed..");
                 res.json({success:true})
             } else {
@@ -527,28 +531,31 @@ const OrderReturned = async (req,res)=>{
 /*   load buylist */
     const OrderCancelled = async (req,res)=>{
         try{
-            // const pdtid = req.params.pdtid
+            const pdtid = req.params.pdtid
             const odrid = req.params.odrid
-            // const userid = req.params.userid
-            // const qty = req.params.qty
-            // const total = req.params.total
+                       
+           
+            const orders = await Order.findOne({_id:odrid,"product_list.productId":pdtid}, { "product_list.$": 1 }).populate('user').exec() 
             
            
-            const orders = await Order.findOne({_id:odrid}).populate('user').exec()       
-           
+                let total = 0
+                orders.product_list.forEach((odr)=>{
+                    total = odr.total
+                })
+                
                 const orderStat = await Order.updateOne(
-                    { _id: odrid },              
+                    { _id: odrid ,"product_list.productId":pdtid },              
                     { $set: {     
-                        orderstatus: "cancelled" ,
-                        cancelled_date: new Date(),
-                        paymentstatus:'cancelled',
-                        adminaction :'approve cancel'           
-                    } } 
+                        "product_list.$[elem].orderstatus": "cancelled" ,
+                        "product_list.$[elem].cancelled_date": new Date(),
+                        "product_list.$[elem].paymentstatus":'cancelled',                           
+                    } },
+                    { arrayFilters: [{ "elem.productId": pdtid }] }   
                 )
                 //update wallet(Add paymentamount) based on payment method
                 if(orders.payment === 'Razorpay' || orders.payment === 'Wallet'){
                     if(orders.user.wallet != null){
-                        let amount = orders.user.wallet + orders.payment_amount
+                        let amount = orders.user.wallet + total
                         await User.updateOne(
                             {_id:orders.user._id},
                             { $set :{
@@ -559,7 +566,7 @@ const OrderReturned = async (req,res)=>{
                         await User.updateOne(
                             {_id:orders.user._id},
                             { $set :{
-                                wallet : orders.payment_amount
+                                wallet : total
                             }}
                         )
                     }
@@ -591,9 +598,6 @@ const OrderReturned = async (req,res)=>{
 
         selectCancelReason,
         selectReturnReason,
-
-        selectAdminAction,
-        applyAdminAction,
 
         changeOrderStatus,
 

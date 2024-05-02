@@ -6,50 +6,48 @@
           
       
         <%orders.forEach((odr)=>{%> 
-
+           
         <div style="margin-top: 20px;margin-left: 25px;">
-            <%if (odr.orderstatus === 'delivered' || odr.orderstatus ===  'cancelled' ||odr.orderstatus ===  'refund received'){ %>
+            <%if (odr.product.orderstatus === 'delivered' || odr.product.orderstatus ===  'cancelled' ||odr.product.orderstatus ===  'refund received'){ %>
             <p class="text-dark text-uppercase" style="font-size: 20px;font-weight: 600;"><strong>Order Completed</strong></p>
             <%} else {%>
             <p class="text-dark text-uppercase" style="font-size: 20px;font-weight: 600;"><strong>Track your Order</strong></p>
            
                 <div class="d-flex mb-4">            
-                    <%if(odr.orderstatus === 'pending' || odr.orderstatus === 'processing'){%>
+                    <%if(odr.product.orderstatus === 'pending' || odr.product.orderstatus === 'processing' ){%>
                         
                     <span class="ord-active">Placed-----</span><span class="ord-active">Processing-----</span>
                     <span>Packed----</span><span>Dispatched----</span><span>Shipped----</span><span>Arrived at destination</span>
                     
-                    <%} else if(odr.orderstatus === 'packed'){%>
+                    <%} else if(odr.product.orderstatus === 'packed'){%>
                         <span class="ord-active">Placed-----</span><span class="ord-active">Processing-----</span>
                         <span class="ord-active">Packed-----</span><span>Dispatched----</span><span>Shipped----</span><span>Arrived at destination</span>
                     
-                    <%} else if(odr.orderstatus === 'dispatched'){%>
+                    <%} else if(odr.product.orderstatus === 'dispatched'){%>
                         <span class="ord-active">Placed-----</span><span class="ord-active">Processing-----</span>
                         <span class="ord-active">Packed-----</span><span class="ord-active">Dispatched-----</span><span>Shipped----</span><span>Arrived at destination</span>
                     
-                    <%} else if(odr.orderstatus === 'shipped'){%>
+                    <%} else if(odr.product.orderstatus === 'shipped'){%>
                         <span class="ord-active">Placed-----</span><span class="ord-active">Processing-----</span>
                         <span class="ord-active">Packed-----</span><span class="ord-active">Dispatched-----</span><span class="ord-active">Shipped-----</span><span>Arrived at destination</span>
                     
-                    <%} else if(odr.orderstatus === 'delivered' || odr.orderstatus === 'refund received'){%>
+                    <%} else if(odr.product.orderstatus === 'delivered' || odr.product.orderstatus === 'refund received'){%>
                         <span class="ord-active">Placed-----</span><span class="ord-active">Processing-----</span>
                         <span class="ord-active">Packed-----</span><span class="ord-active">Dispatched-----</span><span class="ord-active">Shipped-----</span><span class="ord-active">Arrived at destination</span>
                     <%}%>
              
             </div>
             <%}%> 
+            
         </div> 
         <div class="row ord-box" style="width: 900px;">
                 
                 <div>
-                    <img src="../upload/<%=odr.productDetails.images[0]%>" class="pdt-img rounded border" >
+                    <!-- /userasset/images -->
+                    <img src="<%= `/upload/${odr.productDetails.images[0]}` %>"  class="pdt-img rounded border" >
                 </div>
 
-                <%let dateString =  odr.order_date %>
-                <%let date = new Date(dateString)%>
-
-                <%let options = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }%>
-                <%let formattedDate = date.toLocaleDateString('en-US', options)%>
+                <%let formattedDate = new Date(odr.order_date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })%>
                     
                 <div class="pdt-det">
                     <div class="d-flex">
@@ -62,11 +60,7 @@
                         <p><%= formattedDate%></p>
                     </div>
 
-                    <%  dateString =  odr.delivery_date %>
-                    <%  date = new Date(dateString)%>
-
-                    <%  options = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }%>
-                    <%  formattedDate = date.toLocaleDateString('en-US', options)%>
+                    <%  formattedDate = new Date(odr.product.delivery_date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })%>
                     <div class="d-flex">
                         <p class="text-dark fs-3 font-weight-bold mb-0">Expected Delivery:</p>
                         <p><%= formattedDate %></p>
@@ -78,7 +72,7 @@
                 </div>
                 <div class="pdt-det box-wid">
                     <p class="text-dark text-uppercase mb-0">Total:</p>
-                    <p><%= odr.payment_amount%></p>
+                    <p><%= odr.product.total%></p>
                 </div>
                 
                 <div class="pdt-det d-block box-wid">
@@ -87,16 +81,16 @@
                     <div><span><%=odr.addressDetails.house%></span></div>
                     <div><span><%=odr.addressDetails.city%></span></div>
                 </div>
-                   
+               
                
 
                 
             </div>
-
-            <%if (odr.orderstatus === 'delivered' || odr.orderstatus ===  'cancelled' ||odr.orderstatus ===  'refund received'){ %>
-                <div><a href="/viewProduct/<%= odr.productDetails._id %>"><button class="use-but ord-but bg-light text-center text-dark">Buy Again</button></a></div>
-            <%}%> 
-
+               
+                    <%if (odr.product.orderstatus === 'delivered' ||odr.product.orderstatus ===  'cancelled' ||odr.product.orderstatus ===  'refund received'){ %>
+                        <div><a href="/viewProduct/<%= odr.productDetails._id %>"><button class="use-but ord-but bg-light text-center text-dark">Buy Again</button></a></div>
+                    <%}%> 
+              
             <%})%>
         
 

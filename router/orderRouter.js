@@ -15,30 +15,27 @@ orderRoute.use(bodyParser.urlencoded({extended:true}))
 /*********admin order********** */
 
 orderRoute.get("/orderManage",orderController.loadOrder)
-orderRoute.get("/orderDetails/:orderid",orderController.viewOrderMore)
+orderRoute.get("/orderDetails/:orderid/:pdtid",orderController.viewOrderMore)
 
 //admin action handling
 
-orderRoute.post("/getAdminAction",orderController.selectAdminAction)
-orderRoute.post("/statusChanging/:odrid/:action",orderController.changeOrderStatus)
-
+orderRoute.post("/statusChanging/:odrid/:pdtid/:action",orderController.changeOrderStatus)
 orderRoute.post("/orderPending/:odrid/:pdtid/:userid",orderController.OrderApproved)
-
-orderRoute.post("/cancelapprove/:odrid",orderController.OrderCancelled)
-orderRoute.post("/returnapprove/:odrid",orderController.OrderReturned)
+orderRoute.post("/cancelapprove/:odrid/:pdtid",orderController.OrderCancelled)
+orderRoute.post("/returnapprove/:odrid/:pdtid",orderController.OrderReturned)
 
 
 
 /*****************user side order*********************/
 
-orderRoute.get('/cancelPage/:odrid',userAuthent.isAuthenticated,orderController.loadCancelPage)
-orderRoute.get('/returnPage/:odrid',userAuthent.isAuthenticated,orderController.loadReturnPage)
+orderRoute.get('/cancelPage/:odrid/:pdtid',userAuthent.isAuthenticated,orderController.loadCancelPage)
+orderRoute.get('/returnPage/:odrid/:pdtid',userAuthent.isAuthenticated,orderController.loadReturnPage)
 
 orderRoute.post("/getCancelReason",orderController.selectCancelReason)
 orderRoute.post("/getReturnReason",orderController.selectReturnReason)
 
-orderRoute.post("/cancelRequest/:odrid",orderController.cancelOrder)
-orderRoute.post("/returnRequest/:odrid",orderController.returnOrder)
+orderRoute.post("/cancelRequest/:odrid/:pdtid",orderController.cancelOrder)
+orderRoute.post("/returnRequest/:odrid/:pdtid",orderController.returnOrder)
 
 
 

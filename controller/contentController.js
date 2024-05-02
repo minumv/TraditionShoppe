@@ -46,162 +46,13 @@ const storeSerachValue = async(req,res)=>{
     }
 }
 
-//get a product by id
 
-const getProductById = async(req,res,id)=>{
-    try{
-
-        
-        const objectId = new mongoose.Types.ObjectId(id);
-       
-        const products = await Products.aggregate([
-            {
-                $match : {
-                    _id: objectId
-                }
-            },
-            {
-                $lookup : {
-                    from : 'discounts',
-                    localField : 'discount',
-                    foreignField : '_id',
-                    as : 'discountInfo'
-                }
-            },
-            {
-                $addFields: {
-                    discountInfo: { $arrayElemAt: ['$discountInfo', 0] },
-                    discountedPrice: {
-                        $cond: {
-                            if: { $gt: [{ $size: "$discountInfo" }, 0] },
-                            then: {
-                                $multiply: [
-                                    "$price_unit",
-                                    { $subtract: [1, { $divide: [{ $toDouble: { $arrayElemAt: ["$discountInfo.percentage", 0] } }, 100] }]}
-                                ]
-                            },
-                            else: "$price_unit"
-                        }
-                    }
-                }
-                
-            },
-            {
-                $lookup : {
-                    from : 'categories',
-                    localField : 'category',
-                    foreignField : '_id',
-                    as : 'categoryInfo'
-                }
-            },
-            {
-                $addFields: {
-                    categoryInfo: { $arrayElemAt: ['$categoryInfo', 0]},
-                    categoryName: "$categoryInfo.category_name"
-                }
-            },
-            {
-                $lookup : {
-                    from : 'offers',
-                    localField : 'product_name',
-                    foreignField : 'offer_name',
-                    as : 'productoffer'
-                }
-            },
-            {
-                $addFields: {
-                    productoffer: { $arrayElemAt: ['$productoffer', 0]},
-                    pdtoffer: {
-                        $cond: {
-                            if: { $gt: [{ $size: "$productoffer" }, 0] },
-                            then: {
-                                $multiply: [
-                                    "$price_unit",
-                                    { $divide: [{ $toDouble: { $arrayElemAt: ["$productoffer.discount_per", 0] } }, 100] }
-                                ]
-                            },
-                            else: 0
-                        }
-                    }
-                }
-            },
-            {
-                $lookup : {
-                    from : 'offers',
-                    localField : 'categoryName',
-                    foreignField : 'offer_name',
-                    as : 'categoryoffer'
-                }
-            },
-            {
-                $addFields: {
-                    categoryoffer: { $arrayElemAt: ['$categoryoffer', 0]},
-                    categoffer: {
-                        $cond: {
-                            if: { $gt: [{ $size: "$categoryoffer" }, 0] },
-                            then: {
-                                $multiply: [
-                                    "$price_unit",
-                                    { $divide: [{ $toDouble: { $arrayElemAt: ["$categoryoffer.discount_per", 0] } }, 100] }
-                                ]
-                            },
-                            else: 0
-                        }
-                    }
-                }
-            },
-            {
-                $addFields: {
-                    discountInfo: {
-                        $cond: {
-                            if: { $isArray: "$discountInfo" }, // Check if discountInfo is an array
-                            then: { $arrayElemAt: ["$discountInfo", 0] }, // If it's an array, extract the first element
-                            else: null // If it's not an array, set it to null
-                        }
-                    },
-                    discountedsalePrice: {
-                        $cond: {
-                            if: {
-                                $and: [
-                                    { $ne: ["$discountInfo", null] }, // Check if discountInfo is not null
-                                    { $or: [ // Check if either pdtoffer or categoffer is not 0
-                                        { $ne: ["$pdtoffer", 0] },
-                                        { $ne: ["$categoffer", 0] }
-                                    ]}
-                                ]
-                            },
-                            then: {
-                                $subtract: [
-                                    "$discountedPrice", // Subtract the offer price from the discountedPrice
-                                    { $max: ["$pdtoffer", "$categoffer"] } // Use $max to get the higher offer value
-                                ]
-                            },
-                            else: "$discountedPrice" // If no offer is applicable or discountInfo is null, keep the original discountedPrice
-                        }
-                    }
-                }
-            }            
-        ])
-
-        return products
-    }
-    catch(err){
-        console.log(err.message);
-    }
-}
 //get all products from database
-const getProducts = async(req,res)=>{
+const getProducts = async(req,res,condition)=>{
     try{
-
-
         const products = await Products.aggregate([
             {
-                $match : {
-                    $and : [
-                        { status: { $ne: 'inactive' } },
-                        { isListing : true}
-                        ]
-                }
+                $match : condition
             },
             {
                 $lookup : {
@@ -706,7 +557,10 @@ const loadAllProducts = async (req,res)=>{
                 
             }else {
                 matchCondition = {
-                    $and : [{status : 'active',status : 'new', isListing : true}]
+                    $and: [
+                        { status: { $ne: 'inactive' } },
+                        { isListing: true }
+                     ]
                 }
             }
             console.log("matchcondition :",matchCondition)
@@ -1253,10 +1107,8 @@ const  setpriceRange = async (req,res)=>{
 const getQtyCount = async(req,res)=>{
     try{
 
-        let qtyCount = 0;
-        const users = await User.findOne({email:req.session.user},{_id:1}).exec()
-        // console.log("user cart: "+users)
-        const user_cart = await Cart.findOne({user:users,status:"listed"}).exec()
+        let qtyCount = 0;       
+        const user_cart = await Cart.findOne({user:req.session.user,status:"listed"}).exec()
         // console.log("cart : "+user_cart)
         
         if(user_cart){           
@@ -1274,9 +1126,8 @@ const getQtyCount = async(req,res)=>{
 const getListCount = async(req,res)=>{
     try{
         let listCount = 0;
-        const users = await User.findOne({email:req.session.user},{_id:1}).exec()
-        // console.log("user : "+users)
-        const user_list = await List.findOne({user:users}).exec()
+       
+        const user_list = await List.findOne({user:req.session.user}).exec()
 
         if(user_list){           
             
@@ -1293,12 +1144,20 @@ const getListCount = async(req,res)=>{
 /*******************product view details************************* */
 const loadProductDetail = async (req,res)=>{
     try{
-        let id = req.params.id
-       
-        const user_id= await User.find({email:req.session.user},{_id:1}).exec()
-
-        const products = await getProductById(req,res,id)
-        const allproducts = await getProducts(req,res)
+        let pdtid = new mongoose.Types.ObjectId(req.params.id)
+        
+        const user_id= req.session.user
+        let condition = { _id:pdtid }
+        
+        const products = await getProducts(req,res,condition)
+        console.log("produtc :",products)
+        condition = {
+            $and : [
+                { status: { $ne: 'inactive' } },
+                { isListing : true}
+                ]}
+        
+        const allproducts = await getProducts(req,res, condition)
         
         await getQtyCount (req,res)
         await getListCount (req,res)
@@ -1332,18 +1191,21 @@ const loadCart = async(req,res)=>{
         await getQtyCount (req,res)
         await getListCount (req,res)
 
-        const user = req.session.user       
-        const user_id = await User.findOne({email:user},{_id:1}).exec()        
-        
-        const products = await getProducts(req,res)
-        console.log("user",user_id)
+        const user_id = req.session.user       
+        let condition = {
+            $and : [
+                { status: { $ne: 'inactive' } },
+                { isListing : true}
+                ]}
+        const products = await getProducts(req,res,condition)
+       
         const user_cart = await Cart.findOne({
             user:user_id,
             status:"listed",
             //"product_list.productId" : { $in : products.map(pdt => pdt._id)}        
         }).exec()
         let mrpTotal = 0;
-        console.log("cart :",user_cart)
+        
         if(user_cart){
             if(user_cart.product_list == ''){
                 await Cart.deleteOne( { 
@@ -1361,12 +1223,11 @@ const loadCart = async(req,res)=>{
                     })
                 })
             }
-            req.session.mrpTotal = mrpTotal           
+            req.session.mrpTotal = mrpTotal        
             
         }      
         
-         console.log("user cart : ",user_cart);
-         console.log( "mrptotal: ",mrpTotal)
+         
         res.render('content/myCart',{
             title: "My Cart - TraditionShoppe",
             page:"My Cart",   
@@ -1391,10 +1252,9 @@ const addToCartTable = async(req,res)=>{
         
         let pdt_id = req.params.id;
         let price = req.params.mrp;
-        const user = req.session.user
+        const user_id = req.session.user
        // const product = await Products.findOne({_id:pdt_id}).exec();
-       const stock = await Products.findOne({_id:pdt_id},{stock:1}).exec()
-        const user_id = await User.findOne({email:user},{_id:1}).exec()
+        const stock = await Products.findOne({_id:pdt_id},{stock:1}).exec()
         const user_cart = await Cart.findOne({user:user_id,status:"listed"}).exec()
         
         let pdt_check = false;
@@ -1482,6 +1342,8 @@ const addToCartTable = async(req,res)=>{
 /*********add qty to cart table*********/
 const addQtyToCart = async(req,res)=>{
     try{
+        console.log("increasing qntity")
+        console.log("ids :",cartid,userid,pdtid,price);
         const cartid = req.params.cartid;
         const userid = req.params.userid;
         const pdtid = req.params.pdtid;
@@ -1489,7 +1351,7 @@ const addQtyToCart = async(req,res)=>{
 
         const stock = await Products.findOne({_id:pdtid},{stock:1,_id:0}).exec()
         const user_cart = await Cart.findOne({_id:cartid}).exec()
-        // console.log("stock: "+stock.stock)
+        console.log("stock: "+stock.stock)
 
         if( stock.stock>0 ){
             let qty = 0;
@@ -1498,7 +1360,8 @@ const addQtyToCart = async(req,res)=>{
             user_cart.product_list.forEach(product => {
                 if( product.productId == pdtid ){
                     //pdt_check = true;
-                    qty = product.quantity;                           
+                    qty = product.quantity;        
+                    console.log("quantity :",qty)                   
 
                 }})
 
@@ -1521,7 +1384,7 @@ const addQtyToCart = async(req,res)=>{
                         }
                     )
                     await getQtyCount(req,res);
-                    console.log('successful');
+                    console.log('qty added successful');
                     req.flash("successMessage", "Product is successfully updated to cart...");
                     res.json({ success: true });
                 }
@@ -1656,8 +1519,7 @@ const addToWishlist = async(req,res)=>{
     try{
         //add user, productlist; user exist- update, otherwise insert
         let pdt_id = req.params.id;
-        const user = req.session.user
-        const user_id = await User.findOne({email:user},{_id:1}).exec()
+        const user_id = req.session.user
         const user_list = await List.findOne({user:user_id}).exec()
 
         if (user_list){
@@ -1701,41 +1563,21 @@ const addToWishlist = async(req,res)=>{
         console.log(err.message);
     }
 }
-/*********add to saving*********/
-const addToSave = async(req,res)=>{
-    try{
-        res.render('content/myCart',{
-            title: "My Cart - TraditionShoppe",
-            page:"My Cart",   
-            user : req.session.user,          
-            errorMessage : req.flash('errorMessage'),
-            successMesssage : req.flash('successMessage')
-        })
-    }
-    catch(err){
-        console.log(err.message);
-    }
-}
+
 
 /*********load checkout*********/
 const loadCheckout = async(req,res)=>{
     try{
         
        
-        const userid = await User.findOne({email:req.session.user},{_id:1}).exec()
+        const userid = req.session.user
         
         const cartDet = await Cart.find({_id:req.params.cartid}).exec()
-        const userAddress = await Address.find({user_id:userid._id}).exec()
+        const userAddress = await Address.find({user_id:userid}).exec()
         const amount = req.params.amount
-   
 
-        console.log("cart user :",cartDet);
-        console.log("user address :",userAddress);
         await getQtyCount(req,res)
         await getListCount(req,res)
-
-        // req.session.couponDiscountTotal = discountedTotal
-        // req.session.coupondiscount = couponDiscount
 
         let coupondiscount = 0
         if(req.session.coupondisc){
@@ -1761,23 +1603,7 @@ const loadCheckout = async(req,res)=>{
     }
 }
 
-/************get state and country value**************/
-const storeStateCountry =async(req,res)=>{
-    try{
-        // console.log(req.body);
-        const { country,state } = req.body;
 
-        // Store dropdown values in session
-        req.session.stateCountry = { country,state  };  
-        console.log("session values in stateCountry:");
-        console.log(req.session.stateCountry); 
-        res.sendStatus(200);    
-
-    }
-    catch(err){
-        console.log(err.message);
-    }
-}
 
 /************add address**************/
 const addNewAddress =async(req,res)=>{
@@ -1785,7 +1611,12 @@ const addNewAddress =async(req,res)=>{
         const userid = req.params.userid;
         const cartid = req.params.cartid;
         const amount = req.params.amount;
-        const { country,state } = req.session.stateCountry || { country: '', state: '' }
+
+        const user_addr = await Address.find({user_id:userid}).exec()
+        let setDefault = true
+        if(user_addr){
+            setDefault = false
+        }
 
         const address = new Address({
             user_id:userid,
@@ -1796,12 +1627,12 @@ const addNewAddress =async(req,res)=>{
             landmark:req.body.landmark,
             city:req.body.city,
             pincode:req.body.pin,
-            state:state,
-            country:country,
+            state:req.body.state,
+            country:req.body.city,
+            isDefault:setDefault
         })
 
-        // console.log('Final Product:', product);
-
+    
         const addressData = await address.save()
         if(addressData){
             const address = await Address.find({user_id:userid}).exec()
@@ -1851,23 +1682,7 @@ const loadEditAddress =async(req,res)=>{
     }
 }
 
-/************get state and country value**************/
-const changeStateCountry =async(req,res)=>{
-    try{
-        console.log(req.body);
-        const { country,state } = req.body;
 
-        // Store dropdown values in session
-        req.session.stateCountryedited = { country , state  };  
-        console.log("session values in stateCountry:");
-        console.log(req.session.stateCountryedited); 
-        res.sendStatus(200);    
-
-    }
-    catch(err){
-        console.log(err.message);
-    }
-}
 
 /************edit address**************/
 const changeAddress =async(req,res)=>{
@@ -1875,10 +1690,7 @@ const changeAddress =async(req,res)=>{
         const addressid = req.params.addressid;
         const cartid = req.params.cartid;
         const amount = req.params.amount
-       // const amt = req.params.amt
-
-        const {country,state} = req.session.stateCountryedited
-
+      
         const address = await Address.find({_id:addressid}).exec()
 
         await Address.updateOne({_id:addressid},
@@ -1890,8 +1702,8 @@ const changeAddress =async(req,res)=>{
                 landmark:req.body.landmark,
                 city:req.body.city,
                 pincode:req.body.pin,
-                state:state,
-                country:country,
+                state:req.body.state,
+                country:req.body.country,
             }})
         
         console.log('successful');
@@ -2064,31 +1876,33 @@ const makeCODPayment = async(req,res)=>{
 
         const user = await User.findOne({_id:userid}).exec()
 
-        
+        console.log("userwallet :",user.wallet," paymethod :",paymentMethod)
     
             if(paymentMethod === 'Wallet' && (user.wallet === 0 || !user.wallet)){
+                console.log("Payment failed..Your wallet is empty..!!")
                 req.flash("errorMessage", "Payment failed..Your wallet is empty..!!");
-                res.status(400).send({success : false ,msg : 'Something went wrong!'})
+                res.json({wallet_empty : true})
             } else  if( paymentMethod === 'Wallet' && user.wallet < total ){
+                console.log("Insufficicient balance in wallet..!!")
                 req.flash("errorMessage", "Insufficicient balance in wallet..!!");
-                res.status(400).send({success : false ,msg : 'Something went wrong!'})
+                res.json({wallet_empty : true})
             } else {
-       
-
-       console.log("cart id :",cartid)
+              
         const cartDet = await Cart.findOne({_id:cartid}).exec()
-        
-        console.log("Cart details :",cartDet)
-       
-        
-        const productDet = await Products.findOne({_id:cartDet.product_list[0].productId}).exec()
-        console.log("productlist for order :",productDet)
 
         const currentDate = moment().format('ddd MMM DD YYYY');
         const deliveryDate = moment().add(7,'days').format('ddd MMM DD YYYY') //expected
-        //const returnDate = moment().add(12,'days').format('ddd MMM DD YYYY')
-    
- 
+            
+        const newList = cartDet.product_list.map(pdt => {
+            return { ...pdt,  
+                orderstatus:'pending',
+                paymentstatus:"pending",
+                delivery_date:deliveryDate,
+            }; // Add the status field to each item
+        });
+        
+        const productDet = await Products.findOne({_id:cartDet.product_list[0].productId}).exec()
+       
         req.session.cartid = cartid
 
          const order = new Order({
@@ -2096,22 +1910,12 @@ const makeCODPayment = async(req,res)=>{
             user: userid,
             address:address,
             payment : paymentMethod,
-            product_list: cartDet.product_list,
-            payment_amount:total,
-            delivery_date:deliveryDate,
-           // return_date:returnDate,
-            paymentstatus:"pending",
-            orderstatus:'pending',
-            adminaction:'approve'        
-
-         })
+            product_list: newList,
+            payment_amount:total,              
+           })
          const orderData = await order.save()
          await getQtyCount(req,res);
-
-         console.log("order details :",orderData); //success
-         console.log("order id :",orderData._id); //success
-         console.log("order payment :",orderData.payment); //success
-
+        
         
          req.session.orderid = orderData._id
          req.session.orderData = orderData
@@ -2163,14 +1967,14 @@ const makeCODPayment = async(req,res)=>{
                 } else {
                         console.error(err)
                         req.flash("errorMessage", "Payment failed.. Try again!!");
-                        res.status(400).send({success : false ,msg : 'Something went wrong!'})
+                        res.json({success : false})
                    }
             })
 
          } else{
             console.log('failed');
              req.flash("errorMessage", "Payment failed.. Try again!!");
-             res.redirect(`/checkout/${cartid}/${amount}`)
+             res.json({success:false})
         }
     }
 
@@ -2224,9 +2028,10 @@ const verifyPayment = async (req, res) => {
                 await Order.updateOne(
                     { _id: orderid },
                     { $set: {
-                        paymentstatus:"completed"
+                        "product_list.$[].paymentstatus": "completed"
                         } }
                 ).exec()
+               
                 const cartid = req.session.cartid
                 console.log("cartid :",cartid)
                 await Cart.updateOne(
@@ -2236,125 +2041,31 @@ const verifyPayment = async (req, res) => {
                         } }
                 ).exec()
                 console.log("payment verification success")
-                res.status(200).json({ status: true });
+                res.json({success: true });
             } else {
                 console.log("payment verification failed")
-                res.json({ status: false });
+                res.json({success: false });
             }
    } catch(err){
     console.log(err.message);
    }
   }
-
-// continue payment from order page
-const continueFailedPayment = async (req, res) => {
+ const verifyFailedPayment = async (req,res)=>{
     try{
-                const { orderId } = req.body;
-                const order = await Order.findOne({ orderId: orderId }).populate("user");
-                req.session.failedPaymentOrderId = orderId;
-                var options = {
-                amount: order.payment_amount * 100,
-                currency: "INR",
-                receipt: "RCPT"+order._id,
-                };
-            
-                instance.orders.create(options, function (error, raz_order) {
-                if (error) {
-                    console.error("Error creating Razorpay order:", error);
-                } else {
-                    res.json({ raz_order: raz_order, user: order.user });
-                }
-                })
-    } catch (err){
-            console.log(err.message);
-    }
-  }
-
-
-  // continued failedPayment verification
-const FailedPaymentVerification = async (req, res) => {
-        try{
-                 //const user_id = req.session.isAuth;
-                const { payment, razorOrder } = req.body;
-            
-                const crypto = require("crypto");
-                var hmac = crypto.createHmac("sha256", RAZORPAY_SECRET_KEY);
-                hmac.update(razorOrder.id + "|" + payment.razorpay_payment_id);
-                hmac = hmac.digest("hex");
-                if (hmac == payment.razorpay_signature) {
-
-                    const orderid = req.session.orderid;
-                    console.log("orderid :",orderid)
-                    await Order.updateOne(
-                        { _id: orderid },
-                        { $set: {
-                            paymentstatus:"completed"
-                            } }
-                    ).exec()
-                    const cartid = req.session.cartid
-                    console.log("cartid :",cartid)
-                    await Cart.updateOne(
-                        { _id: cartid },
-                        { $set: {
-                            status:"pending"
-                            } }
-                    ).exec()
-                    console.log("payment verification success")
-                    res.status(200).json({ status: true });
-
-                } else {
-
-                    console.log("payment verification failed!!")
-                    res.json({ status: false });
-                }
-        } catch(err) {
-            console.log(err.message);
-        }
-  }
-
-/*********load wishlist*********/
-const loadWishlist = async(req,res)=>{
-    try{
-        res.render('content/myWishlist',{
-            title: "My Wishlist - TraditionShoppe",
-            page:"Checkout",   
-            user : req.session.user, 
-            qtyCount:req.session.qtyCount,
-            listCount:req.session.listCount,         
-            errorMessage : req.flash('errorMessage'),
-            successMesssage : req.flash('successMessage')
-        })
-    }
-    catch(err){
+        console.log("order :", req.session.orderid,"cartid :", req.session.cartid)
+        const cancelOrder = await Order.deleteOne({_id:req.session.orderid}).exec()
+         if(cancelOrder){
+            req.flash("errorMessage", "Payment failed.. Try again!!");
+            res.json({success : true})
+         }
+    } catch(err){
         console.log(err.message);
     }
-}
-
-/*********load saved list*********/
-const loadSaved = async(req,res)=>{
-    try{
-        res.render('content/savedList',{
-            title: "Checkout - TraditionShoppe",
-            page:"Checkout",  
-            user : req.session.user,
-            qtyCount:req.session.qtyCount,
-            listCount:req.session.listCount,           
-            errorMessage : req.flash('errorMessage'),
-            successMesssage : req.flash('successMessage')
-        })
-    }
-    catch(err){
-        console.log(err.message);
-    }
-}
-
-
-
+ }
 
 module.exports = {
 
-    getPaginatedProducts,
-    getProductById,
+    getPaginatedProducts,  
     getProducts,
     getSortedProducts,
 
@@ -2384,18 +2095,15 @@ module.exports = {
 
     loadCart,
     loadCheckout,
-    loadWishlist,
-    loadSaved,
-
+    
     addToCartTable,
     addQtyToCart,
     subQtyFromCart,
     deleteFromCart,
 
-    storeStateCountry,
+  
     addNewAddress,
-    loadEditAddress,
-    changeStateCountry,
+    loadEditAddress,   
     changeAddress,
     selectedMethod,
     selectedAddress,
@@ -2405,12 +2113,11 @@ module.exports = {
    
     makeCODPayment,
     verifyPayment,
-    continueFailedPayment,
-    FailedPaymentVerification,
+    verifyFailedPayment,    
     loadPaymentSuccess,
 
     addToWishlist,
-    addToSave,
+    
 
     getQtyCount,
     getListCount
