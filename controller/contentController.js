@@ -8,7 +8,7 @@ const Discount = require('../model/discount')
 const Cart = require('../model/cart')
 const List = require('../model/wishlist')
 const Address = require('../model/address')
-const Order = require('../model/order')
+const Order = require('../model/order');
 const Coupon = require('../model/coupon')
 const Offer = require('../model/offer')
 const bcrypt = require('bcrypt')
@@ -332,7 +332,8 @@ const getPaginatedProducts = async(req,res,perPage,pageNum,matchCondition)=>{
             }
 
             
-        ])
+        ])        
+       
         return products
     }
     catch(err){
@@ -478,6 +479,155 @@ const getSortedProducts = async(req,res,perPage,pageNum,matchCondition,sortCondi
 
             
         ])
+       
+        return products
+    }
+    catch(err){
+        console.log(err.message);
+    }
+}
+const getnameSortedProducts = async(req,res,perPage,pageNum,matchCondition,sortCondition)=>{
+    try{
+        const products = await Products.aggregate([
+            {
+                $match : matchCondition 
+            },
+            {
+                $lookup : {
+                    from : 'discounts',
+                    localField : 'discount',
+                    foreignField : '_id',
+                    as : 'discountInfo'
+                }
+            },
+            {
+                $addFields: {
+                    discountInfo: { $arrayElemAt: ['$discountInfo', 0] },
+                    discountedPrice: {
+                        $cond: {
+                            if: { $gt: [{ $size: "$discountInfo" }, 0] },
+                            then: {
+                                $multiply: [
+                                    "$price_unit",
+                                    { $subtract: [1, { $divide: [{ $toDouble: { $arrayElemAt: ["$discountInfo.percentage", 0] } }, 100] }]}
+                                ]
+                            },
+                            else: "$price_unit"
+                        }
+                    }
+                }
+                
+            },
+            {
+                $lookup : {
+                    from : 'categories',
+                    localField : 'category',
+                    foreignField : '_id',
+                    as : 'categoryInfo'
+                }
+            },
+            {
+                $addFields: {
+                    categoryInfo: { $arrayElemAt: ['$categoryInfo', 0]},
+                    categoryName: "$categoryInfo.category_name"
+                }
+            },
+            {
+                $lookup : {
+                    from : 'offers',
+                    localField : 'product_name',
+                    foreignField : 'offer_name',
+                    as : 'productoffer'
+                }
+            },
+            {
+                $addFields: {
+                    productoffer: { $arrayElemAt: ['$productoffer', 0]},
+                    pdtoffer: {
+                        $cond: {
+                            if: { $gt: [{ $size: "$productoffer" }, 0] },
+                            then: {
+                                $multiply: [
+                                    "$price_unit",
+                                    { $divide: [{ $toDouble: { $arrayElemAt: ["$productoffer.discount_per", 0] } }, 100] }
+                                ]
+                            },
+                            else: 0
+                        }
+                    }
+                }
+            },
+            {
+                $lookup : {
+                    from : 'offers',
+                    localField : 'categoryName',
+                    foreignField : 'offer_name',
+                    as : 'categoryoffer'
+                }
+            },
+            {
+                $addFields: {
+                    categoryoffer: { $arrayElemAt: ['$categoryoffer', 0]},
+                    categoffer: {
+                        $cond: {
+                            if: { $gt: [{ $size: "$categoryoffer" }, 0] },
+                            then: {
+                                $multiply: [
+                                    "$price_unit",
+                                    { $divide: [{ $toDouble: { $arrayElemAt: ["$categoryoffer.discount_per", 0] } }, 100] }
+                                ]
+                            },
+                            else: 0
+                        }
+                    }
+                }
+            },
+            {
+                $addFields: {
+                    discountInfo: {
+                        $cond: {
+                            if: { $isArray: "$discountInfo" }, // Check if discountInfo is an array
+                            then: { $arrayElemAt: ["$discountInfo", 0] }, // If it's an array, extract the first element
+                            else: null // If it's not an array, set it to null
+                        }
+                    },
+                    discountedsalePrice: {
+                        $cond: {
+                            if: {
+                                $and: [
+                                    { $ne: ["$discountInfo", null] }, // Check if discountInfo is not null
+                                    { $or: [ // Check if either pdtoffer or categoffer is not 0
+                                        { $ne: ["$pdtoffer", 0] },
+                                        { $ne: ["$categoffer", 0] }
+                                    ]}
+                                ]
+                            },
+                            then: {
+                                $subtract: [
+                                    "$discountedPrice", // Subtract the offer price from the discountedPrice
+                                    { $max: ["$pdtoffer", "$categoffer"] } // Use $max to get the higher offer value
+                                ]
+                            },
+                            else: "$discountedPrice" // If no offer is applicable or discountInfo is null, keep the original discountedPrice
+                        }
+                    }
+                }
+            },
+            {
+                $sort : sortCondition
+            },
+            {
+                $collation: { locale: 'en'}
+            },
+            {
+                $skip: ( pageNum - 1 ) * perPage
+            },
+            {
+                $limit: perPage
+            }
+
+            
+        ])
         return products
     }
     catch(err){
@@ -488,9 +638,9 @@ const getSortedProducts = async(req,res,perPage,pageNum,matchCondition,sortCondi
 //load all products
 const loadAllProducts = async (req,res)=>{
     try{    
-            
+                       
             let matchCondition = ''
-
+           
             const search = req.query.search 
             console.log("search :",search)
 
@@ -503,66 +653,37 @@ const loadAllProducts = async (req,res)=>{
             const price = req.query.price
             console.log("price :",price)
 
-            if(search){
-                matchCondition = {
-                    $and: [
-                        { status: { $ne: 'inactive' } },
-                        { isListing: true },                       
-                        { "product_name": { $regex: ".*" + search + ".*", $options: 'i' } }
-                    ]
-                };
-            } else if(categ) {
-                matchCondition = {
-                    $and : [
-                        { status: { $ne: 'inactive' } },
-                         {isListing : true},
-                          {product_type:categ}]
-                }
-                
-                
-            }else if(trend){
-                req.session.trend = trend
-                if(trend === 'best'){
-                    matchCondition = {
-                        $and : [{status : 'active', isListing : true}]
-                    }
-                } else if(trend === 'pop'){
-                    matchCondition = {
-                        $and : [{status : 'active', isListing : true}]
-                    }
+            const sort = req.query.sort
+            console.log("sort :",sort)
 
-                } else if(trend === 'new'){
-                    matchCondition = {
-                        $and : [
-                            { status: { $ne: 'inactive' } },
-                            { isListing : true}
-                            ]
-                    }
-                }
-            }else if(price){
+            matchCondition = {
+                $and: [
+                    { status: { $ne: 'inactive' } },
+                    { isListing: true }
+                 ]
+            }
+
+            if(search){
+                matchCondition.$and.push( { "product_name": { $regex: ".*" + search + ".*", $options: 'i' } })
+            }
+            if(categ) {
+                matchCondition.$and.push( {product_type:categ})
+            }
+            if(trend){
+                matchCondition.$and.push( { status: 'new' })                
+            }
+            if(price){
                 let price_range =''
                 if(price === 'low') price_range = { $lt: 500 }
                 else if(price === 'avrg') price_range = {$gt:500,$lt:10000}
                 else if(price === 'costly') price_range = {$gt:10000,$lt:50000}
                 else if(price === 'high') price_range = {$gt:50000} 
 
-                matchCondition =  {
-                        $and: [
-                            { status: { $ne: 'inactive' } },
-                            { isListing: true },                       
-                            {  price_unit:  price_range }
-                        ]
-                      }
-                sortCondition = {'price_unit':-1}   
-                
-            }else {
-                matchCondition = {
-                    $and: [
-                        { status: { $ne: 'inactive' } },
-                        { isListing: true }
-                     ]
-                }
+                matchCondition.$and.push( {  price_unit:  price_range })
+                      
             }
+           
+              
             console.log("matchcondition :",matchCondition)
             const pageNum = req.query.page || 1
             const perPage = 9
@@ -585,10 +706,40 @@ const loadAllProducts = async (req,res)=>{
                 pages = Math.ceil( totalCount / perPage )
                 console.log("count",totalCount);
               }
-              
 
+              let products = []
+            //   let products = await getPaginatedProducts(req,res,perPage,pageNum,matchCondition,false,false)
+
+
+              let sortCondition = ''
+              switch(sort){
+                  case'lowtohigh':{
+                      sortCondition = {discountedsalePrice:1}
+                      products = await getSortedProducts(req,res,perPage,pageNum,matchCondition,sortCondition)
+                      break;
+                  }
+                  case'hightolow':{
+                      sortCondition = {discountedsalePrice:-1}
+                      products = await getSortedProducts(req,res,perPage,pageNum,matchCondition,sortCondition)
+                      break;
+                  }
+                  case'ascending':{
+                      sortCondition = {product_name:1}
+                      products = await getSortedProducts(req,res,perPage,pageNum,matchCondition,sortCondition)
+                      break;
+                  }
+                  case'descending':{
+                      sortCondition = {product_name:-1}
+                      products = await getSortedProducts(req,res,perPage,pageNum,matchCondition,sortCondition)
+                      break;
+                  }
+                 default:{
+                  products = await getPaginatedProducts(req,res,perPage,pageNum,matchCondition)
+                  break;
+                 }
+              }
            
-            const products = await getPaginatedProducts(req,res,perPage,pageNum,matchCondition)
+           
            // console.log("products :",products)
            
 
@@ -604,7 +755,8 @@ const loadAllProducts = async (req,res)=>{
             pageNum,
             perPage,
             totalCount, 
-            pages,           
+            pages,
+            currentUrl: req.originalUrl,         
             errorMessage:req.flash('errorMessage'),
             successMessage:req.flash('successMessage')
            })
@@ -658,6 +810,7 @@ const loadSearchProducts = async (req,res)=>{
                 listCount:req.session.listCount,               
                 products : products,
                 discounts : discounts,
+                
                 errorMessage:req.flash('errorMessage'),
                 successMessage:req.flash('successMessage')
 
@@ -1343,7 +1496,7 @@ const addToCartTable = async(req,res)=>{
 const addQtyToCart = async(req,res)=>{
     try{
         console.log("increasing qntity")
-        console.log("ids :",cartid,userid,pdtid,price);
+       // console.log("ids :",cartid,userid,pdtid,price);
         const cartid = req.params.cartid;
         const userid = req.params.userid;
         const pdtid = req.params.pdtid;
@@ -2068,7 +2221,8 @@ module.exports = {
     getPaginatedProducts,  
     getProducts,
     getSortedProducts,
-
+    getnameSortedProducts,
+    
     loadAllProducts,
     loadSearchProducts,
     loadProductDetail,
