@@ -13,11 +13,11 @@
 
                     <div class="card-body">             
                       <div class="input-group input-group-outline mb-3">
-                         <input type="text" name="name" class="form-control" value="<%= categories.category_name %>">
+                         <input type="text" name="name" class="form-control" value="<%= categories.category_name %>" required pattern="^[a-zA-Z]+[\-'\s]?[a-zA-Z ]+$">
                       </div>
                      
                       <div class="input-group input-group-outline mb-3">                  
-                        <textarea type="text" name="description" class="form-control" ><%= categories.description %></textarea>
+                        <textarea type="text" name="description" class="form-control" required ><%= categories.description %></textarea>
                       </div>                    
                                            
                         <div class="text-center d-flex justify-content-end">                         

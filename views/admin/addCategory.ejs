@@ -12,23 +12,20 @@
 
                     <div class="card-body">             
                       <div class="input-group input-group-outline mb-3">
-                         <input type="text" name="name" class="form-control" placeholder="Name">
+                         <input type="text" name="name" class="form-control" placeholder="Name" required pattern="^[a-zA-Z]+[\-'\s]?[a-zA-Z ]+$">
                       </div>
                      
                       <div class="input-group input-group-outline mb-3">                  
-                        <textarea type="text" name="description" class="form-control" placeholder="Description"></textarea>
+                        <textarea type="text" name="description" class="form-control" placeholder="Description" required></textarea>
                       </div>                    
                                            
                         <div class="text-center d-flex justify-content-end">                         
                             <input type="submit"    class="btn btn-lg bg-gradient-primary btn-lg w-100 mt-4 mb-0 me-2">Add</button>
                          </div>
-                         <% if (errorMessage.length > 0) { %>  
-                                       
-                          <p style="color : red;"><%- errorMessage %></p>                    
+                         <% if (errorMessage.length > 0) { %>                
+                          <div id="errorAlert" class="alert alert-danger text-white mt-4" role="alert"> <%- errorMessage %>  </div>                  
                       <% } %>
-                      <% if (successMessage.length > 0) { %>                
-                          <p style="color : green;"> <%- successMessage %> </p>                   
-                      <% } %>
+                      
 
                     </div>
                   

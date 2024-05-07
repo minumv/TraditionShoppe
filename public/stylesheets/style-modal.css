@@ -94,3 +94,8 @@
     justify-content: center;
     align-items: center;
 }
+.mod-crop{
+    width:900px;
+    height:600px;
+    max-width:100%;
+}

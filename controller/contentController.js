@@ -97,8 +97,19 @@ const getProducts = async(req,res,condition)=>{
             {
                 $lookup : {
                     from : 'offers',
-                    localField : 'product_name',
-                    foreignField : 'offer_name',
+                    let: { product_name: '$product_name' }, // Define variables for local and foreign fields
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ["$offer_name", "$$product_name"] }, // Match documents where offer_name equals categoryName
+                                        { $eq: ["$status", true] } // Match documents where status is true
+                                    ]
+                                }
+                            }
+                        }
+                    ], 
                     as : 'productoffer'
                 }
             },
@@ -122,8 +133,19 @@ const getProducts = async(req,res,condition)=>{
             {
                 $lookup : {
                     from : 'offers',
-                    localField : 'categoryName',
-                    foreignField : 'offer_name',
+                    let: { categoryName: '$categoryName' }, // Define variables for local and foreign fields
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ["$offer_name", "$$categoryName"] }, // Match documents where offer_name equals categoryName
+                                        { $eq: ["$status", true] } // Match documents where status is true
+                                    ]
+                                }
+                            }
+                        }
+                    ],
                     as : 'categoryoffer'
                 }
             },
@@ -244,8 +266,19 @@ const getPaginatedProducts = async(req,res,perPage,pageNum,matchCondition)=>{
             {
                 $lookup : {
                     from : 'offers',
-                    localField : 'product_name',
-                    foreignField : 'offer_name',
+                    let: { product_name: '$product_name' }, // Define variables for local and foreign fields
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ["$offer_name", "$$product_name"] }, // Match documents where offer_name equals categoryName
+                                        { $eq: ["$status", true] } // Match documents where status is true
+                                    ]
+                                }
+                            }
+                        }
+                    ], 
                     as : 'productoffer'
                 }
             },
@@ -269,8 +302,19 @@ const getPaginatedProducts = async(req,res,perPage,pageNum,matchCondition)=>{
             {
                 $lookup : {
                     from : 'offers',
-                    localField : 'categoryName',
-                    foreignField : 'offer_name',
+                    let: { categoryName: '$categoryName' }, // Define variables for local and foreign fields
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ["$offer_name", "$$categoryName"] }, // Match documents where offer_name equals categoryName
+                                        { $eq: ["$status", true] } // Match documents where status is true
+                                    ]
+                                }
+                            }
+                        }
+                    ],
                     as : 'categoryoffer'
                 }
             },
@@ -389,8 +433,19 @@ const getSortedProducts = async(req,res,perPage,pageNum,matchCondition,sortCondi
             {
                 $lookup : {
                     from : 'offers',
-                    localField : 'product_name',
-                    foreignField : 'offer_name',
+                    let: { product_name: '$product_name' }, // Define variables for local and foreign fields
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ["$offer_name", "$$product_name"] }, // Match documents where offer_name equals categoryName
+                                        { $eq: ["$status", true] } // Match documents where status is true
+                                    ]
+                                }
+                            }
+                        }
+                    ], 
                     as : 'productoffer'
                 }
             },
@@ -414,8 +469,19 @@ const getSortedProducts = async(req,res,perPage,pageNum,matchCondition,sortCondi
             {
                 $lookup : {
                     from : 'offers',
-                    localField : 'categoryName',
-                    foreignField : 'offer_name',
+                    let: { categoryName: '$categoryName' }, // Define variables for local and foreign fields
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ["$offer_name", "$$categoryName"] }, // Match documents where offer_name equals categoryName
+                                        { $eq: ["$status", true] } // Match documents where status is true
+                                    ]
+                                }
+                            }
+                        }
+                    ],
                     as : 'categoryoffer'
                 }
             },
@@ -535,8 +601,19 @@ const getnameSortedProducts = async(req,res,perPage,pageNum,matchCondition,sortC
             {
                 $lookup : {
                     from : 'offers',
-                    localField : 'product_name',
-                    foreignField : 'offer_name',
+                    let: { product_name: '$product_name' }, // Define variables for local and foreign fields
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ["$offer_name", "$$product_name"] }, // Match documents where offer_name equals categoryName
+                                        { $eq: ["$status", true] } // Match documents where status is true
+                                    ]
+                                }
+                            }
+                        }
+                    ], 
                     as : 'productoffer'
                 }
             },
@@ -560,8 +637,19 @@ const getnameSortedProducts = async(req,res,perPage,pageNum,matchCondition,sortC
             {
                 $lookup : {
                     from : 'offers',
-                    localField : 'categoryName',
-                    foreignField : 'offer_name',
+                    let: { categoryName: '$categoryName' }, // Define variables for local and foreign fields
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ["$offer_name", "$$categoryName"] }, // Match documents where offer_name equals categoryName
+                                        { $eq: ["$status", true] } // Match documents where status is true
+                                    ]
+                                }
+                            }
+                        }
+                    ],
                     as : 'categoryoffer'
                 }
             },
@@ -744,7 +832,7 @@ const loadAllProducts = async (req,res)=>{
            
 
 
-           console.log("products",products);    
+           //console.log("products",products);    
            res.render('content/allproducts',{
             title : "All Products| TraditionShoppe",
             user : req.session.user,
@@ -1678,7 +1766,7 @@ const addToWishlist = async(req,res)=>{
         if (user_list){
             let pdt_check = false
             user_list.product_list.forEach((pdt)=>{
-                if(pdt.equals(pdt_id)){
+                if(pdt.toString() === pdt_id.toString()){
                     pdt_check = true
                 }
             })
@@ -2028,6 +2116,12 @@ const makeCODPayment = async(req,res)=>{
         console.log("checkout data :",jsonData)
 
         const user = await User.findOne({_id:userid}).exec()
+        let paymntamnt = total
+        console.log('total',paymntamnt)
+        if(req.session.couponDiscountTotal){
+            paymntamnt = req.session.couponDiscountTotal 
+        }
+        console.log('total',paymntamnt)
 
         console.log("userwallet :",user.wallet," paymethod :",paymentMethod)
     
@@ -2128,7 +2222,7 @@ const makeCODPayment = async(req,res)=>{
             console.log('failed');
              req.flash("errorMessage", "Payment failed.. Try again!!");
              res.json({success:false})
-        }
+       }
     }
 
        

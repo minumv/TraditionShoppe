@@ -122,8 +122,10 @@ const successGoogleLogin = async (req,res)=>{
         res.redirect('/home')
 
     } else {
-        req.flash("errorMessage","You are authenticated..Please login!!")
-        res.redirect('/signin/userLogin')
+       // req.flash("errorMessage","You are authenticated..Please login!!")
+       req.session.user = existUser._id
+       req.session.blocked = false
+        res.redirect('/home')
     }
     
     
@@ -478,18 +480,17 @@ const verifyOTPMail = async(req,res)=>{
 //load index page
 const loadIndex = async (req,res)=>{
     try{
-        const products = await Products.find({status:{$ne:'inactive'},isListing:true}).exec()
-        const categories = await Category.find({status:true}).exec()
-        const sellers = await Seller.find({status:{$ne:'inactive'}}).exec()
-        const discounts = await Discount.find({status:true}).exec()
+
+        let condition = {
+            status:{$ne:'inactive'},
+            isListing:true}
+        const products = await content.getProducts(req,res,condition)
+        
         
         res.render('user/index',{
             title: "Home | TraditionShoppe", 
             user:req.session.user, 
-            products:products,
-            categories:categories,
-            sellers:sellers,
-            discounts:discounts,           
+            products,                     
             errorMessage:req.flash('errorMessage'),
             successMessage:req.flash('successMessage')
         })
@@ -503,24 +504,22 @@ const loadIndex = async (req,res)=>{
 //load homepage
 const loadHome = async (req,res)=>{
     try{
+        let condition = {
+            status:'new',
+            isListing:true}
+        const products = await content.getProducts(req,res,condition)
         
-        const products = await Products.find({status:{$ne:'inactive'},isListing:true}).exec()
-        const categories = await Category.find({status:true}).exec()
-        const sellers = await Seller.find({status:{$ne:'inactive'}}).exec()
-        const discounts = await Discount.find({status:true}).exec()
-        
-        await getQtyCount(req,res); //get cart count
-        await getListCount(req,res);    //get wishlist count
+        console.log(products)
+        await getQtyCount(req,res); 
+        await getListCount(req,res);
    
         res.render('user/home',{
             title: "Home | TraditionShoppe", 
             user :req.session.user, 
             qtyCount:req.session.qtyCount,
             listCount:req.session.listCount,
-            products:products,
-            categories:categories,
-            sellers:sellers,
-            discounts:discounts,          
+            products,           
+                     
             errorMessage:req.flash('errorMessage'),
             successMessage:req.flash('successMessage')
         })
@@ -679,9 +678,13 @@ const loadOrder = async (req,res)=>{
                     }
                 }
             ])
-            const totalCount = total[0].count
-           const pages = Math.ceil( totalCount / perPage )
-            console.log("count",totalCount);
+            let totalCount = 1
+            console.log(total)
+            if(total.length>0){               
+                totalCount = total[0].count
+            }             
+            const pages = Math.ceil( totalCount / perPage )
+            
         
         const orders = await Order.aggregate([
             {

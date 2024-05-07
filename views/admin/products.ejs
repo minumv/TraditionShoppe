@@ -40,8 +40,9 @@
                     <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">S.No</th>
                     <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Product Name</th>
                     <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Category</th>
-                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Desciption</th>
-                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Sale price</th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Desrciption</th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">MRP</th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Offer Price</th>
                     <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">In Stock</th>
                     <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Image</th>
                     <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
@@ -68,14 +69,8 @@
                     </td>
                     
                     <td class="align-middle  text-sm">
-                      <% let category = "Not available"; %>
-                      <% categories.forEach((cat_row, index) => { %>
-                          <%console.log(cat_row._id , row.category)%>
-                          <%if(cat_row._id .equals( row.category )) {%>
-                              <% category = cat_row.category_name %>
-                          <% } %>
-                      <% })%>
-                          <p class="text-xs font-weight-bold mb-0"><%= category %></p>
+                      
+                          <p class="text-xs font-weight-bold mb-0"><%= row.categoryName %></p>
                     </td>
                     <td class="align-middle  text-sm" >
                       <p class="text-xs font-weight-bold mb-0" style="width:150px; overflow:hidden ;"><%= row.description %> </p>
@@ -83,6 +78,9 @@
                     <td class="align-middle  text-sm">
                       <p class="text-xs font-weight-bold mb-0"><%= row.price_unit %> </p>
                   </td>
+                  <td class="align-middle  text-sm">
+                    <p class="text-xs font-weight-bold mb-0"><%= row.discountedsalePrice %> </p>
+                </td>
                   <td class="align-middle  text-sm">
                     <p class="text-xs font-weight-bold mb-0"> <%= row.stock %> </p>
                 </td>

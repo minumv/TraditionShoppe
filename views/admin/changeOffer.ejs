@@ -52,21 +52,21 @@
                     </div>
                         
                         <div class="text-center d-flex justify-content-end">                         
-                            <button type="button" onclick="offerChange('<%=ofr._id%>')"  class="btn btn-lg bg-gradient-primary btn-lg w-100 mt-4 mb-0 me-2">change</button>
-                            <a href="#" id="openModal"  data-modal-target="#modal" class="btn btn-lg bg-gradient-primary btn-lg w-100 mt-4 mb-0 me-2">delete</a>
+                            <button type="button" onclick="offerChange('<%=ofr._id%>')"  class="btn btn-lg bg-gradient-secondary btn-lg w-100 mt-4 mb-0 me-2">change</button>
+                            <a href="#" id="openModal"  data-modal-target="#modal" class="btn btn-lg bg-gradient-secondary btn-lg w-100 mt-4 mb-0 me-2">delete</a>
                             
                         </div>
+
+                        <% if (errorMessage.length > 0) { %>                
+                          <div class="alert alert-danger text-white mt-6" role="alert"> <%- errorMessage %>  </div>                  
+                      <% } %>
+                      
                       
                     </div>
                   
                 </div> 
             </div> 
-            <% if (errorMessage.length > 0) { %>                
-                <div class="alert alert-danger text-white" role="alert"> <%- errorMessage %>  </div>                  
-            <% } %>
-              <% if (successMessage.length > 0) { %>                
-                <div class="alert alert-success text-white" role="alert"> <%- successMessage %>  </div>                    
-              <% } %>
+           
             <div class="modal" id="modal">
                 <div class="closeModal">
                   <a id="closeModal"  data-close-button class="close-button">&times;<a>              

@@ -43,7 +43,7 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
                    
                     if(userData.role === 'admin'){
                         req.session.role = userData.role;
-                        req.session.user = userData._id ;
+                        req.session.admin = userData._id ;
                         req.flash("successMessage", "You have successfully logged in.");
                         res.redirect('/admin/dashboard')
                     } else {
@@ -233,8 +233,25 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
    
     const loadCouponPage = async (req, res)=>{
         try {
-            const coupon = await Coupon.find().sort({'created':-1}).exec()
 
+            let flag =0, id;
+            const couponData = await Coupon.find().exec()
+            couponData.forEach((cpn)=>{               
+                if(cpn.expire_date < new Date()){
+                    flag = 1
+                    id = cpn.id
+                }
+                     
+                if(flag == 1){
+                    Coupon.updateOne(                    
+                        {_id:id},
+                        { $set : {
+                        status : false
+                        }}
+                    ).exec()                    
+                }
+            })
+            const coupon = await Coupon.find().sort({'created':-1}).exec()
             res.render('admin/couponManage',{
                 title : "Admin Panel - TraditionShoppe",
                 page:"Coupon",
@@ -273,28 +290,30 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
         try{
 
             let stat = true
-
-            if((req.body.end < new Date())||(req.body.end < req.body.start)){
+            let start = new Date(req.body.start)
+            let end = new Date(req.body.end)
+            let min = parseFloat(req.body.min_purch)
+            let max = parseFloat(req.body.max_amt)
+            if(end < new Date() || end < start || min < max){
                 stat = false
             }
-
-            console.log(req.body);
+           
             const newCoupon = new Coupon({
                     coupon_code:req.body.coupon,
                     discount_per:req.body.percentage,
-                    start_date:req.body.start,
-                    expire_date:req.body.end,
-                    minimum_purchase:req.body.min_purch,
-                    maximum_discount_amt:req.body.max_amt,
+                    start_date:start,
+                    expire_date:end,
+                    minimum_purchase:min,
+                    maximum_discount_amt:max,
                     status : stat
             })
             await newCoupon.save();
             if(newCoupon){
                 req.flash("successMessage", "New coupon created successfully!!");
-                res.json({success:true})
+                res.redirect('/getCoupon')
             } else {
                 req.flash("errorMessage", "Coupon creation failed.. Try again!!");
-                res.json({success:false})
+                res.redirect('/newCoupon')
             }
         }
         catch(err){
@@ -326,9 +345,12 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
     const updateCouponDetails = async (req,res) =>{
         try{
             const id = req.params.id
-            console.log(req.body);
             let stat = true
-            if((req.body.end < new Date())||(req.body.end < req.body.start)){
+            let start = new Date(req.body.start)
+            let end = new Date(req.body.end)
+            let min = parseFloat(req.body.min_purch)
+            let max = parseFloat(req.body.max_amt)
+            if(end < new Date() || end < start || min < max){
                 stat = false
             }
            
@@ -337,19 +359,19 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
                 {$set :{
                     coupon_code:req.body.coupon,
                     discount_per:req.body.discount_per,
-                    start_date:req.body.start,
-                    expire_date:req.body.end,
-                    minimum_purchase:req.body.min_purch,
-                    maximum_discount_amt:req.body.max_amt,
+                    start_date:start,
+                    expire_date:end,
+                    minimum_purchase:min,
+                    maximum_discount_amt:max,
                     status:stat                    
                 }}).exec()
 
                 if(coupon){
                     req.flash("successMessage", "Coupon details updated successfully!!");
-                    res.json({success:true})
+                    res.redirect('/getCoupon')
                 } else {
                     req.flash("errorMessage", "Coupon updation failed.. Try again!!");
-                    res.json({succes:false})
+                    res.redirect('/newCoupon')
                 }
         }
         catch(err){
@@ -369,10 +391,10 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
                 }}).exec()
                 if(coupon){
                     req.flash("successMessage", "Coupon deleted successfully!!");
-                    res.json({success:true})
+                    res.redirect('/getCoupon')
                 } else {
                     req.flash("errorMessage", "Coupon deletion failed.. Try again!!");
-                    res.json({success:false})
+                    res.redirect('/newCoupon')
                 }
         }
         catch(err){
@@ -387,20 +409,20 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
             let flag =0, id;
             const offerData = await Offer.find().exec()
             offerData.forEach((offr)=>{
-                console.log(offr.expire_date);
+                
                 if(offr.expire_date < new Date()){
                     flag = 1
                     id = offr.id
+                }           
+                if(flag == 1){
+                    Offer.updateOne(                    
+                        {_id:id},
+                        { $set : {
+                        status : false
+                        }}
+                    ).exec()                    
                 }
             })
-            if(flag == 1){
-                 await Offer.updateOne(                    
-                    {_id:id},
-                    { $set : {
-                     status : false
-                    }}
-                 ).exec()                    
-            }
             const offer= await Offer.find().sort({'created':-1}).exec()
             res.render('admin/offerManage',{
                 title : "Offer Management - TraditionShoppe",
@@ -460,28 +482,34 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
         try{
         
         console.log("req.body :",req.body)
+        if( req.body.offer_name === '' || req.body.offer_type === '' || req.body.percentage === '' || req.body.start === '' || req.body.end === ''){
+            req.flash("errorMessage", "Please fill the Fields!!");
+            res.json({success:false})
+        } else {
             let setStatus = true
-           if((req.body.end < new Date())||(req.body.end < req.body.start)||(req.body.offer_name==='No Selection')){
+            let start = new Date(req.body.start)
+            let end = new Date(req.body.end)
+                   
+           if(end < new Date()||end < start){
             setStatus = false
            }           
             const newOffer = new Offer({
                     offer_name:req.body.offer_name,
                     offer_type:req.body.offer_type,
                     discount_per:req.body.percentage,
-                    start_date:req.body.start,
-                    expire_date:req.body.end,
+                    start_date:start,
+                    expire_date:end,
                     status : setStatus
             })
             await newOffer.save();
-            if(newOffer){
-                req.flash("successMessage", "New Offer created successfully!!");
+            if(newOffer){               
                 res.json({success:true})
             } else {
                 req.flash("errorMessage", "Offer creation failed.. Try again!!");
                 res.json({success:false})
             }
         }
-        
+    }
         catch(err){
             console.log(err.message);
         }
@@ -511,12 +539,17 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
     const updateOfferDetails = async (req,res) =>{
         try{
             const id = req.params.id          
-            let stat = true;
-            
-            if((req.body.end < new Date())||(req.body.end < req.body.start)||(req.body.offer_name==='No Selection')){
+            if( req.body.offer_name === '' || req.body.offer_type === '' || req.body.percentage === '' || req.body.start === '' || req.body.end === ''){
+                req.flash("errorMessage", "Please fill the Fields!!");
+                res.json({success:false})
+            } else {
+                let stat = true
+                let start = new Date(req.body.start)
+                let end = new Date(req.body.end)
+                       
+               if(end < new Date()||end < start){
                 stat = false
-            }
-           
+               } 
            
                 const offer = await Offer.updateOne(
                     {_id:id},
@@ -524,19 +557,19 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
                         offer_name:req.body.offer_name,
                         offert_type:req.body.offer_type,
                         discount_per:req.body.percentage,
-                        start_date:req.body.start,
-                        expire_date:req.body.end, 
+                        start_date:start,
+                        expire_date:end, 
                         status : stat                                   
                     }}).exec()
 
-                    if(offer){
-                        req.flash("successMessage", "Offer details updated successfully!!");
+                    if(offer){                        
                         res.json({success:true})
                     } else {                
                         req.flash("errorMessage", "Offer updation failed.. Try again!!");
                         res.json({success:false})
                     }
-                }    
+                }
+            }    
     
         catch(err){
             console.log(err.message);
@@ -553,8 +586,7 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
                 {$set :{
                    status : false
                 }}).exec()
-                if(offer){
-                    req.flash("successMessage", "Offer deleted successfully!!");
+                if(offer){                   
                     res.json({success:true})
                 } else {
                     req.flash("errorMessage", "Offer deletion failed.. Try again!!");

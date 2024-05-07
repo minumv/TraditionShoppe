@@ -12,23 +12,174 @@ const bcrypt = require('bcrypt')
 
 /*.................... Product details ................. */
 
+const getProducts = async(req,res)=>{
+    try{
+        const products = await Products.aggregate([
+            
+            {
+                $lookup : {
+                    from : 'discounts',
+                    localField : 'discount',
+                    foreignField : '_id',
+                    as : 'discountInfo'
+                }
+            },
+            {
+                $addFields: {
+                    discountInfo: { $arrayElemAt: ['$discountInfo', 0] },
+                    discountedPrice: {
+                        $cond: {
+                            if: { $gt: [{ $size: "$discountInfo" }, 0] },
+                            then: {
+                                $multiply: [
+                                    "$price_unit",
+                                    { $subtract: [1, { $divide: [{ $toDouble: { $arrayElemAt: ["$discountInfo.percentage", 0] } }, 100] }]}
+                                ]
+                            },
+                            else: "$price_unit"
+                        }
+                    }
+                }
+                
+            },
+            {
+                $lookup : {
+                    from : 'categories',
+                    localField : 'category',
+                    foreignField : '_id',
+                    as : 'categoryInfo'
+                }
+            },
+            {
+                $addFields: {
+                    categoryInfo: { $arrayElemAt: ['$categoryInfo', 0]},
+                    categoryName: "$categoryInfo.category_name"
+                }
+            },
+            {
+                $lookup : {
+                    from : 'offers',
+                    let: { product_name: '$product_name' }, // Define variables for local and foreign fields
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ["$offer_name", "$$product_name"] }, // Match documents where offer_name equals categoryName
+                                        { $eq: ["$status", true] } // Match documents where status is true
+                                    ]
+                                }
+                            }
+                        }
+                    ],                   
+                    as : 'productoffer'
+                }
+            },
+            {
+                $addFields: {
+                    productoffer: { $arrayElemAt: ['$productoffer', 0]},
+                    pdtoffer: {
+                        $cond: {
+                            if: { $gt: [{ $size: "$productoffer" }, 0] },
+                            then: {
+                                $multiply: [
+                                    "$price_unit",
+                                    { $divide: [{ $toDouble: { $arrayElemAt: ["$productoffer.discount_per", 0] } }, 100] }
+                                ]
+                            },
+                            else: 0
+                        }
+                    }
+                }
+            },
+            {
+                $lookup : {
+                    from : 'offers',
+                    let: { categoryName: '$categoryName' }, // Define variables for local and foreign fields
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $and: [
+                                        { $eq: ["$offer_name", "$$categoryName"] }, // Match documents where offer_name equals categoryName
+                                        { $eq: ["$status", true] } // Match documents where status is true
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    as : 'categoryoffer'
+                }
+            },
+            {
+                $addFields: {
+                    categoryoffer: { $arrayElemAt: ['$categoryoffer', 0]},
+                    categoffer: {
+                        $cond: {
+                            if: { $gt: [{ $size: "$categoryoffer" }, 0] },
+                            then: {
+                                $multiply: [
+                                    "$price_unit",
+                                    { $divide: [{ $toDouble: { $arrayElemAt: ["$categoryoffer.discount_per", 0] } }, 100] }
+                                ]
+                            },
+                            else: 0
+                        }
+                    }
+                }
+            },
+            {
+                $addFields: {
+                    discountInfo: {
+                        $cond: {
+                            if: { $isArray: "$discountInfo" }, // Check if discountInfo is an array
+                            then: { $arrayElemAt: ["$discountInfo", 0] }, // If it's an array, extract the first element
+                            else: null // If it's not an array, set it to null
+                        }
+                    },
+                    discountedsalePrice: {
+                        $cond: {
+                            if: {
+                                $and: [
+                                    { $ne: ["$discountInfo", null] }, // Check if discountInfo is not null
+                                    { $or: [ // Check if either pdtoffer or categoffer is not 0
+                                        { $ne: ["$pdtoffer", 0] },
+                                        { $ne: ["$categoffer", 0] }
+                                    ]}
+                                ]
+                            },
+                            then: {
+                                $subtract: [
+                                    "$discountedPrice", // Subtract the offer price from the discountedPrice
+                                    { $max: ["$pdtoffer", "$categoffer"] } // Use $max to get the higher offer value
+                                ]
+                            },
+                            else: "$discountedPrice" // If no offer is applicable or discountInfo is null, keep the original discountedPrice
+                        }
+                    }
+                }
+            },
+            {
+                $sort : {'created': -1}
+            }            
+        ])
+        return products
+    }
+    catch(err){
+        console.log(err.message);
+    }
+}
   // load products page
   const loadProducts = async(req,res)=>{
     try{
-        const productQuery = Products.find().sort({'created':-1}).exec()
-        const categoryQuery = Category.find({status:true}).exec()
-        const sellerQuery = Seller.find({status:true}).exec()
-        const discountQuery = Discount.find({status:true}).exec()
-
-        const [products, categories, sellers, discounts] = await Promise.all([productQuery, categoryQuery, sellerQuery, discountQuery]);
-            //console.log(products[0].images[0]);
+        const products= await getProducts(req,res)
+        console.log(products)
+        
         res.render('admin/products',{
             title : "Admin Panel - TraditionShoppe",
             page:"Products",
             products:products,
-            categories:categories,
-            sellers:sellers,
-            discounts:discounts,
+           
             errorMessage: req.flash("errorMessage"), 
             successMessage: req.flash("successMessage") 
        
@@ -87,6 +238,7 @@ const storeDropdownValues = async (req,res,next)=>{
    
 }
 
+
 const submitProducts = async (req,res)=>{
     try{
       
@@ -137,11 +289,13 @@ const submitProducts = async (req,res)=>{
         if(productData){
             console.log('successful');
            
-             res.redirect('/admin/products')
+            //  res.redirect('/admin/products')
+            res.json({success:true})
         } else {
             console.log('failed');
             //  req.flash("errorMessage", "Product registration failed.. Try again!!");
-             res.redirect("/newProducts");
+            // res.redirect("/newProducts");
+            res.json({success:false})
         }  
     }
     catch(err){
@@ -202,19 +356,19 @@ const storeDropdownEdit = async (req,res,next)=>{
 const updateProduct = async(req,res)=>{
     try{
         let id = req.params.id
-        console.log(req.session.dropdownEdit);
+      if(req.session.dropdownEdit){
         const { category, seller, discount, material, color, product_type, status, isListing } = req.session.dropdownEdit;
         // const catName = req.body.category;
         const categ = await Category.findOne({ category_name: category }, { _id: 1 }).exec();
-        console.log('Category:', category, categ);
+       // console.log('Category:', category, categ);
 
         // const sellName = req.body.seller;
         const sellr = await Seller.findOne({ seller_name: seller }, { _id: 1 }).exec();
-        console.log('Seller:', seller, sellr);
+      //  console.log('Seller:', seller, sellr);
 
         // const discName = req.body.discount;
         const disc = await Discount.findOne({ discount_name: discount }, { _id: 1 }).exec();
-        console.log('Discount:', discount, disc);
+      //  console.log('Discount:', discount, disc);
 
         // Ensure that categ, sellr, and disc are not null before proceeding
         if (!categ || !sellr || !disc) {
@@ -238,6 +392,11 @@ const updateProduct = async(req,res)=>{
             isListing:isListing
         }})
         res.redirect('/admin/products')
+    } else{
+        console.log('not updated');
+       // res.redirect(`/admin/products/update/${id}`)
+
+    }
     }
     catch(err){
         console.log(err.message);
@@ -245,10 +404,74 @@ const updateProduct = async(req,res)=>{
 }
 
 
+const loadImage = async(req,res)=>{
+    try{
+        console.log('display page')
+        res.render('admin/changeImage',{
+            title : "Add Image - TraditionShoppe",
+            page:"Add new Image",
+            pdtid:req.params.pdtid,
+            images:req.query.image,
+            errorMessage : req.flash('errorMessage'),
+            successMessage : req.flash('successMessage')
+        })
+    }
+    catch(err){
+        console.log(err.message);
+    }
+}
+
+const addimageTopdt = async(req,res)=>{
+    try{
+        const pdtid = req.body.pdtid
+        const image = req.body.image
+        if(image!==null){
+            await Products.updateOne({_id:pdtid },
+                { $pull: { images: image }}) 
+        }
+        const product = await Products.updateOne({_id:pdtid },
+            { $push: { images: uploadedFiles }}) 
+
+        if(product){
+            res.json({success:true})
+        } 
+        else{
+            req.flash("errorMessage", "Image uploading failed!!");
+            res.json({success:false})   
+        }      
+    }
+    catch(err){
+        console.log(err.message);
+    }
+}
+
+const deleteImage = async(req,res)=>{
+    try{
+        console.log('to delete')
+        console.log(req.body)
+        const pdtid = req.body.pdtid
+        const image = req.body.images
+        console.log(pdtid,image)
+        const product = await Products.updateOne({_id:pdtid },
+            { $pull: { images: image }}) 
+        if(product){
+            console.log('deleted')
+            req.flash("successMessage", "Image deletion successfull...");
+            res.json({success:true})
+        } 
+        else{
+            req.flash("errorMessage", "Image deletion failed!!");
+            res.json({success:false})   
+        }      
+    }
+    catch(err){
+        console.log(err.message);
+    }
+}
 // delete product
 const  deleteProduct = async (req,res)=>{
     try{       
-
+        console.log('deleting')
         let id = req.params.id
         console.log(id)
         await Products.updateOne({_id:id},{$set:{
@@ -331,31 +554,33 @@ const addNewCategory = async(req,res)=>{
         const name =  req.body.name
         const descr = req.body.description
 
-        const categ = await Category.find({category_name:name}).exec()
-
-        if(!categ){
+        const categ = await Category.findOne({category_name:name}).exec()
+        console.log("categ :",categ)
+        
+            if(categ){
+                console.log('failed');
+                req.flash("errorMessage", "Category exist..Try new one!!");
+                res.redirect("/newCategory");
+            }  else {
                 console.log(req.body.name,req.body.description);
+
                 const categQuery = new Category({
                 category_name:name,
                 description : descr,
                 status:true                
-            })
-            const categData = await categQuery.save();
+                })
+                const categData = await categQuery.save();
 
-        if(categData){
-                console.log('successful');
-                 req.flash("successMessage", "Category added successfully..");
-                res.redirect('/admin/category')
-            } else {
-                console.log('failed');
-                 req.flash("errorMessage", "Category registration failed.. Try again!!");
-                res.redirect("/newCategory");
-            } 
-        } else {
-            console.log('failed');
-                 req.flash("errorMessage", "Category exist..Try new one!!");
-                res.redirect("/newCategory");
-        }
+                if(categData){
+                    console.log('successful');
+                    req.flash("successMessage", "Category added successfully..");
+                    res.redirect('/admin/category')
+                } else {
+                    console.log('failed');
+                    req.flash("errorMessage", "Category registration failed.. Try again!!");
+                    res.redirect("/newCategory");
+                } 
+            }
 
         
     }
@@ -429,13 +654,20 @@ const  deleteCategory = async (req,res)=>{
     
     module.exports = {
         loadProducts,
+        
         loadNewProducts,       
         submitProducts,
+        
+        loadImage,
+        addimageTopdt,
+        deleteImage,
+        
         storeDropdownValues,
         loadProductsChange ,
         storeDropdownEdit,
         updateProduct,
         deleteProduct,
+        
         loadCategory,
         loadNewCategory,
         addNewCategory,

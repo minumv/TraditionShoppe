@@ -12,22 +12,22 @@
 
                     <div class="card-body">             
                       <div class="input-group input-group-outline mb-3">
-                         <input type="text" name="coupon" class="form-control" placeholder="Enter Coupon Code eg: FESTIV2024">
+                         <input type="text" name="coupon" class="form-control" placeholder="Enter Coupon Code eg: FESTIV2024" required pattern="^(?=.*[a-zA-Z])(?=.*[0-9])[a-zA-Z0-9]+$">
                       </div>                     
                       <div class="input-group input-group-outline mb-3">
-                        <input type="text" name="percentage" class="form-control" placeholder="Enter Discount Percentage">
+                        <input type="text" name="percentage" class="form-control" placeholder="Enter Discount Percentage" required pattern="^(?!0(?:\.0+)?$)(?:100(?:\.0+)?|\d{0,2}(?:\.\d+)?)$">
                      </div>   
                      <div class="input-group input-group-outline mb-3">
-                        <input type="date" name="start" class="form-control" placeholder="Select Start Date: dd-mm-yyyy">
+                        <input type="date" name="start" class="form-control" placeholder="Select Start Date: dd-mm-yyyy" required>
                      </div>   
                      <div class="input-group input-group-outline mb-3">
-                        <input type="date" name="end" class="form-control" placeholder="Select End Date: dd-mm-yyyy">
+                        <input type="date" name="end" class="form-control" placeholder="Select End Date: dd-mm-yyyy" required>
                      </div>   
                      <div class="input-group input-group-outline mb-3">
-                        <input type="text" name="min_purch" class="form-control" placeholder="Enter Minimum Purchase Amount">
+                        <input type="text" name="min_purch" class="form-control" placeholder="Enter Minimum Purchase Amount" required pattern="^(?!0)\d{1,4}(?:\.\d+)?$">
                      </div>   
                      <div class="input-group input-group-outline mb-3">
-                        <input type="text" name="max_amt" class="form-control" placeholder="Enter Maximum Discount Amount">
+                        <input type="text" name="max_amt" class="form-control" placeholder="Enter Maximum Discount Amount" required pattern="^(?!0)\d{1,4}(?:\.\d+)?$">
                      </div>                      
                                            
                         <div class="text-center d-flex justify-content-end">                         

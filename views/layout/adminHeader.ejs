@@ -20,12 +20,17 @@
 
     <!-- CSS Files -->
     <link id="pagestyle" href="/assets/css/material-dashboard.css?v=3.1.0" rel="stylesheet" />
-    <!-- <link rel="stylesheet" type="text/css"  href="./node_modules/cropperjs/dist/cropper.min.css"> -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.7/cropper.css" integrity="sha512-AuLN6bHjJzqZ+Iw48+GdQPp5uKBdPX6+zWV37ju9zw7XIrevIX01RsLtpTU/zCoQcKrQRPe/EpwDpZiv7OUYMA==" crossorigin="anonymous" />
+    <link rel="stylesheet" type="text/css"  href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.css">
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.7/cropper.css" integrity="sha512-AuLN6bHjJzqZ+Iw48+GdQPp5uKBdPX6+zWV37ju9zw7XIrevIX01RsLtpTU/zCoQcKrQRPe/EpwDpZiv7OUYMA==" crossorigin="anonymous" /> -->
     <link rel="stylesheet" href="/stylesheets/style-modal.css" type="text/css">
     <link rel="stylesheet" href="/stylesheets/style-user.css" type="text/css">
 
     <link rel="stylesheet" href="https://cdn.datatables.net/2.0.5/css/dataTables.dataTables.min.css" >
+    <style>
+      .active_link {
+        background-color: rgb(255, 0, 115); /* Add your active styles here */
+      }
+    </style>
    
 
 </head>
@@ -43,7 +48,7 @@
         <div class="collapse navbar-collapse  w-auto " id="sidenav-collapse-main">
           <ul class="navbar-nav">
             <li class="nav-item">
-              <a class="nav-link text-white active bg-gradient-primary" href="/admin/dashboard">
+              <a class="nav-link text-white  active_link" href="/admin/dashboard">
                 <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
                   <i class="material-icons opacity-10">dashboard</i>
                 </div>

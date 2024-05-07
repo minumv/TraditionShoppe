@@ -1,42 +1,48 @@
 <%- include('../layout/adminHeader') %>
 <section>   
       <div class="container">
-        <form role="form" action="/upload" method="post" enctype="multipart/form-data">    
-        <div class="row ">                    
+        <form role="form" id="profile_form" action="" method="post" enctype="multipart/form-data">    
+          <!-- /upload -->
+          <div class="row ">                    
             <div class="col-6">
                 <div class="card card-plain">
                     <div class="card-header">
                       <h4 class="font-weight-bolder">Add new Products</h4>
                       <!-- <p class="mb-0">Enter your email and password to register</p> -->
                     </div>
-
+                    <% if (errorMessage.length > 0) { %>                
+                      <div class="alert alert-danger" role="alert"> <%- errorMessage %>  </div>                  
+                  <% } %>
+                    <% if (successMessage.length > 0) { %>                
+                      <div class="alert alert-success" role="alert"> <%- successMessage %>  </div>                    
+                    <% } %>
                     <div class="card-body">             
                       <div class="input-group input-group-outline mb-3">
-                         <input type="text" class="form-control" name="name" placeholder="Name">
+                         <input type="text" class="form-control" name="name" placeholder="Name"  required pattern="^[a-zA-Z]+[\-'\s]?[a-zA-Z ]+$">
                       </div>
                       <!-- <div class="input-group input-group-outline mb-3 ">                 
                         <input type="email" class="form-control" placeholder="Category">
                       </div> -->
                       <div class="input-group input-group-outline d-flex justify-content-center">                  
                         <div class="mx-4">
-                          <select id="categoryName" class="form-control">
-                            <option value="No Category">Select Category</option>
+                          <select id="categoryName" class="form-control" required>
+                            <option value="">Select Category</option>
                               <% categories.forEach((row, index) => { %>
                                   <option value="<%= row.category_name %>"><%= row.category_name %></option>
                               <% }) %>
                           </select>
                         </div>
                         <div class="mx-4">
-                          <select id="sellerName" class="form-control">
-                            <option value="No Seller">Select Seller</option>
+                          <select id="sellerName" class="form-control" required>
+                            <option value="">Select Seller</option>
                               <% sellers.forEach((row, index) => { %>
                                   <option value="<%= row.seller_name %>"><%= row.seller_name %></option>
                               <% }) %>
                           </select>
                         </div>
                         <div class="mx-4">
-                          <select id="discountName" class="form-control">
-                            <option value="No Discount">Select Discount</option>
+                          <select id="discountName" class="form-control" required>
+                            <option value="">Select Discount</option>
                               <% discounts.forEach((row, index) => { %>
                                   <option value="<%= row.discount_name %>"><%= row.discount_name %></option>
                               <% }) %>
@@ -44,20 +50,20 @@
                         </div>
                       </div>
                       <div class="input-group input-group-outline mb-3">                  
-                        <textarea type="text" name="description" class="form-control" placeholder="Description"></textarea>
+                        <textarea type="text" name="description" class="form-control" placeholder="Description" required></textarea>
                       </div>
                       <div class="input-group input-group-outline mb-3">                   
-                          <input type="text" name="stock" class="form-control" placeholder="Stock">
+                          <input type="text" name="stock" class="form-control" placeholder="Stock"  required pattern="^(?!0)\d{1,5}$">
                       </div>
                       <div class="input-group input-group-outline mb-3">                   
-                          <input type="text" name="price" class="form-control" placeholder="Price per Unit">
+                          <input type="text" name="price" class="form-control" placeholder="Price per Unit" required pattern="^(?!0)\d{1,4}(?:\.\d+)?$">
                       </div>
                      
                       </div>
                       <div class="input-group input-group-outline mb-3 d-flex"> 
                         <div class="dropdown mx-3">
-                          <select id="material" class="form-control">
-                            <option value="No Material">Select Material</option>
+                          <select id="material" class="form-control" required>
+                            <option value="">Select Material</option>
                               <option value="Wood">Wood</option>
                               <option value="Fibre">Fibre</option>
                               <option value="Brass">Brass</option>
@@ -74,8 +80,8 @@
                           </select>
                       </div>
                       <div class="mx-3">
-                        <select id="color" class="form-control">
-                          <option value="No Color">Select Color</option>
+                        <select id="color" class="form-control" required>
+                          <option value="">Select Color</option>
                           <option value="DarkBrown">Dark Brown</option>
                           <option value="Antique brass">Antique Brass</option>
                           <option value="Sandal">Sandal</option>
@@ -90,8 +96,8 @@
                         </select>
                       </div>    
                       <div class="mx-3">
-                        <select id="type" class="form-control">
-                          <option value="No Type">Select Type</option>
+                        <select id="type" class="form-control" required>
+                          <option value="">Select Type</option>
                           <option value="Decor">decor</option>
                           <option value="Gifts">gifts</option>
                           <option value="Toys">toys</option>
@@ -106,17 +112,20 @@
                             
                         </select></div>          
                       <div class="input-group input-group-outline mb-3">                   
-                        <input type="text" name="size" class="form-control" placeholder="Size (inches)">
+                        <input type="text" name="size" class="form-control" placeholder="Size (inches)" required pattern="^(?!0)\d{1,4}(?:\.\d+)?$">
                       </div>
                       <div class="input-group input-group-outline mb-3">                   
-                        <input type="text" name="weight" class="form-control" placeholder="Weight (grams)">
+                        <input type="text" name="weight" class="form-control" placeholder="Weight (grams)" required pattern="^(?!0)\d{1,4}(?:\.\d+)?$">
                       </div>                
                       </div>
-                      <div class="input-group input-group-outline mb-3 d-flex">  
+                      <div class="input-group input-group-outline mb-3 d-flex"> 
+                       
+                        
+
                       <div>
                            <input type="file" class="form-control mx-3" 
-                            value="Images" id="file-input" name="file" accept="image/png,image/jpeg" 
-                            multiple>                            
+                            id="file-input" name="croppedImage" accept="image/*" 
+                            onchange="handleFileInputChange(event)" multiple required>                            
                       </div>             
                     </div>
                         
@@ -127,11 +136,165 @@
                     </div>
                   
                 </div> 
-            </div> 
+             
+            <div class="col-6 d-block " id="images">
+              <div id="imgdiv1" class="w-100 d-flex" style="height: 250px; visibility: hidden;">
+                  <div class="d-block">
+                      <img id="inputImg1" src="" alt="" style="display: block; max-width: 100%;">
+                  </div>                 
+              </div>
+              <div id="imgdiv2" class="w-100 d-flex" style="height: 250px; visibility: hidden;">
+                <div class="d-block">
+                    <img id="inputImg2" src="" alt="" style="display: block; max-width: 100%;">
+                </div>                 
+            </div>
+            <div id="imgdiv3" class="w-100 d-flex" style="height: 250px; visibility: hidden;">
+              <div class="d-block">
+                  <img id="inputImg3" src="" alt="" style="display: block; max-width: 100%;">
+              </div>                 
+          </div>
+              </div>
+            </div>
+            
+
           
         </form>        
        </div>   
+       <!-- <div id="overlay"></div> -->
   </section>
+<script>
 
+  
+  
+  let cropper ;
+  let previewDiv = document.getElementById('imgdiv1')
+  let preview = document.getElementById('inputImg1')
+    
+  function handleFileInputChange(event) {
+    
+    // const files = event.target.files;
+    // if (files && files.length > 0) {
+    //     const file = files[0]; 
+    //     const reader = new FileReader(); 
+        
+    //     reader.onload = function(e) {
+    //         previewDiv.style.visibility = 'visible';
+    //         preview.src = e.target.result;
+    //     };        
+    //     reader.readAsDataURL(file);
+    // }}
+
+    const files = event.target.files; // Get the selected files
+    console.log(files);
+    // Iterate through each file
+    for (let i = 0; i < files.length; i++) {
+        const reader = new FileReader(); // Create a new FileReader instance
+
+        // Define a callback function to handle the FileReader's onload event
+        reader.onload = function(event) {
+            const imgSrc = event.target.result; // Get the base64 data URL of the image
+            const imgIndex = i + 1; // Index of the image (e.g., img1, img2, etc.)
+            const inputImgId = `inputImg${imgIndex}`; // ID of the input image element
+            const imgElement = document.getElementById(inputImgId); // Get the input image element
+
+            // Set the src attribute of the input image element to display the preview
+            imgElement.src = imgSrc;
+
+            // Show the image container
+            const imgContainerId = `imgdiv${imgIndex}`;
+            document.getElementById(imgContainerId).style.visibility = 'visible';
+           
+            initializeCropperForImage(i+1);
+        };
+
+        // Read the selected file as a data URL (base64)
+       
+        reader.readAsDataURL(files[i]);
+        
+    }
+  }
+
+  const croppers = [];
+
+function initializeCropperForImage(inputIndex) {
+    const imageId = `inputImg${inputIndex}`;
+    console.log(imageId);
+    const cropper = new Cropper(document.getElementById(imageId), {
+        // Add Cropper.js options here
+        aspectRatio:1/1
+       
+    });
+    console.log(cropper);
+
+    // Save cropper instance
+    croppers.push(cropper);
+    console.log('croppers :',croppers)
+}
+
+  // preview.addEventListener('load',function(events){
+  //   cropper = new Cropper(preview,{
+  //     aspectRatio:1/1
+  //   })
+  // })
+
+  let form = document.getElementById('profile_form')
+  let formData = new FormData(form);
+
+    // Display form data in console for testing
+   
+  form.addEventListener('submit',function(event){
+    event.preventDefault()
+
+   for (let i = 0; i < croppers.length; i++) {
+    croppers[i].getCroppedCanvas({
+      maxHeight:1000,
+      maxWidth:1000
+    }).toBlob(function(blob){
+      ajaxWithAxios(blob)
+    })
+  }
+  })
+
+
+  function ajaxWithAxios(blob){
+
+  
+
+    let form = document.getElementById('profile_form');
+    console.log("form: ",form)
+    let formData = new FormData(form)
+    for (var pair of formData.entries()) {
+        console.log(pair[0] + ': ' + pair[1]);
+        
+    }
+
+    formData.append('croppedImage', blob);
+
+    console.log("formdata: ",formData)
+    console.log('Form data length:', formData.size); // Check the size property
+console.log('Form data keys:', formData.keys()); // Log the keys
+for (const key of formData.keys()) {
+    console.log(key + ':', formData.get(key));
+}
+   
+
+// Use `jQuery.ajax` method for example
+$.ajax('/uploadPdtImage', {
+  method: 'POST',
+  data: formData,
+  processData: false,
+  contentType: false,
+  success() {
+    location.href='/admin/products'
+  },
+  error() {
+    location.href='/newProducts'
+    console.log('Upload error');
+  },
+});
+}
+  
+
+</script>
 
   <%- include('../layout/adminFooter') %>

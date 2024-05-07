@@ -13,21 +13,22 @@
                     <% let sell = '' %>
                     <% let disc = '' %>
                    
-                   
+                    <% if (errorMessage.length > 0) { %>                
+                        <div class="alert alert-danger text-white" role="alert"> <%- errorMessage %>  </div>                  
+                      <% } %>
+                     
                     <div class="card-body">             
                       <div class="input-group input-group-outline mb-3">
                          <input type="text" name="name" class="form-control" value="<%= products.product_name %>">
                       </div>
-                      <!-- <div class="input-group input-group-outline mb-3 ">                 
-                        <input type="text" class="form-control" value="<%= products.category %>">
-                      </div> -->
+                     
                       <div class="input-group input-group-outline mb-3 d-flex justify-content-center">                  
                         <div class="dropdown mx-4">
                             <% categories.forEach((row, index) => { %>
                              
                                 <% if(row._id .equals( products.category)) { %>
                                     <% categ = row.category_name %>
-                                    <% console.log("categ") %>
+                                    
                                     <% } %>
                                 <% }) %>
                             <select id="categoryName" class="form-control">
@@ -79,7 +80,7 @@
                       <div class="input-group input-group-outline mb-3 d-flex"> 
                             <div class="dropdown mx-3">
                                 <select id="material" class="form-control">
-                                    <option value="No Material"><%= products.material %></option>
+                                    <option value="<%= products.material %>"><%= products.material %></option>
                                       <option value="Wood">Wood</option>
                                       <option value="Fibre">Fibre</option>
                                       <option value="Brass">Brass</option>
@@ -97,7 +98,7 @@
                             </div>
                             <div class="dropdown mx-3">
                                 <select id="color" class="form-control">
-                                    <option value="No Color"><%= products.color %></option>
+                                    <option value="<%= products.color %>"><%= products.color %></option>
                                     <option value="DarkBrown">Dark Brown</option>
                                     <option value="Antique brass">Antique Brass</option>
                                     <option value="Sandal">Sandal</option>
@@ -113,7 +114,7 @@
                             </div>   
                             <div class="mx-3">
                                 <select id="type" class="form-control">
-                                  <option value="No Type"><%= products.product_type %></option>
+                                  <option value="<%= products.product_type %>"><%= products.product_type %></option>
                                   <option value="Decor">decor</option>
                                   <option value="Gifts">gifts</option>
                                   <option value="Toys">toys</option>
@@ -132,14 +133,7 @@
                             <div class="input-group input-group-outline mb-3">                   
                                 <input type="text" name="weight" class="form-control" value="<%= products.weight %>">
                             </div>      
-                            <!-- <div class="input-group input-group-outline mb-3">
-                                <label for="">Status</label>                   
-                                <input type="text" name="status" class="form-control" value="<%= products.status %>">
-                            </div>
-                            <div class="input-group input-group-outline mb-3">  
-                                <label for="">List?</label>                  
-                                <input type="text" name="list" class="form-control" value="<%= products.isListing %>">
-                            </div>         -->
+                           
                       </div>
                       <div class="input-group input-group-outline mb-3 d-flex">  
                         <div class="mx-3">
@@ -174,50 +168,65 @@
                   
                 </div> 
             </div> 
+        </form> 
             <div class="col-6" >
                 <% for( let i = 0 ; i< products.images.length ; i++ ) {%>
-                <!-- <div class=" d-flex" >
-                    <div >
-                        <img  style="width: 200px;height:200px" src="../upload/<%= products.images[i]%>" alt="">
-                       
-                    </div>
-                   
-                </div> -->
+              
                 <% console.log(products.images[i]) %>
                 <div style="margin: 5px;
                 border: 1px solid #ccc;
-                float: left;
+                float: block;
                 width: 180px;">
-                    <a target="_blank" href="#">
-                      <img src="../upload/<%= products.images[i]%>" alt="<%= products.images[i]%>" width="600" height="600">
-                    </a>                    
-                  </div>
-                <% } %>    
-                <!-- <div id="img2" class="bg-gradient-primary w-100 d-flex" style="visibility: hidden;">
-                    <div class="d-block">
-                        <img id="inputImg2" style="width: 200px;height:200px" src="" alt="">
-                        <input type="button" value="Crop" onclick="cropImage(2)">
-                    </div>
-                    <div id="outDiv1">
-                        <img id="croppedImg2"  style="width: 200px;height:200px" src="" alt="">
-                    </div>
+                   <div class="d-flex">
+                        <a target="_blank" href="#">
+                            <img src="<%= `/upload/${products.images[i]}` %>" alt="<%= products.images[i]%>" width="200" height="200">
+                        </a> 
+                        <div class="d-block ms-4 align-items-center">
+                            
+                           <a href="/addimage/<%=products._id%>/?image=<%=products.images[i]%>" ><button class="btn btn-sm bg-gradient-secondary w-100">Change</button></a>
+                            <button class="btn btn-sm bg-gradient-secondary w-100" onclick="removeImage('<%=products._id%>','<%=products.images[i]%>')">delete</button> 
+                        </div>
+                    </div>                   
                 </div>
-                <div id="img3" class="bg-gradient-primary w-100 d-flex" style="visibility: hidden;">
-                    <div class="d-block">
-                        <img id="inputImg3" style="width: 200px;height:200px" src="" alt="">
-                        <input type="button" value="Crop" onclick="cropImage(3)">
-                    </div>
-                    <div id="outDiv1">
-                        <img id="croppedImg3"  style="width: 200px;height:200px" src="" alt="">
-                    </div>
-                </div>                -->
+                
+            <% } %>  
+            <%console.log("products._id")%>
+
+            <%console.log(products._id)%>
+
+                <a href="/addimage/<%=products._id%>"><button class="btn btn-sm bg-gradient-secondary w-100">add image</button></a>
                <div> 
                
             </div> 
           </div> 
-        </form>        
+              
        </div>   
   </section>
 
+  <script>
+
+    function removeImage(pdtid,images){
+        const data = { 
+            pdtid, images
+        }
+        console.log(data)
+        fetch('/removeImage',{
+            method:'post',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify(data)
+        })
+        .then((res)=>{res.json()})
+        .then((data)=>{
+            if(data.success){
+                console.log('success',pdtid)
+                location.href=`/admin/products/update/${pdtid}`
+            } else {
+                location.href=`/admin/products/update/${pdtid}`
+            }
+
+        })
+
+    }
+  </script>
 
   <%- include('../layout/adminFooter') %>

@@ -86,14 +86,14 @@
                 
             </div>
             <div class="wish-save d-flex">
-                <a class = "link-wish"href="/addtowishlist/<%= pdt._id %>"><span class="icon icon-heart-o">&nbsp;Add to wishlist</span></a>&ensp;&ensp;&ensp;&nbsp;
+                <a class = "link-wish"href="/addtowishlist/<%= pdt._id %>" ><span class="icon icon-heart-o">&nbsp;Add to wishlist</span></a>&ensp;&ensp;&ensp;&nbsp;
                
             </div>           
             <br>          
             <div class="nav-but-div">
                 <!-- <a href="/addtocart/<%= pdt._id %>/<%=pdt.discountedsalePrice %>"><button class="use-but ord-but text-center nav-but text-white" style="background-color:#4F0341;font-size:18px ;">Add to Cart</button></a>&ensp; -->
                 <button type="button" onclick="addingtoCart('<%= pdt._id %>','<%=pdt.discountedsalePrice %>')" class="use-but ord-but text-center nav-but text-white" style="background-color:#4F0341;font-size:18px ;">Add to Cart</button></a>&ensp;
-                <a href="/checkout/<%=user_id%>/<%=pdt.discountedsalePrice %>"><button class="use-but ord-but text-center nav-but text-white" style="background-color:#4F0341 ;font-size:18px ;">Buy Now</button></a>
+                <!-- <a href="/checkout/<%=user_id%>/<%=pdt.discountedsalePrice %>"><button class="use-but ord-but text-center nav-but text-white" style="background-color:#4F0341 ;font-size:18px ;">Buy Now</button></a> -->
 
             </div>
             <% if (errorMessage.length > 0) { %>                

@@ -1,0 +1,81 @@
+<%- include('../layout/adminHeader') %>
+<section>   
+      <div class="container">
+        <div class="d-block p-1">
+            <form id="img_form" action="" method="post"></form>
+            <input type="text" name="pdtid" id="" value="<%=pdtid%>" hidden>
+            <input type="text" name="image" id="" value="<%=images?images:'null'%>" hidden>
+
+                <div id="imgdiv" style="visibility:hidden;">
+                    <img id="inputImg" src="" alt="" style="display:block;max-width: 100%;">
+                </div>
+                <div class="d-flex">
+                    <input type="file" class="form-control" 
+                    value="Images" id="file-input" name="file" accept="image/png,image/jpeg" 
+                    onchange="addnewImage(event)" multiple> 
+                    <button type="submit" class="form-control">crop&upload</button>
+                </div> 
+            </form>                          
+          </div>
+      </div>
+</section>
+
+<script>
+    let cropper ;
+    let previewDiv = document.getElementById('imgdiv')
+    let preview = document.getElementById('inputImg')
+    function addnewImage(event){
+        const files = event.target.files;
+        if (files && files.length > 0) {
+            const file = files[0]; 
+            const reader = new FileReader(); 
+            
+            reader.onload = function(e) {
+                previewDiv.style.visibility = 'visible';
+                preview.src = e.target.result;
+            };        
+            reader.readAsDataURL(file);
+        }
+    }
+
+    preview.addEventListener('load',function(events){
+        cropper = new Cropper(preview,{
+        aspectRatio:1/1
+        })
+    })
+
+    let form = document.getElementById('img_form')
+    form.addEventListener('submit',function(event){
+        event.preventDefault()    
+        croppers[i].getCroppedCanvas({
+        maxHeight:1000,
+        maxWidth:1000
+        }).toBlob(function(blob){
+        addImageToCollection(blob)
+        }) 
+    })
+
+function addImageToCollection(blob){
+   
+    let formData = new FormData(form)  
+
+    formData.append('croppedImage', blob);  
+
+    $.ajax('/uploadnewImage', {
+    method: 'POST',
+    data: formData,
+    processData: false,
+    contentType: false,
+    success() {
+       location.href=`/admin/products/update/${pdtid}`
+    },
+    error() {
+        location.href=`/admin/products/update/${pdtid}`        
+    },
+    });
+}
+
+</script>
+
+
+<%- include('../layout/adminFooter') %>

@@ -38,10 +38,10 @@ const storage = multer.diskStorage({
 });
 
 // Create Multer instance with storage options
-const upload = multer({storage:storage}).array('file',6)
+const upload = multer({storage:storage}).array('croppedImage',3)
 
 //middleware
-const handleUpload = (req, res, next) => {
+ const handleUpload = (req, res, next) => {
     req.uploadedFiles = [];
     console.log('inside middleware');
     upload(req, res, function (err) {
@@ -49,7 +49,7 @@ const handleUpload = (req, res, next) => {
         if (err instanceof multer.MulterError) {
             // A Multer error occurred when uploading.
             // return res.status(500).json({ error: err.message });
-            console.log('multer'+err.message);
+            console.log('multer err:'+err.message);
         } else if (err) {
             // An unknown error occurred when uploading.
             // return res.status(500).json({ error: 'Unknown error occurred' });
@@ -58,16 +58,31 @@ const handleUpload = (req, res, next) => {
         // Everything went fine, proceed to the next middleware or route handler.
         
         req.uploadedFiles = req.files.map(file => file.originalname);
+        console.log("upload files :",req.uploadedFiles)
         next();
     });
 
 };
+
+// const storage = multer.diskStorage({
+//     destination: function(req, file, cb) {
+//         cb(null, './upload') // Specify the directory where uploaded files will be stored
+//     },
+//     filename: function(req, file, cb) {
+//         cb(null, file.originalname) // Use the original file name as the stored file name
+//     }
+// });
+// const upload = multer({ storage: storage });
 
 
 /*****************Routing Product page****************** */
 
 productRoute.get("/admin/products",productController.loadProducts)
 productRoute.get('/newProducts',productController.loadNewProducts)
+productRoute.get('/addimage/:pdtid',productController.loadImage)
+
+
+
 
 productRoute.get("/admin/products/update/:id",productController.loadProductsChange);
 
@@ -76,8 +91,9 @@ productRoute.post("/update/:id",productController.updateProduct)
 productRoute.post("/delete/:id",productController.deleteProduct)
 
 productRoute.post("/getDropdownValues",productController.storeDropdownValues)
-productRoute.post("/upload",handleUpload, productController.submitProducts)
-
+productRoute.post("/uploadPdtImage",handleUpload, productController.submitProducts)
+productRoute.post("/uploadnewImage", productController.addimageTopdt)
+productRoute.post('/removeImage',productController.deleteImage)
 
 
 

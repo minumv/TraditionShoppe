@@ -72,7 +72,7 @@ const mongoose = require('mongoose');
                 $sort : { 'created' : -1 }
             }
             ])  
-            console.log(orders)      
+            // console.log(orders)      
             
             res.render('admin/orderManage',{
                 title: "Order Management | TraditionShoppe",
@@ -165,7 +165,7 @@ const mongoose = require('mongoose');
                 }                 
             ])
              
-                console.log("orders",orders)
+                // console.log("orders",orders)
            
            
             res.render('admin/orderDetails',{
@@ -469,7 +469,7 @@ const OrderReturned = async (req,res)=>{
        
         const odrid = req.params.odrid 
         const pdtid = req.params.pdtid     
-        const orders = await Order.findOne({_id:odrid,"product_list.productId":pdtid},{ "product_list.$": 1 }).populate('user').exec()       
+        const orders = await Order.findOne({_id:odrid,"product_list.productId":pdtid},{ "product_list.$": 1,payment:1 }).populate('user').exec()       
         console.log("orders",orders)
 
        
@@ -496,9 +496,11 @@ const OrderReturned = async (req,res)=>{
             products.stock = newStock
             products.save()
             //add wallet to user collection
-            if(orders.user.wallet != null){
+            console.log('order returned, amount adding to wallet')
+            console.log('user wallet',orders.user.wallet)
+            if(orders.user.wallet != null  || orders.user.wallet !== 0){
                 let amount = orders.user.wallet + total
-                console.log("wallet :",orders.user.wallet,"amount :",amount)
+                console.log("wallet :",orders.user.wallet,"amount :",amount,'adding amount :',total)
                 await User.updateOne(
                     {_id:orders.user._id},
                     { $set :{
@@ -533,16 +535,18 @@ const OrderReturned = async (req,res)=>{
         try{
             const pdtid = req.params.pdtid
             const odrid = req.params.odrid
-                       
+             
+            console.log('id :',pdtid,odrid)
            
-            const orders = await Order.findOne({_id:odrid,"product_list.productId":pdtid}, { "product_list.$": 1 }).populate('user').exec() 
+            const orders = await Order.findOne({_id:odrid,"product_list.productId":pdtid}, { "product_list.$": 1,payment:1 }).populate('user').exec() 
             
-           
+            console.log('orderdata :',orders)
                 let total = 0
                 orders.product_list.forEach((odr)=>{
                     total = odr.total
                 })
                 
+               
                 const orderStat = await Order.updateOne(
                     { _id: odrid ,"product_list.productId":pdtid },              
                     { $set: {     
@@ -553,15 +557,21 @@ const OrderReturned = async (req,res)=>{
                     { arrayFilters: [{ "elem.productId": pdtid }] }   
                 )
                 //update wallet(Add paymentamount) based on payment method
+                console.log('order cancelled, adding to wallet')
+                console.log('user wallet',orders.user.wallet)
+                console.log(orders.payment)
                 if(orders.payment === 'Razorpay' || orders.payment === 'Wallet'){
-                    if(orders.user.wallet != null){
+                    if(orders.user.wallet != null  || orders.user.wallet !== 0){
+                       
                         let amount = orders.user.wallet + total
+                        console.log('amount,total',amount,total)
                         await User.updateOne(
                             {_id:orders.user._id},
                             { $set :{
                                 wallet : amount
                             }}
                         )
+                        console.log('added to wallet amt');
                     } else {
                         await User.updateOne(
                             {_id:orders.user._id},
@@ -569,6 +579,7 @@ const OrderReturned = async (req,res)=>{
                                 wallet : total
                             }}
                         )
+                        console.log('added to empty wallet')
                     }
                 }
             
