@@ -167,6 +167,7 @@
   
   
   let cropper ;
+  let imageArray = []
   let previewDiv = document.getElementById('imgdiv1')
   let preview = document.getElementById('inputImg1')
     
@@ -185,8 +186,9 @@
     // }}
 
     const files = event.target.files; // Get the selected files
-    console.log(files);
+    console.log("files :",files);
     // Iterate through each file
+   
     for (let i = 0; i < files.length; i++) {
         const reader = new FileReader(); // Create a new FileReader instance
 
@@ -199,6 +201,7 @@
 
             // Set the src attribute of the input image element to display the preview
             imgElement.src = imgSrc;
+            imageArray.push(imgSrc)
 
             // Show the image container
             const imgContainerId = `imgdiv${imgIndex}`;
@@ -208,7 +211,7 @@
         };
 
         // Read the selected file as a data URL (base64)
-       
+      //  console.log("reader value :",readAsDataURL(files[i]))
         reader.readAsDataURL(files[i]);
         
     }
@@ -219,16 +222,16 @@
 function initializeCropperForImage(inputIndex) {
     const imageId = `inputImg${inputIndex}`;
     console.log(imageId);
-    const cropper = new Cropper(document.getElementById(imageId), {
+    cropper = new Cropper(document.getElementById(imageId), {
         // Add Cropper.js options here
         aspectRatio:1/1
        
     });
-    console.log(cropper);
+    console.log(`cropper${imageId} :`,cropper);
 
     // Save cropper instance
     croppers.push(cropper);
-    console.log('croppers :',croppers)
+    console.log('croppers :',inputIndex ,":",croppers)
 }
 
   // preview.addEventListener('load',function(events){
@@ -244,22 +247,25 @@ function initializeCropperForImage(inputIndex) {
    
   form.addEventListener('submit',function(event){
     event.preventDefault()
-
-   for (let i = 0; i < croppers.length; i++) {
-    croppers[i].getCroppedCanvas({
+   
+  //  for (let i = 0; i < croppers.length; i++) {
+    croppers[2].getCroppedCanvas({
       maxHeight:1000,
       maxWidth:1000
     }).toBlob(function(blob){
       ajaxWithAxios(blob)
     })
-  }
+   
+  // }
+  
+ 
   })
 
 
   function ajaxWithAxios(blob){
 
   
-
+    
     let form = document.getElementById('profile_form');
     console.log("form: ",form)
     let formData = new FormData(form)
@@ -267,9 +273,9 @@ function initializeCropperForImage(inputIndex) {
         console.log(pair[0] + ': ' + pair[1]);
         
     }
-
-    formData.append('croppedImage', blob);
-
+    console.log("blob :",blob)
+    formData.append('croppedImage',blob);
+    console.log("crr",formData.croppedImage)
     console.log("formdata: ",formData)
     console.log('Form data length:', formData.size); // Check the size property
 console.log('Form data keys:', formData.keys()); // Log the keys
@@ -278,13 +284,13 @@ for (const key of formData.keys()) {
 }
    
 
-// Use `jQuery.ajax` method for example
 $.ajax('/uploadPdtImage', {
   method: 'POST',
   data: formData,
   processData: false,
   contentType: false,
   success() {
+    console.log("uploaded")
     location.href='/admin/products'
   },
   error() {
@@ -292,7 +298,7 @@ $.ajax('/uploadPdtImage', {
     console.log('Upload error');
   },
 });
-}
+ }
   
 
 </script>

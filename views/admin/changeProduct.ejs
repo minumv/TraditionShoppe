@@ -179,12 +179,12 @@
                 width: 180px;">
                    <div class="d-flex">
                         <a target="_blank" href="#">
-                            <img src="<%= `/upload/${products.images[i]}` %>" alt="<%= products.images[i]%>" width="200" height="200">
+                            <img src="<%=`/upload/${products.images[i]}` %>" alt="<%= products.images[i]%>" width="200" height="200">
                         </a> 
                         <div class="d-block ms-4 align-items-center">
                             
-                           <a href="/addimage/<%=products._id%>/?image=<%=products.images[i]%>" ><button class="btn btn-sm bg-gradient-secondary w-100">Change</button></a>
-                            <button class="btn btn-sm bg-gradient-secondary w-100" onclick="removeImage('<%=products._id%>','<%=products.images[i]%>')">delete</button> 
+                           <a href="/addimage/<%=products._id%>/?image=<%=products.images[i]%>" ><span class="btn btn-sm bg-gradient-secondary w-100">Change</span></a>
+                            <button type="button" class="btn btn-sm bg-gradient-secondary w-100" onclick="removeImage('<%=products._id%>','<%=products.images[i]%>')">delete</button> 
                         </div>
                     </div>                   
                 </div>
@@ -194,7 +194,7 @@
 
             <%console.log(products._id)%>
 
-                <a href="/addimage/<%=products._id%>"><button class="btn btn-sm bg-gradient-secondary w-100">add image</button></a>
+                <a href="/addimage/<%=products._id%>"><button type="button" class="btn btn-sm bg-gradient-secondary w-100">add image</button></a>
                <div> 
                
             </div> 
@@ -216,9 +216,9 @@
             body:JSON.stringify(data)
         })
         .then((res)=>{res.json()})
-        .then((data)=>{
-            if(data.success){
-                console.log('success',pdtid)
+        .then((success)=>{           
+            if(success){
+                console.log('success')
                 location.href=`/admin/products/update/${pdtid}`
             } else {
                 location.href=`/admin/products/update/${pdtid}`

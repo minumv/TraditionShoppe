@@ -263,6 +263,9 @@ const submitProducts = async (req,res)=>{
             console.log('One or more documents not found in the database.');
             // Handle the case where one or more documents are not found
         }
+        let imgArray = req.uploadedFiles
+        imgArray.pop()
+        console.log(imgArray)
 
         const product = new Products({
 
@@ -277,7 +280,7 @@ const submitProducts = async (req,res)=>{
             color:color,
             size:req.body.size,
             weight:req.body.weight,
-            images:req.uploadedFiles ,
+            images:imgArray ,
             product_type:product_type,
             status:'new',
             isListing:true
@@ -425,12 +428,16 @@ const addimageTopdt = async(req,res)=>{
     try{
         const pdtid = req.body.pdtid
         const image = req.body.image
+        let imgArray=req.uploadedFiles
+        imgArray.pop()
+        console.log("array :",imgArray)
         if(image!==null){
             await Products.updateOne({_id:pdtid },
                 { $pull: { images: image }}) 
+                console.log('deleted previous')
         }
         const product = await Products.updateOne({_id:pdtid },
-            { $push: { images: uploadedFiles }}) 
+            { $push: { images: imgArray[0]}}) 
 
         if(product){
             res.json({success:true})
