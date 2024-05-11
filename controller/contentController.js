@@ -836,6 +836,7 @@ const loadAllProducts = async (req,res)=>{
            res.render('content/allproducts',{
             title : "All Products| TraditionShoppe",
             user : req.session.user,
+            blocked:req.session.blocked,
             page : 'All products', 
             qtyCount:req.session.qtyCount,
             listCount:req.session.listCount,               
@@ -893,6 +894,7 @@ const loadSearchProducts = async (req,res)=>{
                 res.render('content/allproducts',{
                 title : "All Products| TraditionShoppe",
                 user : req.session.user,
+                blocked:req.session.blocked,
                 page : 'All products', 
                 qtyCount:req.session.qtyCount,
                 listCount:req.session.listCount,               
@@ -1407,6 +1409,7 @@ const loadProductDetail = async (req,res)=>{
         res.render('content/productView',{
             title: "View Product | TraditionShoppe", 
             user : req.session.user,
+            blocked:req.session.blocked,
             user_id:user_id[0]._id,
             qtyCount:req.session.qtyCount,
             listCount:req.session.listCount,         
@@ -1472,7 +1475,8 @@ const loadCart = async(req,res)=>{
         res.render('content/myCart',{
             title: "My Cart - TraditionShoppe",
             page:"My Cart",   
-            user : req.session.user,            
+            user : req.session.user, 
+            blocked:req.session.blocked,           
             products, 
             user_cart, 
             mrpTotal,
@@ -1727,6 +1731,14 @@ const deleteFromCart = async(req,res)=>{
         let qty = 0;
         let amount = 0;
         let price = 0;
+        if( user_cart.product_list.length === 1 ){
+            await Cart.deleteOne(
+                { _id:cartid })
+                console.log('successful');
+                await getQtyCount(req,res);
+                req.flash("successMessage", "User is deleted from cart...");
+                res.json({ success: true });
+            } else {
         user_cart.product_list.forEach(product => {
             if( product.productId == pdtid ){
                 qty = product.quantity,
@@ -1743,9 +1755,10 @@ const deleteFromCart = async(req,res)=>{
             }) 
                       
             await getQtyCount(req,res);
-        console.log('successful');
-        req.flash("successMessage", "Product is deleted from cart...");
-        res.json({success:true})
+            console.log('successful');
+            req.flash("successMessage", "Product is deleted from cart...");
+            res.json({success:true})
+        }
     }
     catch(err){
         console.log(err.message);
@@ -1829,6 +1842,7 @@ const loadCheckout = async(req,res)=>{
             title: "Checkout - TraditionShoppe",
             page:"Checkout",   
             user : req.session.user,
+            blocked:req.session.blocked,
             cartDet, 
             userAddress,
             amount,
@@ -1911,6 +1925,7 @@ const loadEditAddress =async(req,res)=>{
         res.render('content/editAddress',{
             title: "Edit Address - TraditionShoppe",
             user : req.session.user,
+            blocked:req.session.blocked,
             address,  
             cartid,
             amount,             

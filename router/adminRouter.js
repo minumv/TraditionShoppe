@@ -3,7 +3,7 @@ const adminRoute = express()
 const bodyParser = require('body-parser')
 
 const adminController = require('../controller/adminController')
-// const userAuthent = require('../middleware/userAuthent')
+const userAuthent = require('../middleware/userAuthent')
 
 
 
@@ -15,11 +15,11 @@ adminRoute.use(bodyParser.urlencoded({extended:true}))
 adminRoute.use(express.static('public'));
 
 /*****************Routing Customer page****************** */
-
-adminRoute.get("/admin/login",/*userAuthent.isAuthenticated */adminController.loadAdminLogin)
+adminRoute.get("/admin",adminController.loadAdminLogin)
+adminRoute.get("/admin/login",userAuthent.isAdminLoggedOut,adminController.loadAdminLogin)
 adminRoute.get("/admin/dashboard",adminController.loadAdminHome)
-adminRoute.get("/admin/customers",/*userAuthent.isAuthenticated,*/adminController.loadCustomer)
-adminRoute.get("/admin/customer/update/:id",adminController.loadCustomerEdit)
+adminRoute.get("/admin/customers",userAuthent.isAdminAuthenticated,adminController.loadCustomer)
+adminRoute.get("/admin/customer/update/:id",userAuthent.isAdminAuthenticated,adminController.loadCustomerEdit)
 
 adminRoute.post("/admin/login",adminController.verifyAdminLogin)
 adminRoute.post("/verify/:id",adminController.verifyCustomer)
@@ -64,7 +64,7 @@ adminRoute.get("/salesreport",adminController.loadSalesReport)
 // adminRoute.get("/admin/banner",adminController.loadBanner)  
 // adminRoute.get("/admin/salesreport",adminController.loadSales) 
 // adminRoute.get("/admin/settings",adminController.loadSettings) 
-// adminRoute.get("/admin/logout",adminController.logOut) 
+adminRoute.get("/admin/logout",adminController.logout) 
 
 
 

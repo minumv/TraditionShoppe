@@ -1,0 +1,68 @@
+<%- include('../layout/profileHeader') %>
+  
+    <div class="d-block" style="width:1290px;">
+       
+        <%coupon.forEach((cpn)=>{%>            
+                    
+       <div> 
+        <div class="row ord-box">
+                
+                    
+                <div class="pdt-det">
+                    <div class="d-flex">
+                        <p class="text-dark text-uppercase mb-0"><%=cpn.coupon_code%></p>
+                       
+                    </div>
+
+                   
+                </div>
+                <div class="pdt-det box-wid">
+                    <p class="text-dark text-uppercase mb-0">Discount:</p>
+                    <p><%=cpn.discount_per%></p>
+                </div>
+                
+                <div class="pdt-det d-block box-wid">
+                    <p class="text-dark text-uppercase mb-0">Minimum Purchase:</p>
+                    <p><%=cpn.minimum_purchase%></p>
+                </div>
+               
+               
+            </div>
+            
+      
+            <%})%>
+            
+        
+<!--  orders -->
+
+<div class="row" data-aos="fade-up">
+    <div class="col-md-12 text-center">
+      <div class="site-block-27">
+        <ul>         
+          <% for(let i = 1 ; i <= pages ; i++){%>
+            <% if( i== pageNum ) {%>
+             <li class="active"><a href="/getusercoupon/?page=<%= i %>"><span><%= i %></span></a></li>
+            <% } else { %>
+            <li><a href="/getusercoupon/?page=<%= i %>"><span><%= i %></span></a></li>
+            <% } %>
+          <% } %>         
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+ </div>
+ <!-- pagination -->
+
+
+
+</div>
+</div>
+
+
+
+
+  <%- include('../layout/userFooter') %>
+
+  

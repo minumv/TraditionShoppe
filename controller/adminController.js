@@ -37,9 +37,8 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
             const userData = await User.findOne({email:username})
             console.log(userData);
             if(userData){
-                // const passwordMatch = await bcrypt.compare(password,userData.password)
-                // console.log(passwordMatch);
-                // if(passwordMatch){                    
+                
+                if(password === userData.password){                               
                    
                     if(userData.role === 'admin'){
                         req.session.role = userData.role;
@@ -47,20 +46,20 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
                         req.flash("successMessage", "You have successfully logged in.");
                         res.redirect('/admin/dashboard')
                     } else {
-                        req.flash("errorMessage", "Invalid access!!");
-                        res.redirect("/signin/adminLogin");
+                        req.flash("errorMessage", "Invalid access, Only admin can access!!");
+                        res.redirect("/admin/login");
                     }
                     
                 } else {
                     req.flash("errorMessage", "Invalid Username and Password!!");
-                    res.redirect("/signin/adminLogin");
+                    res.redirect("/admin/login");
                 }
                 
 
-            // } else {
-            //     req.flash("errorMessage", "Invalid Username and Password!!");
-            //     res.redirect("/admin/login");
-            // }
+            } else {
+                req.flash("errorMessage", "You are not authenticated!!");
+                res.redirect("/admin/login");
+            }
 
 
         } catch(err) {
@@ -81,7 +80,7 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
                     title:"Admin Panel | TraditionShoppe",
                     page:"Dashboard",
                     users:users,
-                    user : req.session.user,
+                    admin : req.session.admin,
                     errorMessage: req.flash("errorMessage"), 
                     successMessage: req.flash("successMessage") 
                 })
@@ -102,7 +101,7 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
                     title:"Admin Panel | TraditionShoppe",
                     page:"Customers",
                     users:users,
-                    user : req.session.user,
+                    admin : req.session.admin,
                     errorMessage: req.flash("errorMessage"), 
                     successMessage: req.flash("successMessage") 
                 })
@@ -125,7 +124,7 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
                     page:"Customer Update",
                     users:users,
                     page:'View Customer',
-                    user : req.session.user,
+                    admin : req.session.admin,
                     errorMessage: req.flash("errorMessage"), 
                     successMessage: req.flash("successMessage") 
                 })
@@ -143,8 +142,9 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
             let id = req.params.id
             await User.updateOne({_id:id},{$set:{
             status : 'Verified'           
-        }})
-           res.redirect('/admin/customers')
+            }})
+            req.session.verified = true
+            res.redirect('/admin/customers')
          
         } catch (err){
             console.log(err.message);
@@ -165,6 +165,7 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
             user.status = 'Blocked'
             await user.save()    
             req.session.blocked = true
+            req.session.user = false
         
            res.redirect('/admin/customers')
          
@@ -182,7 +183,8 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
         let id = req.params.id
         await User.updateOne({_id:id},{$set:{
         status : 'Verified'           
-    }})
+        }})
+        req.session.blocked = false
        res.redirect('/admin/customers')
      
     } catch (err){
@@ -256,6 +258,7 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
                 title : "Admin Panel - TraditionShoppe",
                 page:"Coupon",
                 coupon:coupon,
+                admin:req.session.admin,
                 errorMessage : req.flash('errorMessage'),
                 successMessage : req.flash('successMessage')
             })
@@ -274,6 +277,7 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
             res.render('admin/addCoupon',{
                 title : "Admin Panel - TraditionShoppe",
                 page:"New Coupon",
+                admin:req.session.admin,
                 //coupon:coupon,
                 errorMessage : req.flash('errorMessage'),
                 successMessage : req.flash('successMessage')
@@ -331,6 +335,7 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
                 title : "Admin Panel - TraditionShoppe",
                 page:"Change Coupon",
                 coupon:coupon,
+                admin:req.session.admin,
                 errorMessage : req.flash('errorMessage'),
                 successMessage : req.flash('successMessage')
             })
@@ -428,6 +433,7 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
                 title : "Offer Management - TraditionShoppe",
                 page:"Offer",
                 offer:offer,
+                admin:req.session.admin,
                 errorMessage : req.flash('errorMessage'),
                 successMessage : req.flash('successMessage')
             })
@@ -443,7 +449,7 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
                 res.render('admin/addOffer',{
                 title : "Offer Management - TraditionShoppe",
                 page:"New Offer",
-                //coupon:coupon,
+                admin:req.session.admin,
                 errorMessage : req.flash('errorMessage'),
                 successMessage : req.flash('successMessage')
             })
@@ -524,7 +530,8 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
             res.render('admin/changeOffer',{
                 title : "Offer Management - TraditionShoppe",
                 page:"Change Offer",
-                offer,offer,
+                offer,
+                admin:req.session.admin,
                 errorMessage : req.flash('errorMessage'),
                 successMessage : req.flash('successMessage')
             })
@@ -664,7 +671,7 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
             if(fromdate && todate){
                 matchCondition={
                 $and: [
-                    { orderstatus: 'delivered' },
+                    { "product_list.orderstatus": 'delivered' },
                     { order_date: { $gte: new Date(fromdate), $lte: new Date(todate) } }
                 ] }           
             } else if(filter){
@@ -673,7 +680,7 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
                     
                     matchCondition={
                         $and: [
-                            { orderstatus: 'delivered' },
+                            {  "product_list.orderstatus": "delivered"  },
                             { order_date: currentDate }
                         ] }    
                 } else if(filter === 'yesterday'){
@@ -685,7 +692,7 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
                     console.log("yesterday",yesterday)
                     matchCondition = {
                         $and: [
-                            { orderstatus: 'delivered' },
+                            { "product_list.orderstatus": "delivered" },
                             { order_date: { $gte: yesterday, $lt: currentDate } } // Using $lt to exclude today's orders
                         ]
                     };
@@ -703,7 +710,7 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
                     console.log("lastWeek",lastWeekStartDate,lastWeekEndDate,)
                     matchCondition = {
                         $and: [
-                            { orderstatus: 'delivered' },
+                            { "product_list.orderstatus": "delivered" },
                             { order_date: { $gte: lastWeekStartDate, $lte: lastWeekEndDate } }
                         ]
                     };
@@ -716,7 +723,7 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
                     console.log("lastMonth",lastMonthStartDate ,lastMonthEndDate,)
                     matchCondition = {
                         $and: [
-                            { orderstatus: 'delivered' },
+                            {  "product_list.orderstatus": "delivered"  },
                             { order_date: { $gte: lastMonthStartDate, $lte: lastMonthEndDate } }
                         ]
                     };
@@ -724,8 +731,9 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
                 }
 
             } else {
-                matchCondition={orderstatus: 'delivered'};
+                matchCondition={ "product_list.orderstatus": "delivered" };
             }
+            console.log("matchCondition:",matchCondition)
             const orders = await getOrders(req,res,matchCondition)
             delete req.session.fromdate  
             delete req.session.todate  
@@ -735,7 +743,8 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
             res.render('admin/salesReport',{
                 title : "Sales Report - TraditionShoppe",
                 page:"Sales Report",
-                orders:orders,                
+                orders:orders,  
+                admin:req.session.admin,              
                 errorMessage : req.flash('errorMessage'),
                 successMessage : req.flash('successMessage')
             })
@@ -751,34 +760,58 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
                     $match: matchCondition
                 },
                 {
-                    $lookup: {
-                        from: "users", // Assuming 'addresses' is the name of your Address collection
-                        localField: "user", // Field in the 'orders' collection
-                        foreignField: "_id", // Field in the 'addresses' collection
-                        as: "userDetails"
-                    }
-                },
-                {
-                    $unwind: {
-                        path: "$userDetails",
-                        preserveNullAndEmptyArrays: true
-                    }
-                },
-                {
-                    $lookup: {
-                        from: "products", // Assuming 'addresses' is the name of your Address collection
-                        localField: "product_list.productId", // Field in the 'orders' collection
-                        foreignField: "_id", // Field in the 'addresses' collection
-                        as: "productDetails"
-                    }
-                },
-                {
-                    $unwind: {
-                        path: "$productDetails",
-                        preserveNullAndEmptyArrays: true
-                    }
+                    $unwind: "$product_list"   
+            },
+            {
+                $lookup:{
+                    from:'products',
+                    localField:'product_list.productId',
+                    foreignField:'_id',
+                    as:'productDetails'
+                    
                 }
-            ])
+            },
+            {
+                $unwind: {
+                    path: "$productDetails",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+           
+            {
+                $lookup:{
+                    from:'users',
+                    localField:'user',
+                    foreignField:'_id',
+                    as:'userDetails'
+                    
+                }
+            },
+            {
+                $unwind: {
+                    path: "$userDetails",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $lookup:{
+                    from:'addresses',
+                    localField:'address',
+                    foreignField:'_id',
+                    as:'addressDetails'
+                    
+                }
+            },
+            {
+                $unwind: {
+                    path: "$addressDetails",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $sort : { 'created' : -1 }
+            }
+            ])  
             return orders
     
         } catch(err){
@@ -816,6 +849,18 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
     //     }
     // }
 
+    const logout = async(req,res)=>{
+        try{
+            req.flash("successMessage", "You have been logged out.");
+            // Clear the user session
+            req.session.destroy();         
+            // Redirect to the login page
+            res.redirect("/admin/login");
+        } catch (error){
+            console.log(error.message);
+        }
+    }
+    
 
 
 
@@ -856,6 +901,6 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
         loadSalesReport,
         getOrders,
         // loadSettings,
-        // logOut
+        logout
         
     }

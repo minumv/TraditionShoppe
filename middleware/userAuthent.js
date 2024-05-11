@@ -6,7 +6,7 @@ const isAuthenticated = async (req, res, next)=>{
         next();
       } else {
         // User is not logged in, redirect to the login page with an error message
-        req.flash("errorMessage", "Please log in !!.");
+        req.flash("errorMessage", "You are not authenticated to access this site!!");
        // console.log("is authenticated?")
        res.redirect("/signin/userLogin")
         // res.redirect("/index");
@@ -37,11 +37,32 @@ const isAuthenticated = async (req, res, next)=>{
     
   }
 
-  const isAdminLogged = async(req,res)=>{
+
+  const isAdminAuthenticated = async (req, res, next)=>{
     try {
-      if (req.session && req.session.user && req.session.role) {
+      if (req.session.admin) {
+        // User is logged in, proceed to the next middleware
+        next();
+      } else {
+        // User is not logged in, redirect to the login page with an error message
+        req.flash("errorMessage", "You are not authenticated to access this site!!");
+       // console.log("is authenticated?")
+       res.redirect("/admin/login")
+        // res.redirect("/index");
+        
+      }
+   
+     
+    } catch (error) {
+      console.log(error.message);
+    }
+      
+  }
+  const isAdminLoggedOut = async(req,res)=>{
+    try {
+      if (req.session.admin) {
         // User is logged in, redirect to the login page
-        res.redirect("/dashboard");
+        res.redirect("/admin/login");
       } else {
         // User is not logged in, redirect to the login page with an error message
         next();
@@ -57,6 +78,7 @@ const isAuthenticated = async (req, res, next)=>{
     module.exports = {
       isAuthenticated,
       isLoggedOut,
-      isAdminLogged,
+      isAdminAuthenticated,
+      isAdminLoggedOut,
      }
 

@@ -102,6 +102,7 @@ userRoute.get("/oldorders",userAuthent.isAuthenticated,userController.loadOlder)
 /**************review*******************/
 // userRoute.get("/getReview",userAuthent.isAuthenticated,userController.loadReview)
 // userRoute.post("/addReview",userAuthent.isAuthenticated,userController.storeReview)
+userRoute.get("/getusercoupon",userAuthent.isAuthenticated,userController.loadcoupon)
 
 /**************address*******************/
 userRoute.get("/getAddress",userAuthent.isAuthenticated,userController.loadAddress)

@@ -7,7 +7,7 @@ const Otp = require('../model/userOTP')
 const Products = require('../model/product')
 const Category = require('../model/category')
 const Seller = require('../model/seller')
-const Discount = require('../model/discount')
+const Coupon = require('../model/coupon')
 const Cart = require('../model/cart')
 const List = require('../model/wishlist')
 const Order = require('../model/order')
@@ -66,22 +66,26 @@ const verifyLogin = async(req,res)=>{
     try{
         const {email,password} = req.body
         const userData =await User.findOne({email:email})
-        if(userData){
-            const passwordMatch = await bcrypt.compare(password,userData.password)
-            if(passwordMatch){
+        if(userData.status === 'Blocked'){
+            req.flash("errorMessage","You are blocked by the admin!!!")
+            res.redirect('/signin/userLogin')
+        }
+        if(!userData){
+            req.flash("errorMessage","You are not authenticated to access this site!!")
+            res.redirect('/signin/userLogin')
+        }
+        const passwordMatch = await bcrypt.compare(password,userData.password)
+        if(passwordMatch){
                 req.session.user = userData._id ;
                 req.session.blocked = false
                 req.flash("successMessage","You are successfully logged in.")
                 res.redirect('/home')
-            } else {
+        } else {
                 req.flash("errorMessage","Invalid Username and Password!!")
                 res.redirect('/signin/userLogin')
-            }
-
-        } else {
-            req.flash("errorMessage","Invalid Username and Password!!")
-            res.redirect('/signin/userLogin')
         }
+
+      
     }
     catch(err){
         console.log(err.message);
@@ -592,6 +596,7 @@ const loadProfile = async (req,res)=>{
         res.render('profile/userProfile',{
             title:"My account | TraditionShoppe",
             user : req.session.user,
+            blocked:req.session.blocked,
             qtyCount:req.session.qtyCount,
             listCount:req.session.listCount,
             page:'Your Profile',
@@ -615,6 +620,7 @@ const loadeditProfile = async(req,res)=>{
         res.render('profile/userProfileEdit',{
             title:"My account | TraditionShoppe",
             user : req.session.user,
+            blocked:req.session.blocked,
             qtyCount:req.session.qtyCount,
             listCount:req.session.listCount,
             page:'Your Profile',
@@ -744,6 +750,7 @@ const loadOrder = async (req,res)=>{
         res.render('profile/userOrder',{
             title:"My Order | TraditionShoppe",
             user : req.session.user,
+            blocked:req.session.blocked,
             page:'Your Orders',
             qtyCount:req.session.qtyCount,
             listCount:req.session.listCount,
@@ -837,6 +844,7 @@ const loadOrderView = async (req,res)=>{
         res.render('profile/orderDetails',{
             title:"My Order Details | TraditionShoppe",
             user : req.session.user,
+            blocked:req.session.blocked,
             page:'Change Address',
             qtyCount:req.session.qtyCount,
             listCount:req.session.listCount,           
@@ -1151,6 +1159,7 @@ const loadAddress = async (req,res)=>{
         res.render('profile/userAddress',{
             title:"My Address | TraditionShoppe",
             user : req.session.user,
+            blocked:req.session.blocked,
             page:'Your Address',
             qtyCount:req.session.qtyCount,
             listCount:req.session.listCount,     
@@ -1174,6 +1183,7 @@ const loadnewAddress = async (req,res)=>{
         res.render('profile/newAddress',{
             title:"My Address | TraditionShoppe",
             user : req.session.user,
+            blocked:req.session.blocked,
             page:'aAd Address',
             users,
             qtyCount:req.session.qtyCount,
@@ -1246,6 +1256,7 @@ const loadeditAddress = async (req,res)=>{
         res.render('profile/editAddress',{
             title:"My Address | TraditionShoppe",
             user : req.session.user,
+            blocked:req.session.blocked,
             page:'Change Address',
             qtyCount:req.session.qtyCount,
             listCount:req.session.listCount,           
@@ -1354,6 +1365,64 @@ const setAddressDefault = async (req,res)=>{
     }
 }
 
+/********************coupon********************* */
+const loadcoupon = async (req,res)=>{
+    try{
+      
+        const pageNum = req.query.page || 1
+        const perPage = 8
+        const totalpdtCount = await Coupon.aggregate([
+            {
+                $match: { status:true }
+            },          
+            {
+                $group: {
+                    _id: "$_id", 
+                    count: { $sum: 1 }
+                }
+            }
+        ]);
+
+        const totalCount = totalpdtCount.length > 0 ? totalpdtCount[0].count : 0;
+        //const userid = new mongoose.Types.ObjectId(req.session.user)
+        const pages = Math.ceil( totalCount / perPage )
+        console.log("count",totalCount);
+        const users = await User.findOne({_id:req.session.user}).exec()
+        const coupon = await Coupon.aggregate([{
+            $match:{ status:true}
+        },
+        {
+            $skip: ( pageNum - 1 ) * perPage
+        },
+        {
+            $limit: perPage
+        }])
+        console.log("Coupon :",coupon)
+        await getQtyCount(req,res);
+        await getListCount(req,res);
+        
+        res.render('profile/coupon',{
+            title:"Coupon List | TraditionShoppe",
+            user : req.session.user,
+            blocked:req.session.blocked,
+            page:'Your Coupon',
+            qtyCount:req.session.qtyCount,
+            listCount:req.session.listCount,                       
+           coupon,
+            users,
+            pageNum,
+            perPage,
+            totalCount, 
+            pages,           
+            errorMessage:req.flash('errorMessage'),
+            successMessage:req.flash('successMessage')
+
+        })
+    }
+    catch(err){
+        console.log(err.message);
+    }
+}
 
 
 /**************handle my wallet******************/
@@ -1400,6 +1469,7 @@ const loadWallet = async (req,res)=>{
             res.render('profile/userWallet',{
             title:"My account | TraditionShoppe",
             user : req.session.user,
+            blocked:req.session.blocked,
             page:'Your Wallet',
             qtyCount:req.session.qtyCount,
             listCount:req.session.listCount,  
@@ -1475,6 +1545,7 @@ const loadList = async (req,res)=>{
         res.render('profile/userWishlist',{
             title:"My Wishlist | TraditionShoppe",
             user : req.session.user,
+            blocked:req.session.blocked,
             page:'Your Wishlist',
             qtyCount:req.session.qtyCount,
             listCount:req.session.listCount, 
@@ -1548,6 +1619,7 @@ module.exports = {
 
     loadOrder,
     loadOrderView,
+    loadcoupon,
 
     // loadReview,
     // storReview,

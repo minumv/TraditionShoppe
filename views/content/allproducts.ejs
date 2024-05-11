@@ -22,7 +22,7 @@
               <div class="float-md-left mb-4"><h2 class="text-black h5">Shop All</h2></div>
               <div class="d-flex">
                 <div class="dropdown mr-1 ml-md-auto">
-                  <button type="button" class="btn btn-secondary btn-sm " id="dropdownMenuOffset" onclick="updateURL(event,'?trend=new')"  aria-haspopup="true" aria-expanded="false">
+                  <button type="button" class="btn btn-secondary btn-sm " id="dropdownMenuOffset" onclick="updateURL(event,'/?trend=new')"  aria-haspopup="true" aria-expanded="false">
                     Latest
                   </button>
                  
@@ -36,10 +36,10 @@
 
                                       <!--most sold calculte from paymnt product list  -->
                     <div class="dropdown-divider"></div>
-                    <a class="dropdown-item" href="" onclick="updateURL(event,'?sort=lowtohigh')" >Price, low to high</a>
-                    <a class="dropdown-item" href="" onclick="updateURL(event,'?sort=hightolow')">Price, high to low</a>
-                    <a class="dropdown-item" href="" onclick="updateURL(event,'?sort=ascending')">aA-zZ</a>
-                    <a class="dropdown-item" href="" onclick="updateURL(event,'?sort=descending')">zZ-aA</a>
+                    <a class="dropdown-item" href="" onclick="updateURL(event,'/?sort=lowtohigh')" >Price, low to high</a>
+                    <a class="dropdown-item" href="" onclick="updateURL(event,'/?sort=hightolow')">Price, high to low</a>
+                    <a class="dropdown-item" href="" onclick="updateURL(event,'/?sort=ascending')">aA-zZ</a>
+                    <a class="dropdown-item" href="" onclick="updateURL(event,'/?sort=descending')">zZ-aA</a>
                   </div>
                 </div>
               </div>
@@ -93,10 +93,10 @@
                   <li><a href="#">&lt;</a></li>
                   <% for(let i = 1 ; i <= pages ; i++){%>
                     <% if( i== pageNum ) {%>
-                     <li class="active"><a href="" onclick="changeUrl(event,'?page=<%= i %>')"><span><%= i %></span></a></li>
+                     <li class="active"><a href="" onclick="changeUrl(event,'/?page=<%= i %>')"><span><%= i %></span></a></li>
                      <!-- <li class="active"><a href="/allproducts/?page=<%= i %>"><span><%= i %></span></a></li> -->
                     <% } else { %>
-                    <li><a href="" onclick="changeUrl(event,'?page=<%= i %>')"><span><%= i %></span></a></li>
+                    <li><a href="" onclick="changeUrl(event,'/?page=<%= i %>')"><span><%= i %></span></a></li>
                     <!-- <li><a href="/allproducts/?page=<%= i %>"><span><%= i %></span></a></li> -->
                     <% } %>
                   <% } %>
@@ -122,10 +122,10 @@
           <div class="border p-4 rounded mb-4">
             <h3 class="mb-3 h6 text-uppercase text-black d-block">Shop By Categories</h3>
             <ul class="list-unstyled mb-0">
-              <li class="mb-1"><a href="" onclick="updateURL(event,'?categ=toys')" class="d-flex"><span class="text-black">Toys</span> <span class="text-black ml-auto"></span></a></li>
-              <li class="mb-1"><a href="" onclick="updateURL(event,'?categ=eco')" class="d-flex"><span class="text-black">Eco-Friendly</span> <span class="text-black ml-auto"></span></a></li>
-              <li class="mb-1"><a href="" onclick="updateURL(event,'?categ=gift')" class="d-flex"><span class="text-black">Gifts</span> <span class="text-black ml-auto"></span></a></li>
-              <li class="mb-1"><a href="" onclick="updateURL(event,'?categ=west')" class="d-flex"><span class="text-black">Western Arts</span> <span class="text-black ml-auto"></span></a></li>
+              <li class="mb-1"><a href="" onclick="updateURL(event,'/?categ=toys')" class="d-flex"><span class="text-black">Toys</span> <span class="text-black ml-auto"></span></a></li>
+              <li class="mb-1"><a href="" onclick="updateURL(event,'/?categ=eco')" class="d-flex"><span class="text-black">Eco-Friendly</span> <span class="text-black ml-auto"></span></a></li>
+              <li class="mb-1"><a href="" onclick="updateURL(event,'/?categ=gift')" class="d-flex"><span class="text-black">Gifts</span> <span class="text-black ml-auto"></span></a></li>
+              <li class="mb-1"><a href="" onclick="updateURL(event,'/?categ=west')" class="d-flex"><span class="text-black">Western Arts</span> <span class="text-black ml-auto"></span></a></li>
             
              
 
@@ -137,10 +137,10 @@
             <div class="border p-4 rounded mb-4">
               <h3 class="mb-3 h6 text-uppercase text-black d-block">Price Ranges</h3>
               <ul class="list-unstyled mb-0">
-                <li class="mb-1"><a href="" onclick="updateURL(event,'?price=low')" class="d-flex"><span class="text-black">below 500</span> <span class="text-black ml-auto"></span></a></li>
-                <li class="mb-1"><a href="" onclick="updateURL(event,'?price=avrg')" class="d-flex"><span class="text-black">500 - 10,000</span> <span class="text-black ml-auto"></span></a></li>
-                <li class="mb-1"><a href="" onclick="updateURL(event,'?price=costly')" class="d-flex"><span class="text-black">10,000 - 50,000</span> <span class="text-black ml-auto"></span></a></li>
-                <li class="mb-1"><a href="" onclick="updateURL(event,'?price=high')" class="d-flex"><span class="text-black">above 50,000</span> <span class="text-black ml-auto"></span></a></li>
+                <li class="mb-1"><a href="" onclick="updateURL(event,'/?price=low')" class="d-flex"><span class="text-black">below 500</span> <span class="text-black ml-auto"></span></a></li>
+                <li class="mb-1"><a href="" onclick="updateURL(event,'/price=avrg')" class="d-flex"><span class="text-black">500 - 10,000</span> <span class="text-black ml-auto"></span></a></li>
+                <li class="mb-1"><a href="" onclick="updateURL(event,'/?price=costly')" class="d-flex"><span class="text-black">10,000 - 50,000</span> <span class="text-black ml-auto"></span></a></li>
+                <li class="mb-1"><a href="" onclick="updateURL(event,'/?price=high')" class="d-flex"><span class="text-black">above 50,000</span> <span class="text-black ml-auto"></span></a></li>
                       
   
               </ul>
@@ -162,11 +162,11 @@
   function updateURL(e,queryString) {
      e.preventDefault()
         var currentURL = window.location.href;
-        var baseURL = currentURL.split('?')[0];
+        var baseURL = currentURL.split('/?')[0];
         var currentParams = currentURL.split('?')[1];
-    var queryType = queryString.split('?')[1]
+    var queryType = queryString.split('/?')[1]
         if (!currentParams || currentURL.includes('?page') ) {
-            window.location.href = baseURL+ '/' + queryString;
+            window.location.href = baseURL+  queryString;
         } else if (currentParams.includes('&page'))  {
           queryString = queryString.startsWith('?') ? queryString.split('?')[1]: queryString;
             window.location.href = currentURL.split('&')[0] + '&' + queryString;
@@ -179,8 +179,8 @@
   function changeUrl(e,queryString){
     e.preventDefault()
     var currentURL = window.location.href;
-        var baseURL = currentURL.split('?')[0];
-        var currentParams = currentURL.split('?')[1];
+        var baseURL = currentURL.split('/?')[0];
+        var currentParams = currentURL.split('/?')[1];
 
         if (currentURL.endsWith('allproducts')) {
             window.location.href = currentURL + queryString;

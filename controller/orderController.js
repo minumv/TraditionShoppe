@@ -201,6 +201,7 @@ const loadCancelPage = async(req,res)=>{
             qtyCount:req.session.qtyCount,
             listCount:req.session.listCount,
             user:req.session.user,
+            blocked:req.session.blocked,
             errorMessage:req.flash('errorMessage'),
             successMessage:req.flash('successMessage')
         })
@@ -227,6 +228,7 @@ const loadReturnPage = async(req,res)=>{
             qtyCount:req.session.qtyCount,
             listCount:req.session.listCount,
             user:req.session.user,
+            blocked:req.session.blocked,
             errorMessage:req.flash('errorMessage'),
             successMessage:req.flash('successMessage')
         })
