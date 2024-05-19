@@ -73,18 +73,250 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
     //load home page
     const loadAdminHome = async (req,res)=>{
         try{
-            const userQuery =  User.find({role:'user',status:{$ne:'deleted'}})
-            await userQuery.exec()
-            .then(users=>{
+            const totalActiveProducts = await Product.aggregate([
+                {
+                  $group: {
+                    _id: null,
+                    totalProducts: {
+                        $sum: {
+                          $cond: [
+                            {
+                              $and: [
+                                { $ne: ["$status", 'inactive'] },
+                                { $eq: ["$isListing", true] },
+                              ],
+                            },
+                            1,
+                            0,
+                          ],
+                        },
+                      }, 
+                  },
+                },
+              ]);
+            
+              //total users
+              const totalActiveUsers = await User.aggregate([
+                {
+                  $group: {
+                    _id: null,
+                    activeUsers: {
+                      $sum: {
+                        $cond: [
+                          {
+                            $and: [
+                              { $ne: ["$status", 'Blocked'] },
+                              { $ne: ["$role", 'admin'] },
+                            ],
+                          },
+                          1,
+                          0,
+                        ],
+                      },
+                    },                   
+                  },
+                },
+              ]);
+            
+              //total orders
+              const totalOrders = await Order.aggregate([
+                { $unwind: "$product_list" },
+                {
+                  $group: {
+                    _id: null,
+                    completedOrders: {
+                      $sum: {
+                        $cond: [
+                          {
+                            $and: [
+                              { $ne: ["$product_list.paymentstatus", "pending"] },
+                              { $ne: ["$product_list.paymentstatus", "cancelled"] },
+                            ],
+                          },
+                          1,
+                          0,
+                        ],
+                      },
+                    },                   
+                    income: {
+                      $sum: {
+                        $cond: [
+                          {
+                            $or: [
+                              { $eq: ["$product_list.paymentstatus", "completed"] },                              
+                              { $eq: ["$product_list.paymentstatus", "refund granted"] },                              
+                            ],
+                          },
+                          "$product_list.total",
+                          0,
+                        ],
+                      },
+                    },
+                  },
+                },
+              ]);
+            
+            //   console.log("total pdts:",totalActiveProducts)
+            //   console.log("total users:",totalActiveUsers)
+            //   console.log("total orders:",totalOrders)
+            //   console.log("income:",totalOrders[0].income)
+
+            const bestSellingProduct = await Order.aggregate([
+                {
+                  $match: {
+                   " product_list.paymentstatus": { $ne: "cancelled" },
+                  },
+                },
+                // Unwind the products array to get each product as a separate document
+                { $unwind: "$product_list" },
+            
+                // Group by product and sum the quantity
+                {
+                  $group: {
+                    _id: "$product_list.productId",
+                    totalQuantity: { $sum: "$product_list.quantity" },
+                  },
+                },
+            
+                // Sort by total quantity in descending order
+                { $sort: { totalQuantity: -1 } },
+            
+                // Limit to the top 3 products
+                { $limit: 10 },
+            
+                // Lookup to get the product details
+                {
+                  $lookup: {
+                    from: "products", // Replace with your actual product collection name
+                    localField: "_id",
+                    foreignField: "_id",
+                    as: "productDetails",
+                  },
+                },
+            
+                // Unwind the productDetails array
+                { $unwind: "$productDetails" },
+            
+                // Project to reshape the output
+                {
+                  $project: {
+                    _id: 0,
+                    productName: "$productDetails.product_name",
+                    productImage: "$productDetails.images", // Replace with the actual field name for image
+                    productPrice: "$productDetails.price_unit", // Replace with the actual field name for price
+                    totalQuantity: 1,
+                  },
+                },
+              ]);
+            
+              //top three best selling categories
+              const bestSellingBrands = await Order.aggregate([
+                {
+                  $match: {
+                    "product_list.paymentStatus": { $ne: "cancelled" },
+                  },
+                },
+                // Unwind the products array to get each product as a separate document
+                { $unwind: "$product_list" },
+            
+                // Lookup to get the product details including category
+                {
+                  $lookup: {
+                    from: "products", 
+                    localField: "product_list.productId",
+                    foreignField: "_id",
+                    as: "productDetails",
+                  },
+                },
+            
+                // Unwind the productDetails array
+                { $unwind: "$productDetails" },
+                {
+                    $lookup: {
+                        from: "sellers", 
+                        localField: "productDetails.seller",
+                        foreignField: "_id",
+                        as: "sellerDetails",
+                      },
+                },
+            
+                // Group by category and sum the quantity
+                {
+                  $group: {
+                    _id: "$sellerDetails.seller_name",
+                    totalQuantity: { $sum: "$product_list.quantity" },
+                  },
+                },
+            
+                // Sort by total quantity in descending order
+                { $sort: { totalQuantity: -1 } },
+            
+                // Limit to the top 3 categories
+                { $limit: 10 },
+              ]);
+              const bestSellingCategories = await Order.aggregate([
+                {
+                  $match: {
+                    "product_list.paymentStatus": { $ne: "cancelled" },
+                  },
+                },
+                // Unwind the products array to get each product as a separate document
+                { $unwind: "$product_list" },
+            
+                // Lookup to get the product details including category
+                {
+                  $lookup: {
+                    from: "products", 
+                    localField: "product_list.productId",
+                    foreignField: "_id",
+                    as: "productDetails",
+                  },
+                },
+            
+                // Unwind the productDetails array
+                { $unwind: "$productDetails" },
+                {
+                    $lookup: {
+                        from: "categories", 
+                        localField: "productDetails.category",
+                        foreignField: "_id",
+                        as: "categoryDetails",
+                      },
+                },
+            
+                // Group by category and sum the quantity
+                {
+                  $group: {
+                    _id: "$categoryDetails.category_name",
+                    totalQuantity: { $sum: "$product_list.quantity" },
+                  },
+                },
+            
+                // Sort by total quantity in descending order
+                { $sort: { totalQuantity: -1 } },
+            
+                // Limit to the top 3 categories
+                { $limit: 10 },
+              ]);
+              console.log('bestproducts :',bestSellingProduct)
+              console.log('bestcategories :',bestSellingCategories)
+              console.log('bestbrands :',bestSellingBrands)
+            
                 res.render('admin/dashboard',{
                     title:"Admin Panel | TraditionShoppe",
                     page:"Dashboard",
-                    users:users,
+                    totalActiveProducts,
+                    totalActiveUsers,
+                    totalOrders,
+                    bestSellingBrands,
+                    bestSellingCategories,
+                    bestSellingProduct,
+                    //users:users,
                     admin : req.session.admin,
                     errorMessage: req.flash("errorMessage"), 
                     successMessage: req.flash("successMessage") 
                 })
-            }) 
+            
             
         } catch (err){
             console.log(err.message);
@@ -100,7 +332,7 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
                 res.render('admin/customers',{
                     title:"Admin Panel | TraditionShoppe",
                     page:"Customers",
-                    users:users,
+                     users:users,
                     admin : req.session.admin,
                     errorMessage: req.flash("errorMessage"), 
                     successMessage: req.flash("successMessage") 
@@ -681,7 +913,7 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
                     matchCondition={
                         $and: [
                             {  "product_list.orderstatus": "delivered"  },
-                            { order_date: currentDate }
+                            {order_date: currentDate }
                         ] }    
                 } else if(filter === 'yesterday'){
                    
@@ -737,7 +969,7 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
             const orders = await getOrders(req,res,matchCondition)
             delete req.session.fromdate  
             delete req.session.todate  
-            console.log("order details :",orders)
+           // console.log("order details :",orders)
 
                 
             res.render('admin/salesReport',{

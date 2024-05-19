@@ -181,10 +181,154 @@ const mongoose = require('mongoose');
         }
     }
 
-    
-    
+    /************************chart details************************* */
+
+    //fetch pie chart details
+
+    const pieChart = async (req, res) => {
+        const categoryWiseSale = await Order.aggregate([
+          {
+            $match: {
+                "product_list.orderstatus": { $ne: "cancelled" },
+            },
+          },
+          {
+            $unwind: "$product_list",
+          },
+          {
+            $lookup: {
+              from: "products", // the foreign collection name
+              localField: "product_list.productId", //the foreign collection id in our local collection
+              foreignField: "_id", //foreign collection id
+              as: "productInfo", //new field added
+            },
+          },
+          {
+            $unwind: "$productInfo",
+          },
+          {
+            $lookup: {
+              from: "categories", // the foreign collection name
+              localField: "productInfo.category", //the foreign collection id in our local collection
+              foreignField: "_id", //foreign collection id
+              as: "categoryInfo", //new field added
+            },
+          },
+          {
+            $group: {
+              _id: "$categoryInfo.category_name",
+              purchaseCount: { $sum: "$product_list.quantity" },
+            },
+          },
+        ]);
+
+        console.log("category : ",categoryWiseSale)
+      
+        res.json({ categoryWiseSale });
+      };
+      
+      // fetch barChart details
 
 
+      const barChart = async (req, res) => {
+        const { timeFrame } = req.query;
+      
+        try {
+          let aggregationPipeline = [];
+      
+          // Match based on payment status
+          aggregationPipeline.push({
+            $match: {
+              $or: [{ "product_list.orderstatus": "pending" }, { "product_list.orderstatus": "delivered" }],
+            },
+          });
+      
+          // Group by different time frames
+          switch (timeFrame) {
+            case "daily":
+              aggregationPipeline.push({
+                $group: {
+                  _id: { $dateToString: { format: "%Y-%m-%d", date: "$order_date" } },
+                  totalOrders: { $sum: 1 },
+                },
+              });
+              break;
+      
+            case "weekly":
+              aggregationPipeline.push({
+                $group: {
+                  _id: { $dateToString: { format: "%Y-%U", date: "$order_date" } },
+                  totalOrders: { $sum: 1 },
+                },
+              });
+              break;
+      
+            case "monthly":
+              aggregationPipeline.push({
+                $group: {
+                  _id: { $dateToString: { format: "%Y-%m", date: "$order_date" } },
+                  totalOrders: { $sum: 1 },
+                },
+              });
+              break;
+      
+            case "yearly":
+              aggregationPipeline.push({
+                $group: {
+                  _id: { $dateToString: { format: "%Y", date: "$order_date" } },
+                  totalOrders: { $sum: 1 },
+                },
+              });
+              break;
+      
+            default:
+              res.status(400).json({ error: "Invalid time frame" });
+              return;
+          }
+      
+          // Project and sort
+          aggregationPipeline.push(
+            {
+              $project: {
+                _id: 0,
+                timeFrame: "$_id",
+                totalOrders: 1,
+              },
+            },
+            {
+              $sort: { timeFrame: 1 },
+            }
+          );
+          
+          console.log("Aggregation Pipeline:", aggregationPipeline);
+          const result = await Order.aggregate(aggregationPipeline);
+          console.log("result :",result)
+      
+          const salesData = {
+            labels: result.map((entry) => entry.timeFrame),
+            datasets: [
+              {
+                label: `${
+                  timeFrame.charAt(0).toUpperCase() + timeFrame.slice(1)
+                } Sales`,
+                backgroundColor: "rgba(75,192,192,0.2)",
+                borderColor: "rgba(75,192,192,1)",
+                borderWidth: 1,
+                data: result.map((entry) => entry.totalOrders),
+              },
+            ],
+          };
+      
+          res.json(salesData);
+        } catch (error) {
+          console.error("Error fetching data:", error);
+          res.status(500).json({ error: "Internal Server Error" });
+        }
+      };
+      
+    
+
+/**********************************************************************/
 
         /*   load cancel page */
 const loadCancelPage = async(req,res)=>{
@@ -603,6 +747,9 @@ const OrderReturned = async (req,res)=>{
     module.exports = {
         loadOrder,
         viewOrderMore,
+
+        pieChart,
+        barChart,
 
         OrderApproved,
 

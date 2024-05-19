@@ -113,3 +113,52 @@ margin-left: 4px;
     justify-content: center;
     align-items: center;
 }
+
+/*************validations*********************/
+
+ .input-group {
+    /* display  : flex;
+    flex-direction: column; */
+  position:relative;
+  width : 100%;
+  background-color: aqua;
+  margin-bottom: 25px;
+} 
+
+.input-group input{
+   /* border : none; */
+    /* border-radius : 4px; */
+    /* display : block; */
+   /*  border-bottom: 1px solid #ccc; */
+    font-size:15px;
+    padding : 10px;
+    
+   
+} 
+
+.input-group input:focus{
+    border-color: 1px solid #4F0341;
+}
+
+.input-group.success input{
+    border-color:1px solid #09c372;
+   
+}
+
+.input-group.error input{
+    border-color:1px solid #ff3860;
+  
+   
+}
+.error{
+    position:absolute;
+    right:8px;
+    top:10px;
+   color:#ed1557;
+   font-size: 13px;
+   font-weight: bold;
+}
+
+.error i {
+    color:seagreen;
+}

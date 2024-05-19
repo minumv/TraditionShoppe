@@ -24,6 +24,10 @@ orderRoute.post("/orderPending/:odrid/:pdtid/:userid",orderController.OrderAppro
 orderRoute.post("/cancelapprove/:odrid/:pdtid",orderController.OrderCancelled)
 orderRoute.post("/returnapprove/:odrid/:pdtid",orderController.OrderReturned)
 
+//chart handling
+orderRoute.get("/categorySale",orderController.pieChart)
+orderRoute.get("/barChart",orderController.barChart)
+
 
 
 /*****************user side order*********************/

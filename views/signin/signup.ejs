@@ -3,7 +3,7 @@
 <body>
 <div class="container">
 	<div class="d-flex justify-content-center h-100">
-		<div class="card" style="height: 570px;top:10%;">
+		<div class="card" style="height: 570px;width:450px; top:10%;">
 			<div class="card-header">
 				<h3 style="color:#4F0341">Sign Up</h3>				
 				<div class="d-flex justify-content-end social_icon">
@@ -15,46 +15,54 @@
 			<div class="card-body">
 				
 					<div class="input-group form-group">
-						<div class="input-group-prepend">
-							<span class="input-group-text"><i class="fas fa-user"></i></span>
-						</div>
-						<input type="text" name="name" class="form-control" placeholder="name" required pattern="^[a-zA-Z]+[\-'\s]?[a-zA-Z ]+$">
 						
+							<div class="input-group-prepend">
+								<span class="input-group-text"><i class="fas fa-user"></i></span>
+							</div>
+							<input type="text" id="name" name="name" class="form-control" placeholder="name" onkeyup="validateName()">
+						
+						<span id="name-error" class="error"></span>
 					</div>
+					
 					<div class="input-group form-group">
 						<div class="input-group-prepend">
 							<span class="input-group-text"><i class="fas fa-envelope"></i></span>
 						</div>
-						<input type="email" name="email" class="form-control" placeholder="email"  required > 
+						<input type="text" id="email" name="email" class="form-control" placeholder="email" onkeyup="validateEmail()"> 
+						<span id="email-error" class="error"></span>
 					</div>
                     <div class="input-group form-group">
 						<div class="input-group-prepend">
 							<span class="input-group-text"><i class="fas fa-mobile"></i></span>
 						</div>
-						<input type="text" name="phone" class="form-control" placeholder="mobile" required >
+						<input type="text" id="phone" name="phone" class="form-control" placeholder="mobile" onkeyup="validateMobile()">
+						<span id="phone-error" class="error"></span>
 					</div>
                     <div class="input-group form-group">
 						<div class="input-group-prepend">
 							<span class="input-group-text"><i class="fas fa-key"></i></span>
 						</div>
-						<input type="password" name="password" class="form-control" placeholder="password" required>
+						<input type="password" id="password" name="password" class="form-control" placeholder="password" onkeyup="validatePassword()">
+						<span id="password-error" class="error"></span>
 					</div>
                     <div class="input-group form-group">
 						<div class="input-group-prepend">
 							<span class="input-group-text"><i class="fas fa-key"></i></span>
 						</div>
-						<input type="password" name ="confirmpassword" class="form-control" placeholder="confirm password" required>
+						<input type="password" id="password2" name ="confirmpassword" class="form-control" placeholder="confirm password" onkeyup="validateConfirm()">
+						<span id="confirm-error" class="error"></span>
 					</div>
 					<div class="input-group form-group">
 						<div class="input-group-prepend">
 							<span class="input-group-text"><i class="fas fa-code"></i></span>
 						</div>
 						<%if(referalCode){%>
-							<input type="text" name="refferal" class="form-control" placeholder="Referral Code " value=<%=referalCode%> required >
+							<input type="text" id="refferal" name="refferal" class="form-control" placeholder="Referral Code " value="<%=referalCode %>" onkeyup="validateRefferal()">
 						<%} else {%>
-							<input type="text" name="refferal" class="form-control" placeholder="Referral Code " required >
+							<input type="text" id="refferal" name="refferal" class="form-control" placeholder="Referral Code " onkeyup="validateRefferal()">
 						<%}%>
 						<span style="font-size:13px;">*Add refferal code here if any, otherwise type 'No'</span>
+						<span id="refferal-error" class="error"></span>
 					</div>
 					<!-- <div class="row align-items-center remember">
 						<input type="checkbox">Remember Me
@@ -86,6 +94,9 @@
 </div>
 <script>
 	function customerSignup (){
+
+	//	validateAllFields()
+
 		const name = document.querySelector('input[name="name"]').value
 		const email = document.querySelector('input[name="email"]').value
 		const phone = document.querySelector('input[name="phone"]').value
@@ -115,5 +126,140 @@
 			}
 		})
 	}
+
+	
+	const nameError = document.getElementById('name-error')
+	const phoneError = document.getElementById('phone-error')
+	const emailError = document.getElementById('email-error')
+	const passwordError = document.getElementById('password-error')
+	const confirmError = document.getElementById('confirm-error')
+	const refferalError = document.getElementById('refferal-error')
+
+	function validateAllFields(){
+		// if(name === '' || email === ''){
+		// 	alert('fill the fields')
+		// }
+		// if(){
+		// 	emailError.innerHTML = 'Email is required'
+		// 	return false
+		// }
+		// if(phone === ''){
+		// 	phoneError.innerHTML = 'Phone no is required'
+		// 	return false
+		// }
+		// if( password === ''){
+		// 	passwordError.innerHTML = 'Password required'
+		// 	return false
+		// }
+		// if( password2 === ''){
+		// 	confirmError.innerHTML = 'Confirm password required'
+		// 	return false
+		// }
+		// if(refferal === '' ){
+		// 	refferalError.innerHTML = 'Refferal required'
+		// 	return false
+		// }
+		// return true
+	}
+
+	function validateName(){
+		const name = document.getElementById('name').value
+	
+		if(name.length === 0){
+			nameError.innerHTML = 'Name is required'
+			return false
+		}
+		if(!name.match(/^[a-zA-Z][a-zA-Z\s]*$/)){
+			nameError.innerHTML = 'Name should be valid'
+			return false
+		}
+		nameError.innerHTML = '<i class = "fas fa-check-circle"></i>'
+		return true
+	}
+
+	function validateEmail(){	
+		const email = document.getElementById('email').value
+	
+
+		if(email.length === 0){
+			emailError.innerHTML = 'Email is required'
+			return false
+		}
+		if(!email.match(/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/)){
+			emailError.innerHTML = 'Email should be valid'
+			return false
+		}
+		emailError.innerHTML = '<i class = "fas fa-check-circle"></i>'
+		return true
+	}
+
+	function validateMobile(){	
+		const phone = document.getElementById('phone').value
+
+	
+
+		if(phone.length === 0){
+			phoneError.innerHTML = 'Phone no is required'
+			return false
+		}
+		if(phone.length !== 10){
+			phoneError.innerHTML = 'Phone no should be 10 digits'
+			return false
+		}
+		if(!phone.match(/^[0-9]{10}$/)){
+			phoneError.innerHTML = 'Only digits'
+			return false
+		}
+		phoneError.innerHTML = '<i class = "fas fa-check-circle"></i>'
+		return true
+	}
+
+	function validatePassword(){
+
+		const password = document.getElementById('password').value
+	
+		if( password.length === 0){
+			passwordError.innerHTML = 'Password required'
+			return false
+		}
+		if(password.length < 6){
+			passwordError.innerHTML = 'Must have atleast 6 characters'
+			return false
+		}
+		passwordError.innerHTML = '<i class = "fas fa-check-circle"></i>'
+		return true
+
+	}
+
+	function validateConfirm(){
+		const password2 = document.getElementById('password2').value
+		const password = document.getElementById('password').value
+
+		
+		if( password2.length === 0){
+			confirmError.innerHTML = 'Confirm password required'
+			return false
+		}
+		if( password2 !== password){
+			confirmError.innerHTML = 'Password should match'
+			return false
+		}
+		confirmError.innerHTML = '<i class = "fas fa-check-circle"></i>'
+		return true
+	}
+
+	function validateRefferal(){
+	const refferal = document.getElementById('refferal').value
+
+
+		if(refferal.length === 0 ){
+			refferalError.innerHTML = 'Refferal required'
+			return false
+		}
+		refferalError.innerHTML = '<i class = "fas fa-check-circle"></i>'
+		return true
+	}
+
+
 </script>
 <%- include('../layout/authfooter') %>
