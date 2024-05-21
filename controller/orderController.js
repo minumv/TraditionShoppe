@@ -3,7 +3,7 @@ const moment = require('moment');
 const User = require('../model/user')
 const Product = require('../model/product')
 const Category = require('../model/category')
-const Seller = require('../model/seller')
+const Wallet = require('../model/wallet')
 const Discount = require('../model/discount')
 const Cart = require('../model/cart')
 const Order = require('../model/order')
@@ -661,6 +661,12 @@ const OrderReturned = async (req,res)=>{
                     }}
                 )
             }
+            const walletsave = new Wallet({
+                user:orders.user._id,
+                order:odrid,
+                transactiontype:'credited',
+                amount:total,
+            }).save()
 
             if(orderStat && products){
                 req.flash("successMessage", "Process completed..");
@@ -727,6 +733,12 @@ const OrderReturned = async (req,res)=>{
                         )
                         console.log('added to empty wallet')
                     }
+                    const walletsave = new Wallet({
+                        user:orders.user._id,
+                        order:odrid,
+                        transactiontype:'credited',
+                        amount:total,
+                    }).save()
                 }
             
                 if(orderStat){

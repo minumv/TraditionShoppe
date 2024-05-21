@@ -6,43 +6,46 @@
         <p class="wallet-head">My Balance :&nbsp;&nbsp;<span>₹&nbsp;<%= users.wallet%></span></p>
     </div>
    
-    <% if(!orders || orders.length === 0) {%>
+    <% if(!wallet || wallet.length === 0) {%>
         <div class="d-flex justify-content-center align-items-center">
            <div class="d-block"> 
                 <div>
                     <img width="450" height="300" src="/userasset/images/wallet-empty.png" />
                 </div>
-                <div class="d-flex justify-content-center align-items-center">
+                <!-- <div class="d-flex justify-content-center align-items-center">
                     <a href="/allproducts" class="use-but ord-but text-center text-white" style="background-color:#4F0341 ;">Go to Shopping</a>
-                </div>
+                </div> -->
             </div>
         </div>
 
-    <%} else if(orders){%>       
+    <%} else if(wallet){%>       
     
-            <%orders.forEach((odr)=>{%>   
+            <%wallet.forEach((wlt)=>{%>   
             <div class="row ord-box">
                 
-                    <div class="wallet-align">
-                    <div><img src="../upload/<%=odr.productDetails.images[0]%>" class="pdt-img rounded border" ></div>
+                    <div class="wallet-align wal-name" style="width:400px;">
+                   
+                        <%if(wlt.order){%>
+                            <p class="text-uppercase mb-0">ORDR_<%=wlt.order%></p>
+                        <%} else {%>
+                            <p class="text-uppercase mb-0">REFERAL_CODE_USED</p>
+                        <%}%>
+                   
                     </div>&nbsp;&nbsp;
 
-                    <div class="wallet-align  wal-name" style="width:400px;">
-                        <p class="text-uppercase mb-0"><%=odr.productDetails.product_name%></p>
+                    <div class="wallet-align  wal-name" style="width:150px;">
+                        <p class="text-uppercase mb-0">₹<%=wlt.amount%></p>
                     </div>&nbsp;&nbsp;
                     <div class="wallet-align wal-name" style="width:200px;">
-                        <p class="text-dark text-uppercase mb-0">₹<%= odr.payment_amount%></p>
+                        <p class="text-dark text-uppercase mb-0"><%= wlt.transactiontype%></p>
                     </div>
 
-                <%let dateString =  odr.order_date %>
-                <%let date = new Date(dateString)%>
-
-                <%let options = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }%>
-                <%let formattedDate = date.toLocaleDateString('en-US', options)%>
+                <%let formattedDate = new Date(wlt.created).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })%>
                     
                     <div class="wallet-align wal-name">              
                         <p class="text-dark text-uppercase mb-0"><%= formattedDate%></p>
                     </div>
+                   
                 
             </div>    
            <%})%>    

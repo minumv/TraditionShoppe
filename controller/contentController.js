@@ -10,6 +10,7 @@ const List = require('../model/wishlist')
 const Address = require('../model/address')
 const Order = require('../model/order');
 const Coupon = require('../model/coupon')
+const Wallet = require('../model/wallet')
 const Offer = require('../model/offer')
 const bcrypt = require('bcrypt')
 const mongoose = require('mongoose');
@@ -1825,6 +1826,9 @@ const loadCheckout = async(req,res)=>{
         
        
         const userid = req.session.user
+        const coupondisc = req.query.coupondisc
+        console.log("checkout query:",req.query)
+        console.log("coupondis :",coupondisc)
         
         const cartDet = await Cart.find({_id:req.params.cartid}).exec()
         const userAddress = await Address.find({user_id:userid}).exec()
@@ -1834,8 +1838,8 @@ const loadCheckout = async(req,res)=>{
         await getListCount(req,res)
 
         let coupondiscount = 0
-        if(req.session.coupondisc){
-            coupondiscount = req.session.coupondiscount
+        if(coupondisc){
+            coupondiscount = coupondisc
         }
 
         res.render('content/checkout',{
@@ -2059,7 +2063,7 @@ const couponApply = async (req,res)=>{
 
                 console.log("coupon applied first time successfully..");
                 req.flash("successMessage", "Coupon applied successfully...");
-                res.status(200).send({ success: true, discountedTotal });                
+                res.status(200).send({ success: true,discountedTotal,couponDiscount});                
             }
 
         } else if ( couponApplied ){
@@ -2083,11 +2087,12 @@ const couponApply = async (req,res)=>{
                     console.log("coupon added to collection");
                 }   
                 
-                req.session.couponDiscountTotal = discountedTotal    
+                req.session.couponDiscountTotal = discountedTotal 
+                req.session.coupondiscount = couponDiscount   
                 console.log("coupon applied amount : " + discountedTotal);      
                 console.log("coupon applied successfull..");
                 req.flash("successMessage", "Coupon applied successfully...");
-                res.status(200).send({ success: true, discountedTotal });                
+                res.status(200).send({ success: true, discountedTotal,couponDiscount });                
             }
     
         } 
@@ -2132,11 +2137,11 @@ const makeCODPayment = async(req,res)=>{
 
         const user = await User.findOne({_id:userid}).exec()
         let paymntamnt = total
-        console.log('total',paymntamnt)
+        console.log('total before coupon:',paymntamnt)
         if(req.session.couponDiscountTotal){
             paymntamnt = req.session.couponDiscountTotal 
         }
-        console.log('total',paymntamnt)
+        console.log('total after coupon:',paymntamnt)
 
         console.log("userwallet :",user.wallet," paymethod :",paymentMethod)
     
@@ -2154,12 +2159,12 @@ const makeCODPayment = async(req,res)=>{
 
         const currentDate = moment().format('ddd MMM DD YYYY');
         const deliveryDate = moment().add(7,'days').format('ddd MMM DD YYYY') //expected
-            
+        console.log("dates:",new Date(currentDate),new Date(deliveryDate)) 
         const newList = cartDet.product_list.map(pdt => {
             return { ...pdt,  
                 orderstatus:'pending',
                 paymentstatus:"pending",
-                delivery_date:deliveryDate,
+                delivery_date:new Date(deliveryDate),
             }; // Add the status field to each item
         });
         
@@ -2168,7 +2173,7 @@ const makeCODPayment = async(req,res)=>{
         req.session.cartid = cartid
 
          const order = new Order({
-            order_date : currentDate,
+            order_date : new Date(currentDate),
             user: userid,
             address:address,
             payment : paymentMethod,
@@ -2194,7 +2199,12 @@ const makeCODPayment = async(req,res)=>{
             const newWallet = user.wallet - total
             await User.updateOne(
                 {_id:userid},{$set:{wallet:newWallet}}).exec()
-            
+            const walletsave = new Wallet({
+                user:userid,
+                order:orderData._id,
+                transactiontype:'debited',
+                amount:total,
+            }).save()
             await Cart.updateOne(
                 { _id:cartid },{$set:{status:"pending"}}).exec()
 
@@ -2251,8 +2261,34 @@ const makeCODPayment = async(req,res)=>{
 
 const loadPaymentSuccess = async(req,res)=>{
     try{
-            const {orderData} = req.session.orderData
-            console.log("success :",orderData);
+            console.log("session :",req.session.orderData)    
+            const orderData = req.session.orderData
+            console.log("orderdata :",orderData)
+            const order = await Order.aggregate([
+                {
+                    $match: { _id:orderData._id }
+                }, 
+                {
+                    $unwind: "$product_list"   
+                },         
+               
+                {
+                    $lookup: {
+                        from: "products", // Assuming 'addresses' is the name of your Address collection
+                        localField: "product_list.productId", // Field in the 'orders' collection
+                        foreignField: "_id", // Field in the 'addresses' collection
+                        as: "productDetails"
+                    }
+                },
+                {
+                    $unwind: {
+                        path: "$productDetails",
+                        preserveNullAndEmptyArrays: true
+                    }
+                },
+            ])
+               
+           console.log("orders :",order);
             await getQtyCount(req,res);
 
             res.render('content/PaymentSuccess',{
@@ -2260,7 +2296,7 @@ const loadPaymentSuccess = async(req,res)=>{
             user : req.session.user,
             qtyCount:req.session.qtyCount,
             listCount:req.session.listCount, 
-            orderData:orderData,                
+            order,                
             errorMessage : req.flash('errorMessage'),
             successMesssage : req.flash('successMessage')
         })
@@ -2315,15 +2351,164 @@ const verifyPayment = async (req, res) => {
  const verifyFailedPayment = async (req,res)=>{
     try{
         console.log("order :", req.session.orderid,"cartid :", req.session.cartid)
-        const cancelOrder = await Order.deleteOne({_id:req.session.orderid}).exec()
-         if(cancelOrder){
+        // const failedOrder = await Order.updateOne({_id:req.session.orderid},{$set:{
+        //     "product_list.$[].paymentstatus":"pending"
+        // }}).exec()
+        //  if(failedOrder){
+            await Cart.updateOne({_id:req.session.cartid},
+                { $set: {
+                    status:"pending"
+                    } }
+            ).exec()
             req.flash("errorMessage", "Payment failed.. Try again!!");
-            res.json({success : true})
-         }
+            res.json({
+                success: true,
+                orderid: req.session.orderid,
+                cartid: req.session.cartid
+              });
+        //  }
     } catch(err){
         console.log(err.message);
     }
  }
+
+ //payment again 
+ const continuePaymentFailed = async (req, res) => {
+    // const orderid  = req.body.orderid;
+    // const prdtid = req.body.prdtid;
+    const orderid = new mongoose.Types.ObjectId(req.body.orderid);
+    const prdtid = new mongoose.Types.ObjectId( req.body.prdtid);
+    const order = await Order.aggregate([
+        {
+            $match: {
+                _id: orderid,
+                "product_list.productId": prdtid
+            }
+        },
+        {
+            $addFields: {
+                product: {
+                    $filter: {
+                        input: "$product_list",
+                        as: "product",
+                        cond: { $eq: ["$$product.productId", prdtid] }
+                    }
+                }
+            }
+        }, 
+        {
+            $unwind: {
+                path: "$product",
+                preserveNullAndEmptyArrays: true
+            }
+        }, 
+        {
+            $lookup: {
+                from: "products",
+                localField: "product.productId",
+                foreignField: "_id",
+                as: "productDetails"
+            }
+        },
+        {
+            $unwind: {
+                path: "$productDetails",
+                preserveNullAndEmptyArrays: true
+            }
+        },  
+                
+        {
+            $lookup: {
+                from: "users", // Assuming 'addresses' is the name of your Address collection
+                localField: "user", // Field in the 'orders' collection
+                foreignField: "_id", // Field in the 'addresses' collection
+                as: "userDetails"
+            }
+        },
+        {
+            $unwind: {
+                path: "$userDetails",
+                preserveNullAndEmptyArrays: true
+            }
+        }  
+    ]).exec();
+   // console.log("payorder :",order)
+  // console.log("Detail :",order[0].userDetails.name)
+    req.session.failedPaymentOrderId = orderid;
+    req.session.failedPaymentPrdtid = prdtid;
+   // console.log("session :", req.session.failedPaymentOrderId,req.session.failedPaymentPrdtid )
+    var options = {
+      amount: order[0].product.total * 100,
+      currency: "INR",
+      receipt: "RCPT"+order._id+prdtid,
+    };
+  
+    razorpayInstance.orders.create(options,(err,razorder)=>{
+        if(!err){                   
+           // console.log("razorpay order :",razorder)
+            res.json({
+                success : true,
+                msg : "Order Placed",
+                order_id :razorder.id,
+                amount : order[0].product.total * 100,
+                key_id : RAZORPAY_ID_KEY,
+                product_name : order[0].productDetails.product_name ,
+                description : "Test Transaction",
+                contact : order[0].userDetails.phone,
+                name : order[0].userDetails.name,
+                email : order[0].userDetails.email,                       
+                razorder:razorder
+            })
+           
+        } else {
+                console.error(err)
+                req.flash("errorMessage", "Payment failed.. Try again!!");
+                res.json({success : false})
+           }
+    })
+  };
+  //verify payment after failed payment
+  const verifyPaymentFailed = async (req, res) => {
+    //const email = req.session.user;
+   try{
+            console.log("inside verifypayment")
+            const { payment, razorOrder} = req.body;
+            console.log("verifypayment details :",req.body)
+
+            const crypto = require("crypto");
+            var hmac = crypto.createHmac("sha256",RAZORPAY_SECRET_KEY);
+            hmac.update(razorOrder.id + "|" + payment.razorpay_payment_id);
+            hmac = hmac.digest("hex");
+            console.log("hmac :",hmac)
+            console.log("paymnt signtr :",payment.razorpay_signature)
+            if (hmac == payment.razorpay_signature) {
+              
+                const orderid = req.session.failedPaymentOrderId;
+                const order = await Order.findOne({_id:orderid})
+                req.session.orderData = order
+                const pdtid =  req.session.failedPaymentPrdtid;
+                console.log("orderid :",orderid)
+                console.log("pdtid :",pdtid)
+                await Order.updateOne(
+                    { _id: orderid,"product_list.productId":pdtid},
+                    { $set: {
+                        "product_list.$[elem].paymentstatus": "completed"
+                    } },
+                    { arrayFilters: [{ "elem.productId": pdtid }] } )                 
+               
+               
+                console.log("payment verification success")
+                res.json({success: true });
+            } else {
+                console.log("payment verification failed")
+                res.json({success: false });
+            }
+   } catch(err){
+    console.log(err.message);
+   }
+  }
+
+
 
 module.exports = {
 
@@ -2378,6 +2563,9 @@ module.exports = {
     verifyPayment,
     verifyFailedPayment,    
     loadPaymentSuccess,
+
+    continuePaymentFailed,
+    verifyPaymentFailed,
 
     addToWishlist,
     

@@ -91,6 +91,10 @@ contentRoute.post('/verifyPayment',contentController.verifyPayment)
 contentRoute.get("/paymentSuccess",contentController.loadPaymentSuccess)
 
 
+contentRoute.post('/continueFailedPayment',contentController.continuePaymentFailed)
+contentRoute.post('/verifyPaymentFailed',contentController.verifyPaymentFailed)
+
+
 
 
 /****************wishlist and save for later******************/

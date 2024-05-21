@@ -37,7 +37,7 @@
               <span class=" logo-span ms-1 font-weight-bold text-dark">TraditionShoppe</span>
             </a>
           </div>
-           <div> <p class="text-dark fs-3">Checkout</p></div>
+           <div> <p class="text-secondary font-weight-bold fs-3">Checkout</p></div>
            <div><a href="/cart"><span class="icon icon-shopping_cart text-dark "></span></a></div>
         </div>
         <% if (errorMessage.length > 0) { %>                
@@ -48,7 +48,7 @@
           <% } %>
           
         <div class="row d-flex base-addrs">
-            <div class="col-md-4">
+            <div class="col-md-4 mt-1">
                 <div class="address boredr-shadow">                    
                     <div class="bottom-line">
                         <p class="p-head text-dark">Your Addresses</p>
@@ -83,56 +83,57 @@
                         <label id ="useAddress"  class="use-but mb-2 text-center text-dark font-weight-bold">Use this address</label>
                     </div>
                 </div>
+                <div class="modal mod-ad" id="modal">
+                    <div class="closeModal">
+                        <p>Enter a new delivery address</p>
+                      <a id="closeModal"  data-close-button class="close-button">&times;<a>              
+                    </div> 
+                    <div>
+                        <p>Add a new address</p>
+                    </div>          
+                    <div class="modal-body">
+                     <div class="address-body">
+                        
+                        <div>
+                            <input type="text" name="name" id="" placeholder="Fullname">
+                        </div>
+                        <div>
+                            <input type="text" name="mobile" id="" placeholder="Mobile">
+                        </div>
+                        <div>
+                            <input type="text" name="pin" id="pin" placeholder="Pincode">
+                        </div>
+                        <div>
+                            <input type="text" name="house" id="" placeholder="Flat, House no., Building, Company, Apartment">
+                        </div>
+                        <div>
+                            <input type="text" name="street" id="" placeholder="Area, Street, Sector, Village">
+                        </div>               
+                        <div>
+                            <input type="text" name="landmark" id="" placeholder="Landmark">
+                        </div>                
+                        <div>
+                            <input type="text" name="city" id="" placeholder="Town/City">
+                        </div>
+                        <div>
+                            <input type="text" name="state" id="" placeholder="State">
+                        </div>
+                        <div>
+                            <input type="text" name="country" id="" placeholder="Country">
+                        </div>
+                     </div>
+                    </div>
+                    <div class="modal-footer">
+                      <!-- <a id="cancel" data-close-button class="btnmodal btn btn-lg bg-light btn-lg w-25 mt-4 mb-0 me-2">No, cancel</a> -->
+                      <button type="submit" id="addAddress" formaction="/addAddress/<%=cart.user%>/<%=cart._id%>/<%=cart.total_amount%>" class="btnmodal btn btn-lg bg-warning btn-lg w-25 mt-4 mb-0 me-2">Use this address</button>
+                    </div>
+                 </div> 
             </div>
-            <div class="modal mod-ad" id="modal">
-                <div class="closeModal">
-                    <p>Enter a new delivery address</p>
-                  <a id="closeModal"  data-close-button class="close-button">&times;<a>              
-                </div> 
-                <div>
-                    <p>Add a new address</p>
-                </div>          
-                <div class="modal-body">
-                 <div class="address-body">
-                    
-                    <div>
-                        <input type="text" name="name" id="" placeholder="Fullname">
-                    </div>
-                    <div>
-                        <input type="text" name="mobile" id="" placeholder="Mobile">
-                    </div>
-                    <div>
-                        <input type="text" name="pin" id="pin" placeholder="Pincode">
-                    </div>
-                    <div>
-                        <input type="text" name="house" id="" placeholder="Flat, House no., Building, Company, Apartment">
-                    </div>
-                    <div>
-                        <input type="text" name="street" id="" placeholder="Area, Street, Sector, Village">
-                    </div>               
-                    <div>
-                        <input type="text" name="landmark" id="" placeholder="Landmark">
-                    </div>                
-                    <div>
-                        <input type="text" name="city" id="" placeholder="Town/City">
-                    </div>
-                    <div>
-                        <input type="text" name="state" id="" placeholder="State">
-                    </div>
-                    <div>
-                        <input type="text" name="country" id="" placeholder="Country">
-                    </div>
-                 </div>
-                </div>
-                <div class="modal-footer">
-                  <!-- <a id="cancel" data-close-button class="btnmodal btn btn-lg bg-light btn-lg w-25 mt-4 mb-0 me-2">No, cancel</a> -->
-                  <button type="submit" id="addAddress" formaction="/addAddress/<%=cart.user%>/<%=cart._id%>/<%=cart.total_amount%>" class="btnmodal btn btn-lg bg-warning btn-lg w-25 mt-4 mb-0 me-2">Use this address</button>
-                </div>
-             </div> 
+           
         </form>
         <% defaultPayment = 'Razorpay' %>
         <!-- <form  role="form" id="checkout-form"  method="post"> -->
-            <div class="col-md-4">
+            <div class="col-md-4 mt-1">
                 <div class="payment boredr-shadow d-block text-dark">
                     <div class="bottom-line mb-0 p-0 ">
                         <p class="p-head text-dark">Add Coupon Here</p>                        
@@ -164,7 +165,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-4 mt-1">
                 <div class="checkout boredr-shadow">
                     <% ordr_tot = cart.total_amount %>
                     <div class="d-flex justify-content-center">                      
@@ -186,8 +187,8 @@
                         </div>                         
                         <% if(coupondiscount !== 0){%> 
                         <div class="d-flex justify-content-between">
-                            <p>Coupon:</p>
-                            <p>₹cpnamt</p>
+                            <p>Coupon Amount:</p>
+                            <p>₹<%=coupondiscount%></p>
                         </div>                          
                         <%}%>
                         <div class="d-flex justify-content-between bottom-line">
@@ -203,8 +204,8 @@
                       
                 </div>
             </div>    
-              
-         </div>
+        </div> 
+        
         <!-- </form> -->
        
 
@@ -229,11 +230,22 @@
 <script src="/userasset/js/main.js"></script>
 <script src="/js/scripts.js"></script>
 <script src="/js/script-modal.js"></script>
-
+<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <script>
-// alert("checking script")
-// console.log("script is working")
+
+function displayMessage(message) {
+    swal("Alert!", message, "error");
+        // var messageDiv = document.createElement('div');
+        // messageDiv.className = messageType;
+        // messageDiv.innerHTML = message;
+        // document.body.appendChild(messageDiv);
+        // setTimeout(function () {
+        //     document.body.removeChild(messageDiv);
+        // }, 3000);
+    }                    
+
+
     function applyCoupon( amount , userid , cartid ){
         const couponCode = document.getElementById('couponCode').value
         const totalAmount = amount
@@ -246,7 +258,7 @@
             couponCode,
             totalAmount
         }
-        console.log("coupondata :",couponData)
+        //console.log("coupondata :",couponData)
 
         fetch(`/applyCoupon/${userid}`,{
             method : 'POST',
@@ -258,7 +270,9 @@
         .then(data =>{
             if(data.success){
                 const discountedTotal = data.discountedTotal
-                location.href = `/checkout/${cartid}/${discountedTotal}`
+                const coupondiscount = data.couponDiscount
+                console.log("data:",data)
+                location.href = `/checkout/${cartid}/${discountedTotal}?coupondisc=${coupondiscount}`
             } else {
                 location.href = `/checkout/${cartid}/${amount}`
             }
@@ -279,9 +293,13 @@ console.log("pay :",paymentMethod,"total :",total)
         
     //make alert a popup box
         if(address === null){
-            alert("Select a valid address !!")
+           // event.preventDefault();
+            displayMessage('Please select an address before placing your order');
+            //return;
         }else if(total < 1000 && paymentMethod.value === "COD"){
-            alert("COD is only applicable for 1000 above purchase!!")
+           // event.preventDefault();
+            displayMessage('Please go for online Payment for order lesser tha RS.1000/-');
+            //return;
         } else {
                 const checkoutData = {
                 paymentMethod: paymentMethod.value,
@@ -290,7 +308,7 @@ console.log("pay :",paymentMethod,"total :",total)
                 cartid,
                 userid
             }
-            console.log('total',total)
+            console.log('total amount:',total)
             checkoutHandle(checkoutData,cartid,total)
         }
     }
@@ -346,7 +364,8 @@ console.log("pay :",paymentMethod,"total :",total)
                         console.log('error:', resp.error.metadata.order_id);
                         console.log('error:', resp.error.metadata.payment_id);
                         paymentFailed(resp)
-                        location.href = `/checkout/${cartid}/${total}`
+                        location.href = `/getOrder`
+                        //location.href = `/checkout/${cartid}/${total}`
                     });             
                     
                     rzp1.open();
@@ -363,7 +382,7 @@ console.log("pay :",paymentMethod,"total :",total)
         })
    
    }
-function paymentFailed(){
+function paymentFailed(resp){
    fetch('/failedPayment',{
     method: 'get',
                 headers: {
@@ -372,8 +391,11 @@ function paymentFailed(){
    })
    .then(res => res.json())
     .then(data => {
+            console.log("data:",data.orderid, data.cartid)
+            const orderid = data.orderid
+            const cartid = data.cartid
             if (data.success) {
-                location.href = `/checkout/${cartid}/${total}`
+                location.href = `/getOrder`
             }
         })
     }
@@ -398,7 +420,6 @@ async function verifyPayment(payment, order) {
                         console.log(err.message);
                 }
             }
-                       
 
 
   </script>

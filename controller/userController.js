@@ -6,7 +6,7 @@ const User = require('../model/user')
 const Otp = require('../model/userOTP')
 const Products = require('../model/product')
 const Category = require('../model/category')
-const Seller = require('../model/seller')
+const Wallet = require('../model/wallet')
 const Coupon = require('../model/coupon')
 const Cart = require('../model/cart')
 const List = require('../model/wishlist')
@@ -299,6 +299,11 @@ const loadOtp = async (req,res)=>{
                     })
                     newUser
                     .save()
+                    const walletsave = new Wallet({
+                        user:newUser._id,                
+                        transactiontype:'credited',
+                        amount: obj.referCredit,
+                    }).save()
                     .then((result)=>{                        
                         sendOtpEmail(result,res)                        
                         res.json({success:true, 
@@ -341,7 +346,14 @@ const referalUserUpdate = async(req,res,obj)=>{
             req.session.refferalUsed = true;
             const referUser = await User.findOne({referalCode:obj.refferal})
             referUser.wallet += obj.referCredit;
-            referUser.save()            
+            referUser.save()  
+            const walletsave = new Wallet({
+                user:referUser._id,                
+                transactiontype:'credited',
+                amount: obj.referCredit,
+            }).save()
+            
+            
     } catch(err){
         console.log(err.message)
     }
@@ -665,7 +677,9 @@ const editProfile = async(req,res)=>{
 /*************** handle my order********************/
 const loadOrder = async (req,res)=>{
     try{
-
+        console.log("query:",req.query)
+        const oredrid = req.query.oredrid
+        const cartid = req.query.cartid
         const users = await User.findOne({_id:req.session.user}).exec()
         
             const pageNum = req.query.page || 1
@@ -1432,30 +1446,15 @@ const loadWallet = async (req,res)=>{
             const users = await User.findOne({_id:req.session.user}).exec() 
             const pageNum = req.query.page || 1
             const perPage = 6
-            const totalCount = await Order.countDocuments({user:users._id,payment:"Wallet"}).exec()               
+            const totalCount = await Wallet.countDocuments({user:users._id}).exec()               
             const pages = Math.ceil( totalCount / perPage )
             console.log("count",totalCount);
 
-            const orders = await Order.aggregate([{
-                $match:{
-                    $and:[{ user:users._id}, {payment:"Wallet"}]
-                }
-            },
-            {
-                $lookup:{
-                    from:'products',
-                    localField:'product_list.productId',
-                    foreignField:'_id',
-                    as:'productDetails'
-                    
-                }
-            },
-            {
-                $unwind: {
-                    path: "$productDetails",
-                    preserveNullAndEmptyArrays: true
-                }
-            },
+            const wallet = await Wallet.aggregate([{
+                $match:
+                    { user:users._id}
+               
+            },            
             {
                 $skip: ( pageNum - 1 ) * perPage
             },
@@ -1465,7 +1464,7 @@ const loadWallet = async (req,res)=>{
 
             await getQtyCount(req,res);
             await getListCount(req,res);
-            console.log("orders :",orders)
+            console.log("Wallets :",wallet)
             res.render('profile/userWallet',{
             title:"My account | TraditionShoppe",
             user : req.session.user,
@@ -1474,7 +1473,7 @@ const loadWallet = async (req,res)=>{
             qtyCount:req.session.qtyCount,
             listCount:req.session.listCount,  
             users,
-            orders,   
+            wallet,   
             pageNum,
             perPage,
             totalCount, 

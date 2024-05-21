@@ -54,7 +54,11 @@
                     
                 <div class="pdt-det">
                     <div class="d-flex">
-                        <p class="text-dark text-uppercase mb-0"><%=odr.productDetails.product_name%></p>
+                        <p class="text-silver font-weight-bold text-uppercase mb-2">ORDR_<%=odr._id%></p>
+                       
+                    </div>
+                    <div class="d-flex">
+                        <p class="text-secondary font-weight-bold text-uppercase mb-0"><%=odr.productDetails.product_name%></p>
                        
                     </div>
 
@@ -69,7 +73,7 @@
                         
               
                     <div class="d-flex">
-                        <p class="text-dark fs-3 font-weight-bold mb-0">Expected Delivery:</p>
+                        <p class="text-dark fs-3  mb-0">Expected Delivery:</p>
                         <p><%= formattedDate %></p>
                     </div>
                     <div class="d-flex">
@@ -79,7 +83,7 @@
                 </div>
                 <div class="pdt-det box-wid">
                     <p class="text-dark text-uppercase mb-0">Total:</p>
-                    <p><%=odr.product_list.total%></p>
+                    <p class="font-weight-bold"><%=odr.product_list.total%></p>
                 </div>
                 
                 <div class="pdt-det d-block box-wid">
@@ -91,17 +95,24 @@
                
                 <div class="pdt-det box-wid">
                     <p class="text-dark text-uppercase mb-0">Status:</p>
-                    <p><%=odr.product_list.orderstatus%></p>
+                    <% if(odr.product_list.paymentstatus === 'pending' && odr.payment === 'Razorpay'){%>
+                        <p class="text-danger">Payment Failed</p>
+                    <%} else {%>
+                        <p class="text-success"><%=odr.product_list.orderstatus%></p>
+                    <%}%>
                 </div>
 
                 <div class="d-block">
                     <div><a href="/getOrderView/<%= odr._id %>/<%= odr.productDetails._id %>"><button class="use-but ord-but bg-light text-center text-dark">View Details</button></a></div>
                     <!-- <div><a href="/review"><button type="submit" class="use-but ord-but bg-light text-center text-dark">Write a review</button></a></div> -->
-                    <% if (odr.product_list.orderstatus === 'pending'){%>
+                    <% if(odr.product_list.paymentstatus === 'pending' && odr.payment === 'Razorpay'){%>
+                        <div><button type="button" class="use-but ord-but bg-warning text-dark" onclick="continueFailedPayment('<%= odr._id %>','<%= odr.productDetails._id %>')">Pay again</button></a></div> 
+                    <%} else  if (odr.product_list.orderstatus === 'pending'){%>
                         <div><a href="/cancelPage/<%= odr._id %>/<%= odr.productDetails._id %>"><button type="submit" class="use-but ord-but bg-light text-center text-dark">Cancel Order</button></a></div>
                     <%} else if(odr.product_list.orderstatus === 'delivered'){%> 
                         <div><a href="/returnPage/<%= odr._id %>/<%= odr.productDetails._id %>"><button type="submit" class="use-but ord-but bg-white text-dark">Return Product</button></a></div>  
                         <%}%>
+                    
                 </div>   
             </div>
             
@@ -135,8 +146,92 @@
 
 </div>
 </div>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+    function continueFailedPayment(odrid,pdtid){
+        event.preventDefault()
+        fetch('/continueFailedPayment', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ orderid: odrid,prdtid:pdtid})
+        })
+            .then(res => res.json())
+            .then(res => {
+                // console.log('data:', data)
+                // const orderData = data.raz_order;
+                // console.log('orderData:', data.raz_order)
+                // const user = data.user
+                // razorPayment(orderData, event, user);
+                if(res.success){
+                var options = {
+                        
+                        "key": "" +res.key_id+ "", // Enter the Key ID generated from the Dashboard
+                        "amount": "" +res.amount+ "", // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
+                        "currency": "INR",
+                        "name": "TraditioShoppe",
+                        "description": "Test Transaction",
+                        "image": "/userasset/images/logo.png",
+                        "order_id": "" +res.order_id+ "", //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
+                        "handler": function(response){
+                           verifyPayment(response,res.razorder,odrid,pdtid)
+                        },
+                        "prefill": {
+                            "name": ""+res.name+"",
+                            "email": ""+res.email+"",
+                            "contact":""+res.contact+""
+                        },
+                        "notes": {
+                            "address": "Razorpay Corporate Office"
+                        },
+                        "theme": {
+                            "color": "#4F0341"
+                        }
+                    };
+                    
+                    var rzp1 = new Razorpay(options); 
+                    rzp1.on('payment.failed', function (resp) {
+                        console.log('error:', resp.error.code);
+                        console.log('error:', resp.error.description);
+                        console.log('error:', resp.error.source);
+                        console.log('error:', resp.error.step);
+                        console.log('error:', resp.error.reason);
+                        console.log('error:', resp.error.metadata.order_id);
+                        console.log('error:', resp.error.metadata.payment_id);
+                        paymentFailed(resp)
+                        location.href = `/getOrder`
+                        //location.href = `/checkout/${cartid}/${total}`
+                    });             
+                    
+                    rzp1.open();
+                }
+            })
+            .catch(err => {
+                console.log('error:', err)
+            })
+    }
 
-
+    async function verifyPayment(payment, order,odrid,pdtid) {
+        try {
+            fetch('/verifyPaymentFailed', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ payment: payment, razorOrder: order})
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                         location.href=`/paymentSuccess`
+                    }
+                })}
+                catch(err){
+                        console.log(err.message);
+                }
+            }
+</script>
 
 
   <%- include('../layout/userFooter') %>

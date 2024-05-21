@@ -24,7 +24,7 @@ const bannerSchema = new mongoose.Schema({
     created : {
         type : Date,
         require : true,
-        default : new Date().getFullYear
+        default : Date.now
     }
 })
 

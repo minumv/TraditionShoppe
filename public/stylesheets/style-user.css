@@ -344,14 +344,20 @@ body {
     margin-top: 30px;
 }
 .base-addrs{
+    position:relative;
     padding-top:20px;
-    margin: 10px;
-    margin-left:30px;
+    /* margin: 10px;
+    margin-left:30px; */
+    display: flex;
+    
 }
 .address{
-    display:block;
-    width:550px;
-    height:420px;
+    /* display:block; */
+    position: absolute;
+    top:10px;
+    left:60px;
+    width:530px;
+    height:460px;
     padding:20px;
 }
 .addrs-box{
@@ -361,17 +367,23 @@ body {
     margin-bottom: 10px;
 }
 .payment{
-    width:410px;
-    height:420px;
+    position: absolute;
+    top:10px;
+    left:80px;
+    width:400px;
+    height:460px;
     padding:20px;
-    margin-left:80px;
+    margin-left:50px;
     /* background-color: #c26e2d; */
 }
 .checkout{
-    width:400px;
-    height:420px;
+    position: absolute;
+    top:10px;
+    left:580px;
+    width:390px;
+    height:460px;
     padding:30px;
-    margin-left:20px;
+    margin-left:10px;
     padding-bottom:30px;
     /* background-color: #c22db8; */
     justify-content: center;
