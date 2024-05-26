@@ -18,8 +18,8 @@ adminRoute.use(express.static('public'));
 adminRoute.get("/admin",adminController.loadAdminLogin)
 adminRoute.get("/admin/login",userAuthent.isAdminLoggedOut,adminController.loadAdminLogin)
 adminRoute.get("/admin/dashboard",adminController.loadAdminHome)
-adminRoute.get("/admin/customers",userAuthent.isAdminAuthenticated,adminController.loadCustomer)
-adminRoute.get("/admin/customer/update/:id",userAuthent.isAdminAuthenticated,adminController.loadCustomerEdit)
+adminRoute.get("/admin/customers",adminController.loadCustomer)
+adminRoute.get("/admin/customer/update/:id",adminController.loadCustomerEdit)
 
 adminRoute.post("/admin/login",adminController.verifyAdminLogin)
 adminRoute.post("/verify/:id",adminController.verifyCustomer)

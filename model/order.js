@@ -17,8 +17,7 @@ const orderSchema = new mongoose.Schema({
     },
     coupon : {
         type : mongoose.Types.ObjectId,
-        ref: 'coupon',
-        require : true
+        ref: 'coupon'
     },
     payment : { //method
         type :String,        
@@ -74,7 +73,9 @@ const orderSchema = new mongoose.Schema({
         type : Number,
         require : true
     },
-      
+    fixedDeliveryCharge:{
+        type:Number
+    },      
     created : {
         type : Date,
         require : true,

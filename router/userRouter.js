@@ -93,6 +93,7 @@ userRoute.post("/changeprofile/:id",userAuthent.isAuthenticated,userController.e
 /************order**************/
 userRoute.get("/getOrder",userAuthent.isAuthenticated,userController.loadOrder)
 userRoute.get("/getOrderView/:odrid/:pdtid",userAuthent.isAuthenticated,userController.loadOrderView)
+userRoute.get("/getInvoice/:odrid/:pdtid",userController.loadInvoicePage)
 userRoute.get("/orderlast30",userAuthent.isAuthenticated,userController.loadbuyLast30)
 userRoute.get("/order2023",userAuthent.isAuthenticated,userController.load2023)
 userRoute.get("/order2022",userAuthent.isAuthenticated,userController.load2022)

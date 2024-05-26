@@ -18,7 +18,7 @@
                             </div>
                         </li>
                         
-                        <% user_cart.product_list.forEach((cart, index) => { %>
+                        <% user_cart.product_list.forEach((cart,) => { %>
                             <% products.forEach((pdt, index) => { %>                                
                                  <% if( cart.productId.equals(pdt._id)){%>           
                                 
@@ -30,9 +30,9 @@
                                     </div>
                                     <div class="cart-details">                                       
                                         <div class="cart-opert but">
-                                            <button onclick="subtractingFromCart('<%=user_cart._id%>','<%=user_cart.user%>','<%=cart.productId%>','<%=pdt.discountedsalePrice%>')" class="p-1 m-0 side border-0" style="background: transparent;">-</button>
-                                            <div class="p-1 m-0"><button><%=cart.quantity %></button></div>
-                                          <button onclick="addingToCart('<%=user_cart._id%>','<%=user_cart.user%>','<%=cart.productId%>','<%=pdt.discountedsalePrice%>')" class="p-1 m-0 side border-0" style="background: transparent;">+</button>
+                                            <button onclick="subtractingFromCart('<%=user_cart._id%>','<%=user_cart.user%>','<%=cart.productId%>','<%=pdt.discountedsalePrice%>','<%=index%>')" class="p-1 m-0 side border-0" style="background: transparent;">-</button>
+                                            <div class="p-1 m-0"><button id="cart_quantity<%=index%>"><%=cart.quantity %></button></div>
+                                          <button onclick="addingToCart('<%=user_cart._id%>','<%=user_cart.user%>','<%=cart.productId%>','<%=pdt.discountedsalePrice%>','<%=index%>')" class="p-1 m-0 side border-0" style="background: transparent;">+</button>
                                           
                                         </div>
                                         <button onclick="deletingFromCart('<%=user_cart._id%>','<%=user_cart.user%>','<%=cart.productId%>')" class="border-0" style="background: transparent;"><span class="icon icon-trash cart-trash-icon"></span></button>
@@ -113,10 +113,11 @@
 
 
 </main>
+<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
 
 <script>
-    function addingToCart(cartid,userid,pdtid,discountprice){
-
+    function addingToCart(cartid,userid,pdtid,discountprice,index){
+       // alert(index)
         fetch(`/addCart/${cartid}/${userid}/${pdtid}/${discountprice}`,{
             method:"post",
             headers:{
@@ -126,14 +127,20 @@
         .then((res)=>res.json())
         .then((data)=>{
             if(data.success){
-                location.href='/cart'
-            } else {
+                
+                document.getElementById(`cart_quantity${index}`).innerHTML = data.newQty
+                document.getElementById('qCount').innerHTML = data.qtyCount
+                // location.href='/cart'
+            } 
+            else {
+                // console.log("message :",data)
+                // swal("Alert!", data.message, "error");
                 location.href='/cart'
             }
         })
     }
 
-    function subtractingFromCart(cartid,userid,pdtid,discountprice){
+    function subtractingFromCart(cartid,userid,pdtid,discountprice,index){
 
         fetch(`/subCart/${cartid}/${userid}/${pdtid}/${discountprice}`,{
             method:"post",
@@ -144,8 +151,11 @@
         .then((res)=>res.json())
         .then((data)=>{
             if(data.success){
-                location.href='/cart'
-            } else {
+                document.getElementById(`cart_quantity${index}`).innerHTML = data.newQty
+                document.getElementById('qCount').innerHTML = data.qtyCount
+                // location.href='/cart'
+            } 
+            else {
                 location.href='/cart'
             }
         })

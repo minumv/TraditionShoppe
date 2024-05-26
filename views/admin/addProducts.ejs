@@ -1,4 +1,26 @@
 <%- include('../layout/adminHeader') %>
+<style>
+  .input-group {
+    /* display  : flex;
+    flex-direction: column; */
+  position:relative;
+  width : 100%;
+  /* //background-color: aqua; */
+  margin-bottom: 25px;
+} 
+  .error{
+    position:absolute;
+    right:8px;
+    top:10px;
+   color:#ed1557;
+   font-size: 13px;
+   font-weight: bold;
+}
+
+.error i {
+    color:seagreen;
+}
+</style>
 <section>   
       <div class="container">
         <form role="form" id="profile_form" action="" method="post" enctype="multipart/form-data">    
@@ -18,8 +40,9 @@
                     <% } %>
                     <div class="card-body">             
                       <div class="input-group input-group-outline mb-3">
-                         <input type="text" class="form-control" name="name" placeholder="Name"  required pattern="^[a-zA-Z]+[\-'\s]?[a-zA-Z ]+$">
-                      </div>
+                         <input type="text" id="name" class="form-control" name="name" placeholder="Name"  onkeyup="validateName()" >
+                         <span id="name-error" class="error"></span>
+                        </div>
                       <!-- <div class="input-group input-group-outline mb-3 ">                 
                         <input type="email" class="form-control" placeholder="Category">
                       </div> -->
@@ -50,14 +73,17 @@
                         </div>
                       </div>
                       <div class="input-group input-group-outline mb-3">                  
-                        <textarea type="text" name="description" class="form-control" placeholder="Description" required></textarea>
+                        <textarea type="text" id="description" name="description" class="form-control" placeholder="Description" onkeyup="validateDescription()"></textarea>
+                        <span id="description-error" class="error"></span>
                       </div>
                       <div class="input-group input-group-outline mb-3">                   
-                          <input type="text" name="stock" class="form-control" placeholder="Stock"  required pattern="^(?!0)\d{1,5}$">
-                      </div>
+                          <input type="text" id="stock" name="stock" class="form-control" placeholder="Stock" onkeyup="validateStock()" >
+                          <span id="stock-error" class="error"></span>
+                        </div>
                       <div class="input-group input-group-outline mb-3">                   
-                          <input type="text" name="price" class="form-control" placeholder="Price per Unit" required pattern="^(?!0)\d{1,4}(?:\.\d+)?$">
-                      </div>
+                          <input type="text" id="price"  name="price" class="form-control" placeholder="Price per Unit" onkeyup="validatePrice()">
+                          <span id="price-error" class="error"></span>
+                        </div>
                      
                       </div>
                       <div class="input-group input-group-outline mb-3 d-flex"> 
@@ -82,40 +108,43 @@
                       <div class="mx-3">
                         <select id="color" class="form-control" required>
                           <option value="">Select Color</option>
-                          <option value="DarkBrown">Dark Brown</option>
-                          <option value="Antique brass">Antique Brass</option>
-                          <option value="Sandal">Sandal</option>
-                            <option value="Orange">Orange</option>
-                            <option value="Golden">Golden</option>
-                            <option value="Silver">Silver</option>
-                            <option value="Green">Green</option>
-                            <option value="Yellow">Yellow</option>
-                            <option value="Grey">Grey</option>
-                            <option value="Multicolor">Multicolor</option>
+                          <option value="brown">Dark Brown</option>
+                          <option value="brass">Antique Brass</option>
+                          <option value="sandal">Sandal</option>
+                            <option value="orange">Orange</option>
+                            <option value="golden">Golden</option>
+                            <option value="silver">Silver</option>
+                            <option value="green">Green</option>
+                            <option value="yellow">Yellow</option>
+                            <option value="grey">Grey</option>
+                            <option value="multi">Multicolor</option>
                             
                         </select>
                       </div>    
                       <div class="mx-3">
                         <select id="type" class="form-control" required>
                           <option value="">Select Type</option>
-                          <option value="Decor">decor</option>
-                          <option value="Gifts">gifts</option>
-                          <option value="Toys">toys</option>
-                            <option value="Figurine">figurine</option>
-                            <option value="Accessories">accessories</option>
+                          <option value="decor">decor</option>
+                          <option value="gifts">gifts</option>
+                          <option value="toys">toys</option>
+                            <option value="figurine">figurine</option>
+                            <option value="accessories">accessories</option>
                             <option value="eco-friendly">eco-friendly</option>
                             <option value="kitchen-utensil">kitchen-utensil</option>
-                            <option value="Natural-products">natural-products</option>
+                            <option value="natural-products">natural-products</option>
                             <option value="clothes">clothes</option>
-                            <option value="clothes">jewellery</option>
+                            <option value="jewellery">jewellery</option>
+                            <option value="western">western</option>
                             <option value="others">others</option>
                             
                         </select></div>          
                       <div class="input-group input-group-outline mb-3">                   
-                        <input type="text" name="size" class="form-control" placeholder="Size (inches)" required pattern="^(?!0)\d{1,4}(?:\.\d+)?$">
+                        <input type="text" id="size" name="size" class="form-control" placeholder="Size (inches)" onkeyup="validateSize()">
+                        <span id="size-error" class="error"></span>
                       </div>
                       <div class="input-group input-group-outline mb-3">                   
-                        <input type="text" name="weight" class="form-control" placeholder="Weight (grams)" required pattern="^(?!0)\d{1,4}(?:\.\d+)?$">
+                        <input type="text" id="weight" name="weight" class="form-control" placeholder="Weight (grams)" onkeyup="validateWeight()">
+                        <span id="weight-error" class="error"></span>
                       </div>                
                       </div>
                       <div class="input-group input-group-outline mb-3 d-flex"> 
@@ -163,7 +192,97 @@
        <!-- <div id="overlay"></div> -->
   </section>
 <script>
+  const nameError = document.getElementById('name-error')
+	const stockError = document.getElementById('stock-error')
+	const descriptionError = document.getElementById('description-error')
+	const sizeError = document.getElementById('size-error')
+	const weightError = document.getElementById('weight-error')
+	const priceError = document.getElementById('price-error')
 
+  function validateName(){
+		const name = document.getElementById('name').value
+	
+		if(name.length === 0){
+			nameError.innerHTML = 'Name is required'
+			return false
+		}
+		if(!name.match(/^[a-zA-Z]+[\-'\s]?[a-zA-Z ]+$/)){
+			nameError.innerHTML = 'Name should be valid'
+			return false
+		}
+		nameError.innerHTML = '<i class = "fas fa-check-circle"></i>'
+		return true
+	}
+  function validateDescription(){
+		const description = document.getElementById('description').value
+	
+		if(description.length === 0){
+			descriptionError.innerHTML = 'Description is required'
+			return false
+		}
+		
+		descriptionError.innerHTML = '<i class = "fas fa-check-circle"></i>'
+		return true
+	}
+
+  function validateStock(){
+		const stock = document.getElementById('stock').value
+	
+		if(stock.length === 0){
+			stockError.innerHTML = 'Stock is required'
+			return false
+		}
+		if(!stock.match(/^(?!0)\d{1,5}$/)){
+			nameError.innerHTML = 'Stock should be valid'
+			return false
+		}
+		nameError.innerHTML = '<i class = "fas fa-check-circle"></i>'
+		return true
+	}
+  function validatePrice(){
+		const price = document.getElementById('price').value
+	
+		if(price.length === 0){
+			priceError.innerHTML = 'Price is required'
+			return false
+		}
+		if(!price.match(/^(?!0)\d{1,4}(?:\.\d+)?$/)){
+			priceError.innerHTML = 'Price should be valid'
+			return false
+		}
+		priceError.innerHTML = '<i class = "fas fa-check-circle"></i>'
+		return true
+	}
+
+  function validateSize(){
+		const size = document.getElementById('size').value
+	
+		if(size.length === 0){
+			sizeError.innerHTML = 'Size is required'
+			return false
+		}
+		if(!size.match(/^(?!0)\d{1,4}(?:\.\d+)?$/)){
+			sizeError.innerHTML = 'Size should be valid'
+			return false
+		}
+		sizeError.innerHTML = '<i class = "fas fa-check-circle"></i>'
+		return true
+	}
+
+  function validateWeight(){
+		const weight = document.getElementById('weight').value
+	
+		if(weight.length === 0){
+			weightError.innerHTML = 'Weight is required'
+			return false
+		}
+		if(!weight.match(/^(?!0)\d{1,4}(?:\.\d+)?$/)){
+			weightError.innerHTML = 'Weight should be valid'
+			return false
+		}
+		weightError.innerHTML = '<i class = "fas fa-check-circle"></i>'
+		return true
+	}
   
   
   let cropper ;

@@ -298,12 +298,12 @@ const loadOtp = async (req,res)=>{
                         isVerifiedByOtp : false
                     })
                     newUser
-                    .save()
-                    const walletsave = new Wallet({
-                        user:newUser._id,                
-                        transactiontype:'credited',
-                        amount: obj.referCredit,
-                    }).save()
+                    .save() 
+                    // const walletsave = new Wallet({
+                    //     user:newUser._id,                
+                    //     transactiontype:'credited',
+                    //     amount: obj.referCredit,
+                    // }).save()                   
                     .then((result)=>{                        
                         sendOtpEmail(result,res)                        
                         res.json({success:true, 
@@ -872,6 +872,90 @@ const loadOrderView = async (req,res)=>{
     catch(err){
         console.log(err.message);
     }
+}
+
+const loadInvoicePage = async(req,res)=>{
+    try{
+        const odrid = new mongoose.Types.ObjectId(req.params.odrid)
+        console.log(odrid)
+        const pdtid = new mongoose.Types.ObjectId(req.params.pdtid)
+        console.log(pdtid)
+        const users = await User.findOne({_id:req.session.user}).exec()
+        console.log("order id :",odrid)
+        const orders = await Order.aggregate([
+            {
+                $match: { 
+                    $and : [
+                        {_id: odrid} ,
+                        {"product_list.productId": pdtid }
+                    ]
+                }
+            }, 
+            {
+                $addFields: {
+                    product: {
+                        $filter: {
+                            input: "$product_list",
+                            as: "product",
+                            cond: { $eq: ["$$product.productId", pdtid] }
+                        }
+                    }
+                }
+            }, 
+            {
+                $unwind: {
+                    path: "$product",
+                    preserveNullAndEmptyArrays: true
+                }
+            }, 
+            {
+                $lookup: {
+                    from: "products",
+                    localField: "product.productId",
+                    foreignField: "_id",
+                    as: "productDetails"
+                }
+            },
+            {
+                $unwind: {
+                    path: "$productDetails",
+                    preserveNullAndEmptyArrays: true
+                }
+            },  
+                    
+            {
+                $lookup: {
+                    from: "addresses", // Assuming 'addresses' is the name of your Address collection
+                    localField: "address", // Field in the 'orders' collection
+                    foreignField: "_id", // Field in the 'addresses' collection
+                    as: "addressDetails"
+                }
+            },
+            {
+                $unwind: {
+                    path: "$addressDetails",
+                    preserveNullAndEmptyArrays: true
+                }
+            }           
+        ])
+        console.log("orders:",orders)
+        res.render('profile/invoicePage',{
+        title:"My Order Details | TraditionShoppe",
+        user : req.session.user,
+        blocked:req.session.blocked,
+        page:'Invoice',
+        qtyCount:req.session.qtyCount,
+        listCount:req.session.listCount,           
+        orders,
+        users,
+        errorMessage:req.flash('errorMessage'),
+        successMessage:req.flash('successMessage')
+        })
+    }
+    catch(err){
+        console.log(err.message)
+    }   
+
 }
 
 
@@ -1618,6 +1702,8 @@ module.exports = {
 
     loadOrder,
     loadOrderView,
+    loadInvoicePage,
+
     loadcoupon,
 
     // loadReview,

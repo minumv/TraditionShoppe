@@ -51,7 +51,7 @@
                  
                   
                   <form action="/allproducts" id="searchForm" class="site-block-top-search d-flex" method="get" onsubmit="updateAction()">
-                    <input type="text" name="search" class="form-control border-1 search">
+                    <input type="text" name="search" id="search" class="form-control border-1 search">
                     <button type="submit" class="search-but">Search</button>
                 </form>
                 
@@ -78,7 +78,7 @@
                       <li>
                         <a href="/cart" class="site-cart">
                           <span class="icon icon-shopping_cart"></span>
-                          <span class="count"><%= qtyCount %></span>
+                          <span id="qCount" class="count"><%= qtyCount %></span>
                         </a>
                       </li>&nbsp;
                       <li>

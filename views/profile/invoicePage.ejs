@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%=page%></title>
+    <link rel="stylesheet" href="/userasset/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/userasset/css/magnific-popup.css">
+    <link rel="stylesheet" href="/userasset/css/jquery-ui.css">
+    <script src="https://rawgit.com/eKoopmans/html2pdf/master/dist/html2pdf.bundle.js"></script>
+
+</head>
+
+<body>
+    <div class="text-center">
+        <button id="downloadButton" class="btn bg-success text-white mb-3" style="margin-top: 15px;">Download Invoice</button>
+    </div>
+    <div id="invoice" class="container">
+       <div class="d-flex justify-content-center">
+        <div id="invoice-header" class="text-center">
+            <a class="navbar-brand m-0" href="/home" target="_blank">
+                <img src="/userasset/images/logo.png" class="navbar-brand-img h-100" alt="main_logo">
+                <span class=" logo-span ms-1 font-weight-bold text-dark">TraditionShoppe</span>
+              </a>
+            <h6>INVOICE</h6>
+        </div>
+       </div>
+
+       <div id="company-details" class="text-right">
+        <p><strong>TraditionShoppe</strong></p>
+        <p>203A Shastri nagar, Pallimukku PO</p>
+        <p>Kollam</p>
+        <p>India</p>
+    </div>
+
+        <hr>
+        <%orders.forEach((odr)=>{%> 
+        <div id="invoice-details" class="flex-container">
+            <div id="user-details" class="width-50">
+                <p><strong><%=odr.addressDetails.name%></strong></p>
+                <p><%=odr.addressDetails.house%>,<%=odr.addressDetails.city%></p>
+                <p>PIN<%=odr.addressDetails.pincode%>,<%=odr.addressDetails.state%></p>
+                <p>India</p>
+            </div>
+            <%let formattedDate = new Date(odr.order_date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })%>
+            <div class="num width-50">
+                <p><strong>Order:</strong>ORDR_<%=odr._id%></p>
+                <p><strong>Date:</strong><%=formattedDate%></p>
+            </div>
+        </div>
+
+        <table id="invoice-table" class="table">
+            <thead>
+                <tr>
+                    <th>Products</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Discounted Price</th>
+                    
+                </tr>
+            </thead>
+            <tbody>
+                
+                <%let mrp = odr.productDetails.price_unit * odr. product_list[0].quantity %>
+                <% let disc = mrp - odr. product_list[0].total %>
+                <tr>
+                    <td><%=odr.productDetails.product_name%></td>
+                    <td><%=odr.product_list[0].quantity%></td>
+                    <td>₹<%=mrp%>.00</td>
+                    <td>₹<%=disc%>.00</td>                    
+                </tr>
+               
+            </tbody>
+        </table>
+
+        <div id="invoice-footer" class="text-right">
+            <%if(odr.coupon){%>
+            <p>Coupon Discount Applied</p>
+           <%}%>
+            <p><strong>Delivery Charge:</strong> ₹<%odr.fixedDeliveryCharge%>.00</p>
+            <hr>
+            <p id="total" class="font-bold"><strong>Total:</strong>₹<%=odr. product_list[0].total%>.00</p>
+        </div>
+        <%})%>
+        <div id="auto-generated" class="text-center" style="margin-bottom: 100px;">
+            <p>Automatically generated Invoice</p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('downloadButton').addEventListener('click', function () {
+            let dbutton = document.getElementById('downloadButton');
+            dbutton.style.visibility = 'hidden';
+
+            // Use html2pdf with specific width and auto height
+            var element = document.getElementById('invoice');
+            var options = {
+                margin: 10,
+                filename: 'invoice.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait', width: 940 }
+            };
+
+            html2pdf(element, options);
+
+            // Restore button visibility after generating PDF
+            dbutton.style.visibility = 'visible';
+        });
+    </script>
+</body>
+
+</html>

@@ -723,9 +723,265 @@ const getnameSortedProducts = async(req,res,perPage,pageNum,matchCondition,sortC
         console.log(err.message);
     }
 }
-
 //load all products
-const loadAllProducts = async (req,res)=>{
+const loadAllProducts = async(req,res)=>{
+    try{
+       
+        const pageNum = parseInt(req.query.page) || 1;
+        const pageDB = pageNum - 1;
+        const perPage = 9;
+        const search = req.query.search || "";
+        let query = [
+            { status: { $ne: 'inactive' } },
+            { isListing: true }
+        ];
+        let sortCondition = { created:1 };
+        // Search and filter conditions
+        if (search !== "") {
+          query.push(
+            { "product_name": { $regex: ".*" + search + ".*", $options: 'i' } }
+          );
+        } 
+          // Accumulate filter conditions based on query parameters
+          if (req.query.categ_type) {
+            const categType = req.query.categ_type.split("%2C");
+            query.push({ product_type: { $in: categType } });
+          }
+        
+          if (req.query.color) {
+            const colors = req.query.color.split(",");
+            query.push({ color: { $in: colors } });
+          }
+
+          if(req.query.trend){
+            //const trend = req.query.trend.split(",");
+            query.push({ status:'new' });
+          }
+        
+          if (req.query.minPrice && req.query.maxPrice) {
+            const minPrice = parseFloat(req.query.minPrice);
+            const maxPrice = parseFloat(req.query.maxPrice);
+            query.push({ price_unit: { $gte: minPrice, $lte: maxPrice } });
+          }
+
+         
+          if(req.query.sort){
+            switch (req.query.sort) {
+                case 'lowtohigh':
+                  sortCondition = { discountedsalePrice: 1 };
+                  break;
+                case 'hightolow':
+                  sortCondition = { discountedsalePrice: -1 };
+                  break;
+                case 'ascending':
+                  sortCondition = { product_name: 1 };
+                  break;
+                case 'descending':
+                  sortCondition = { product_name: -1 };
+                  break;
+                default:
+                  sortCondition = { created:1 }; // No sorting
+                  break;
+              }
+            
+         // console.log("sort:",sortCondition)
+          // Continue to add more filter conditions as needed
+        }
+        console.log("sort:",sortCondition)
+        console.log("query:",query)
+        // Aggregation stages
+        const matchStage = query.length > 0 ? { $match: { $and: query } } : { $match: {} };
+        const sortStage = Object.keys(sortCondition).length > 0 ? { $sort: sortCondition } : { $sort: {} };
+        const facetStage = {
+          $facet: {
+            products: [
+              matchStage,
+              {
+                $lookup: {
+                  from: 'discounts',
+                  localField: 'discount',
+                  foreignField: '_id',
+                  as: 'discountInfo'
+                }
+              },
+              {
+                $addFields: {
+                  discountInfo: { $arrayElemAt: ['$discountInfo', 0] },
+                  discountedPrice: {
+                    $cond: {
+                      if: { $gt: [{ $size: "$discountInfo" }, 0] },
+                      then: {
+                        $multiply: [
+                          "$price_unit",
+                          { $subtract: [1, { $divide: [{ $toDouble: { $arrayElemAt: ["$discountInfo.percentage", 0] } }, 100] }] }
+                        ]
+                      },
+                      else: "$price_unit"
+                    }
+                  }
+                }
+              },
+              {
+                $lookup: {
+                  from: 'categories',
+                  localField: 'category',
+                  foreignField: '_id',
+                  as: 'categoryInfo'
+                }
+              },
+              {
+                $addFields: {
+                  categoryInfo: { $arrayElemAt: ['$categoryInfo', 0] },
+                  categoryName: "$categoryInfo.category_name"
+                }
+              },
+              {
+                $lookup: {
+                  from: 'offers',
+                  let: { product_name: '$product_name' },
+                  pipeline: [
+                    {
+                      $match: {
+                        $expr: {
+                          $and: [
+                            { $eq: ["$offer_name", "$$product_name"] },
+                            { $eq: ["$status", true] }
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  as: 'productoffer'
+                }
+              },
+              {
+                $addFields: {
+                  productoffer: { $arrayElemAt: ['$productoffer', 0] },
+                  pdtoffer: {
+                    $cond: {
+                      if: { $gt: [{ $size: "$productoffer" }, 0] },
+                      then: {
+                        $multiply: [
+                          "$price_unit",
+                          { $divide: [{ $toDouble: { $arrayElemAt: ["$productoffer.discount_per", 0] } }, 100] }
+                        ]
+                      },
+                      else: 0
+                    }
+                  }
+                }
+              },
+              {
+                $lookup: {
+                  from: 'offers',
+                  let: { categoryName: '$categoryName' },
+                  pipeline: [
+                    {
+                      $match: {
+                        $expr: {
+                          $and: [
+                            { $eq: ["$offer_name", "$$categoryName"] },
+                            { $eq: ["$status", true] }
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  as: 'categoryoffer'
+                }
+              },
+              {
+                $addFields: {
+                  categoryoffer: { $arrayElemAt: ['$categoryoffer', 0] },
+                  categoffer: {
+                    $cond: {
+                      if: { $gt: [{ $size: "$categoryoffer" }, 0] },
+                      then: {
+                        $multiply: [
+                          "$price_unit",
+                          { $divide: [{ $toDouble: { $arrayElemAt: ["$categoryoffer.discount_per", 0] } }, 100] }
+                        ]
+                      },
+                      else: 0
+                    }
+                  }
+                }
+              },
+              {
+                $addFields: {
+                  discountInfo: {
+                    $cond: {
+                      if: { $isArray: "$discountInfo" },
+                      then: { $arrayElemAt: ["$discountInfo", 0] },
+                      else: null
+                    }
+                  },
+                  discountedsalePrice: {
+                    $cond: {
+                      if: {
+                        $and: [
+                          { $ne: ["$discountInfo", null] },
+                          { $or: [
+                            { $ne: ["$pdtoffer", 0] },
+                            { $ne: ["$categoffer", 0] }
+                          ]}
+                        ]
+                      },
+                      then: {
+                        $subtract: [
+                          "$discountedPrice",
+                          { $max: ["$pdtoffer", "$categoffer"] }
+                        ]
+                      },
+                      else: "$discountedPrice"
+                    }
+                  }
+                }
+              },
+              sortStage,
+              { $skip: pageDB * perPage },
+              { $limit: perPage },
+            ],
+            productCount: [
+              matchStage,
+              { $count: "count" }
+            ]
+          }
+        };
+        
+        const results = await Products.aggregate([facetStage]);
+        
+        const products = results[0].products;
+
+        //console.log("products :",products)
+
+        const totalCount = results[0].productCount[0] ? results[0].productCount[0].count : 0;
+        const pages = Math.ceil(totalCount / perPage);
+        
+        res.render('content/allproducts',{
+            title : "All Products| TraditionShoppe",
+            user : req.session.user,
+            blocked:req.session.blocked,
+            page : 'All products', 
+            qtyCount:req.session.qtyCount,
+            listCount:req.session.listCount,               
+            products,
+            pageNum,
+            perPage,
+            totalCount, 
+            pages,
+            currentUrl: req.originalUrl,         
+            errorMessage:req.flash('errorMessage'),
+            successMessage:req.flash('successMessage')
+           })
+        
+    }
+    catch(err){
+        console.log(err.message)
+    }
+}
+//load all products
+const loadAllProductsOrig = async (req,res)=>{
     try{    
                        
             let matchCondition = ''
@@ -1629,15 +1885,17 @@ const addQtyToCart = async(req,res)=>{
                             } 
                         }
                     )
+                    const newQty = qty+1
                     await getQtyCount(req,res);
+                    const qtyCount =  req.session.qtyCount
                     console.log('qty added successful');
                     req.flash("successMessage", "Product is successfully updated to cart...");
-                    res.json({ success: true });
+                    res.json({ success: true,newQty,qtyCount});
                 }
                 
         } else {
-            req.flash("errorMessage", "Out of the stock!!");
-            res.json({ success: false });
+            //req.flash("errorMessage", "Out of the stock!!");
+            res.json({ success: false},{message:'Out of stock' });
         }
 
     }
@@ -1687,10 +1945,12 @@ const subQtyFromCart = async(req,res)=>{
                     } 
                 }
             )
+            const newQty = qty - 1
             await getQtyCount(req,res);
+            const qtyCount =  req.session.qtyCount
             console.log('successful');
             req.flash("successMessage", "Product is successfully updated to cart...");
-            res.json({ success: true });
+            res.json({ success: true , newQty,qtyCount});
 
         } else if (qty<=1){
             if( user_cart.product_list.length === 1 ){
@@ -1699,7 +1959,7 @@ const subQtyFromCart = async(req,res)=>{
                 console.log('successful');
                 await getQtyCount(req,res);
                 req.flash("successMessage", "User is deleted from cart...");
-                res.json({ success: true });
+                res.json({ success: false });
         } else{
             await Cart.updateOne(
                 {  _id:cartid },
@@ -1711,7 +1971,7 @@ const subQtyFromCart = async(req,res)=>{
             console.log('successful');
             await getQtyCount(req,res);
             req.flash("successMessage", "Product is deleted from cart...");
-            res.json({ success: true });
+            res.json({ success: false });
         }
     }
     }
@@ -1833,6 +2093,11 @@ const loadCheckout = async(req,res)=>{
         const cartDet = await Cart.find({_id:req.params.cartid}).exec()
         const userAddress = await Address.find({user_id:userid}).exec()
         const amount = req.params.amount
+        let deliveryCharge = 0
+        if (amount < 1500){
+            deliveryCharge = 80
+            amount = amount - 80
+        }
 
         await getQtyCount(req,res)
         await getListCount(req,res)
@@ -1851,6 +2116,7 @@ const loadCheckout = async(req,res)=>{
             userAddress,
             amount,
             coupondiscount,
+            deliveryCharge,
             qtyCount:req.session.qtyCount,
             listCount:req.session.listCount,       
             errorMessage : req.flash('errorMessage'),
@@ -2060,6 +2326,7 @@ const couponApply = async (req,res)=>{
 
                 req.session.couponDiscountTotal = discountedTotal
                 req.session.coupondiscount = couponDiscount
+                req.session.couponid = couponid
 
                 console.log("coupon applied first time successfully..");
                 req.flash("successMessage", "Coupon applied successfully...");
@@ -2088,7 +2355,8 @@ const couponApply = async (req,res)=>{
                 }   
                 
                 req.session.couponDiscountTotal = discountedTotal 
-                req.session.coupondiscount = couponDiscount   
+                req.session.coupondiscount = couponDiscount 
+                req.session.couponid = couponid  
                 console.log("coupon applied amount : " + discountedTotal);      
                 console.log("coupon applied successfull..");
                 req.flash("successMessage", "Coupon applied successfully...");
@@ -2134,6 +2402,10 @@ const makeCODPayment = async(req,res)=>{
 
         const { paymentMethod,address,total,cartid,userid } = jsonData;
         console.log("checkout data :",jsonData)
+        let charge = 0
+        if (total < 1500){
+            charge = 80
+        }
 
         const user = await User.findOne({_id:userid}).exec()
         let paymntamnt = total
@@ -2171,15 +2443,30 @@ const makeCODPayment = async(req,res)=>{
         const productDet = await Products.findOne({_id:cartDet.product_list[0].productId}).exec()
        
         req.session.cartid = cartid
+        let order;
+        if(req.session.couponid){
+            order = new Order({
+                order_date : new Date(currentDate),
+                user: userid,
+                address:address,
+                payment : paymentMethod,
+                coupon: req.session.couponid,
+                product_list: newList,
+                payment_amount:total,
+                fixedDeliveryCharge:charge              
+               })
+        } else {
 
-         const order = new Order({
+        order = new Order({
             order_date : new Date(currentDate),
             user: userid,
             address:address,
             payment : paymentMethod,
             product_list: newList,
-            payment_amount:total,              
+            payment_amount:total,
+            fixedDeliveryCharge:charge                
            })
+        }
          const orderData = await order.save()
          await getQtyCount(req,res);
         
@@ -2518,6 +2805,7 @@ module.exports = {
     getnameSortedProducts,
     
     loadAllProducts,
+    loadAllProductsOrig,
     loadSearchProducts,
     loadProductDetail,
 

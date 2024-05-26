@@ -22,7 +22,7 @@
               <div class="float-md-left mb-4"><h2 class="text-black h5">Shop All</h2></div>
               <div class="d-flex">
                 <div class="dropdown mr-1 ml-md-auto">
-                  <button type="button" class="btn btn-secondary btn-sm " id="dropdownMenuOffset" onclick="updateURL(event,'/?trend=new')"  aria-haspopup="true" aria-expanded="false">
+                  <button type="button" class="btn btn-secondary btn-sm " id="dropdownMenuOffset" onclick="selectTrend('new')"  aria-haspopup="true" aria-expanded="false">
                     Latest
                   </button>
                  
@@ -35,11 +35,12 @@
 
 
                                       <!--most sold calculte from paymnt product list  -->
+                    <a class="dropdown-item" href="" onclick="selectSort('ascending')">aA-zZ</a>
+                    <a class="dropdown-item" href="" onclick="selectSort('descending')">zZ-aA</a>
                     <div class="dropdown-divider"></div>
-                    <a class="dropdown-item" href="" onclick="updateURL(event,'/?sort=lowtohigh')" >Price, low to high</a>
-                    <a class="dropdown-item" href="" onclick="updateURL(event,'/?sort=hightolow')">Price, high to low</a>
-                    <a class="dropdown-item" href="" onclick="updateURL(event,'/?sort=ascending')">aA-zZ</a>
-                    <a class="dropdown-item" href="" onclick="updateURL(event,'/?sort=descending')">zZ-aA</a>
+                    <a class="dropdown-item" href="" onclick="selectSort('lowtohigh')" >Price, low to high</a>
+                    <a class="dropdown-item" href="" onclick="selectSort('hightolow')">Price, high to low</a>
+                    
                   </div>
                 </div>
               </div>
@@ -78,9 +79,10 @@
          
             <%})%>
         <%} else {%>
-          
-         <div class="row mb-5">
+          <div class="col-sm-6 col-lg-4 mb-4" >  
+         
             <div class="d-flex justify-content-center" > <h1>There is no such product in here!!</h1></div>
+          
           </div>
           <%}%>
 
@@ -93,10 +95,10 @@
                   <li><a href="#">&lt;</a></li>
                   <% for(let i = 1 ; i <= pages ; i++){%>
                     <% if( i== pageNum ) {%>
-                     <li class="active"><a href="" onclick="changeUrl(event,'/?page=<%= i %>')"><span><%= i %></span></a></li>
+                     <li class="active"><a href="" onclick="selectPage('<%= i %>')"><span><%= i %></span></a></li>
                      <!-- <li class="active"><a href="/allproducts/?page=<%= i %>"><span><%= i %></span></a></li> -->
                     <% } else { %>
-                    <li><a href="" onclick="changeUrl(event,'/?page=<%= i %>')"><span><%= i %></span></a></li>
+                    <li><a href="" onclick="selectPage('<%= i %>')"><span><%= i %></span></a></li>
                     <!-- <li><a href="/allproducts/?page=<%= i %>"><span><%= i %></span></a></li> -->
                     <% } %>
                   <% } %>
@@ -108,7 +110,7 @@
         </div>
         <%}%>
         <div class="col-md-3 order-1 mb-5 mb-md-0">
-          <div class="border p-4 rounded mb-4">
+          <!-- <div class="border p-4 rounded mb-4"> -->
             <!-- <h3 class="mb-3 h6 text-uppercase text-black d-block">Trending</h3> -->
             <!-- <ul class="list-unstyled mb-0"> -->
               <!-- <li class="mb-1"><a href="/allproducts/?trend=best" class="d-flex"><span class="text-black">Best Sellers</span> <span class="text-black ml-auto">(2,220)</span></a></li>
@@ -118,64 +120,391 @@
           <!-- </div> -->
         <!-- </div> -->
 
-        
-          <div class="border p-4 rounded mb-4">
-            <h3 class="mb-3 h6 text-uppercase text-black d-block">Shop By Categories</h3>
-            <ul class="list-unstyled mb-0">
-              <li class="mb-1"><a href="" onclick="updateURL(event,'/?categ=toys')" class="d-flex"><span class="text-black">Toys</span> <span class="text-black ml-auto"></span></a></li>
-              <li class="mb-1"><a href="" onclick="updateURL(event,'/?categ=eco')" class="d-flex"><span class="text-black">Eco-Friendly</span> <span class="text-black ml-auto"></span></a></li>
-              <li class="mb-1"><a href="" onclick="updateURL(event,'/?categ=gift')" class="d-flex"><span class="text-black">Gifts</span> <span class="text-black ml-auto"></span></a></li>
-              <li class="mb-1"><a href="" onclick="updateURL(event,'/?categ=west')" class="d-flex"><span class="text-black">Western Arts</span> <span class="text-black ml-auto"></span></a></li>
-            
-             
+        <!-- category -->
+       
 
-            </ul>
-          </div>
-      
-         
-            
-            <div class="border p-4 rounded mb-4">
-              <h3 class="mb-3 h6 text-uppercase text-black d-block">Price Ranges</h3>
-              <ul class="list-unstyled mb-0">
-                <li class="mb-1"><a href="" onclick="updateURL(event,'/?price=low')" class="d-flex"><span class="text-black">below 500</span> <span class="text-black ml-auto"></span></a></li>
-                <li class="mb-1"><a href="" onclick="updateURL(event,'/price=avrg')" class="d-flex"><span class="text-black">500 - 10,000</span> <span class="text-black ml-auto"></span></a></li>
-                <li class="mb-1"><a href="" onclick="updateURL(event,'/?price=costly')" class="d-flex"><span class="text-black">10,000 - 50,000</span> <span class="text-black ml-auto"></span></a></li>
-                <li class="mb-1"><a href="" onclick="updateURL(event,'/?price=high')" class="d-flex"><span class="text-black">above 50,000</span> <span class="text-black ml-auto"></span></a></li>
-                      
-  
-              </ul>
+          <div class="border p-4 rounded mb-4 ">
+            <div class="widget widget-collapsible">
+            <h3 class="mb-3 h6 text-uppercase text-black d-block widget-title"><a data-toggle="collapse" href="#widget-1" role="button" aria-expanded="true" style="color: black;"
+              aria-controls="widget-1">
+              Categories</a>
+            </h3>
+            <div class="collapse show" id="widget-1">
+              <div class="widget-body">
+                <div class="filter-items">
+                  <div class="filter-item">
+                    <div class="custom-control custom-checkbox">
+                      <input type="checkbox" id="decor" name="categ-type" value="decor" onchange="selectCategory('decor')">
+                      <label for="decor" class="text-black">Decor</label>
+                    </div>
+                  </div>
+                  <div class="filter-item">
+                    <div class="custom-control custom-checkbox">
+                      <input type="checkbox" id="toys" name="categ-type" value="toys" onchange="selectCategory('toys')">
+                      <label for="toys" class="text-black">Toys</label>
+                    </div>
+                  </div>
+                  <div class="filter-item">
+                    <div class="custom-control custom-checkbox">
+                      <input type="checkbox" id="clothes" name="categ-type" value="clothes" onchange="selectCategory('clothes')">
+                      <label for="clothes" class="text-black">Clothes</label>
+                    </div>
+                  </div>
+                  <div class="filter-item">
+                    <div class="custom-control custom-checkbox">
+                      <input type="checkbox" id="accessories" name="categ-type" value="accessories" onchange="selectCategory('accessories')">
+                      <label for="accessories" class="text-black">Accessories</label>
+                    </div>
+                  </div>
+                  <div class="filter-item">
+                    <div class="custom-control custom-checkbox">
+                      <input type="checkbox" id="natural-products" name="categ-type" value="natural-products" onchange="selectCategory('natural-products')">
+                      <label for="natural-products" class="text-black">Natural Products</label>
+                    </div>
+                  </div>
+                  
+                    <div class="filter-item">
+                      <div class="custom-control custom-checkbox">
+                        <input type="checkbox" id="eco-friendly" name="categ-type" value="eco-friendly" onchange="selectCategory('eco-friendly')">
+                        <label for="eco-friendly" class="text-black">Eco Friendly</label>
+                      </div>
+                    </div>
+                    <div class="filter-item">
+                      <div class="custom-control custom-checkbox">
+                        <input type="checkbox" id="kithchen-utensil" name="categ-type" value="kitchen-utensil" onchange="selectCategory('kithchen-utensil')">
+                        <label for="kithchen-utensil" class="text-black">Kitchen Utensil</label>
+                      </div>
+                    </div>
+                    <div class="filter-item">
+                      <div class="custom-control custom-checkbox">
+                        <input type="checkbox" id="gift" name="categ-type" value="gift" onchange="selectCategory('gift')">
+                        <label for="gift" class="text-black">Gifts</label>
+                      </div>
+                    </div>
+                    <div class="filter-item">
+                      <div class="custom-control custom-checkbox">
+                        <input type="checkbox" id="figurine" name="categ-type" value="figurine" onchange="selectCategory('figurine')">
+                        <label for="figurine" class="text-black">Figurine</label>
+                      </div>
+                    </div>
+                    <div class="filter-item">
+                      <div class="custom-control custom-checkbox">
+                        <input type="checkbox" id="western" name="categ-type" value="western" onchange="selectCategory('western')">
+                        <label for="west" class="text-black">Western Arts</label>
+                      </div>
+                    </div>
+                    <button class="btn btn-secondary btn-sm "  onclick="clearCategory()">clear</button>
+                  </div>
+                </div>
+              </div>
             </div>
-            
+          </div>
+           <!-- color -->
+           <div class="border p-4 rounded mb-4 ">
+            <div class="widget widget-collapsible">
+            <h3 class="mb-3 h6 text-uppercase text-black d-block widget-title"><a data-toggle="collapse" href="#widget-2" role="button" aria-expanded="true" style="color: black;"
+              aria-controls="widget-1">
+              Color</a>
+            </h3>
+            <div class="collapse show" id="widget-2">
+              <div class="widget-body">
+                <div class="filter-items">
+                  <div class="filter-item">
+                    <div class="custom-control custom-checkbox">
+                      <input type="checkbox" id="brown" name="color" value="brown" class="custom-control-input" onchange="selectColor('brown')">
+                      <label for="brown" class="custom-control-label d-flex color-item align-items-center">
+                        <span class=" color d-inline-block rounded-circle mr-2" style="background-color: brown;"></span> 
+                        <span class="text-black">Brown</span>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="filter-item">
+                    <div class="custom-control custom-checkbox">
+                      <input type="checkbox" id="green" name="color" value="green" class="custom-control-input" onchange="selectColor('green')">
+                      <label for="green" class="custom-control-label d-flex color-item align-items-center">
+                        <span class="bg-success color d-inline-block rounded-circle mr-2"></span> 
+                        <span class="text-black">Green</span>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="filter-item">
+                    <div class="custom-control custom-checkbox">
+                      <input type="checkbox" id="yellow" name="color" value="yellow" class="custom-control-input" onchange="selectColor('yellow')">
+                      <label for="yellow" class="custom-control-label d-flex color-item align-items-center">
+                        <span class="bg-warning color d-inline-block rounded-circle mr-2"></span> 
+                        <span class="text-black">Yellow</span>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="filter-item">
+                    <div class="custom-control custom-checkbox">
+                      <input type="checkbox" id="orange" name="color" value="orange" class="custom-control-input" onchange="selectColor('orange')">
+                      <label for="orange" class="custom-control-label d-flex color-item align-items-center">
+                        <span class="color d-inline-block rounded-circle mr-2" style="background-color: orange;"></span> 
+                        <span class="text-black">Orange</span>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="filter-item">
+                    <div class="custom-control custom-checkbox">
+                      <input type="checkbox" id="silver" name="color" value="silver" class="custom-control-input" onchange="selectColor('silver')">
+                      <label for="silver" class="custom-control-label d-flex color-item align-items-center">
+                        <span class="color d-inline-block rounded-circle mr-2"  style="background-color: silver;"></span> 
+                        <span class="text-black">Silver</span>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="filter-item">
+                    <div class="custom-control custom-checkbox">
+                      <input type="checkbox" id="golden" name="color" value="golden" class="custom-control-input" onchange="selectColor('golden')">
+                      <label for="golden" class="custom-control-label d-flex color-item align-items-center">
+                        <span class="color d-inline-block rounded-circle mr-2" style="background-color: goldenrod;"></span> 
+                        <span class="text-black">Golden</span>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="filter-item">
+                    <div class="custom-control custom-checkbox">
+                      <input type="checkbox" id="sandal" name="color" value="sandal" class="custom-control-input" onchange="selectColor('sandal')">
+                      <label for="sandal" class="custom-control-label d-flex color-item align-items-center">
+                        <span class="color d-inline-block rounded-circle mr-2" style="background-color:	#e9e1c2;"></span> 
+                        <span class="text-black">Sandal</span>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="filter-item">
+                    <div class="custom-control custom-checkbox">
+                      <input type="checkbox" id="brass" name="color" value="brass" class="custom-control-input" onchange="selectColor('brass')">
+                      <label for="brass" class="custom-control-label d-flex color-item align-items-center">
+                        <span class="color d-inline-block rounded-circle mr-2" style="background-color: #B87333;"></span> 
+                        <span class="text-black">Antique Brass</span>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="filter-item">
+                    <div class="custom-control custom-checkbox">
+                      <input type="checkbox" id="grey" name="color" value="grey" class="custom-control-input" onchange="selectColor('grey')">
+                      <label for="grey" class="custom-control-label d-flex color-item align-items-center">
+                        <span class="color d-inline-block rounded-circle mr-2" style="background-color: grey;"></span> 
+                        <span class="text-black">Grey</span>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="filter-item">
+                    <div class="custom-control custom-checkbox">
+                      <input type="checkbox" id="multi" name="color" value="multi" class="custom-control-input" onchange="selectColor('multi')">
+                      <label for="color-purple" class="custom-control-label d-flex color-item align-items-center">
+                        <span class="bg-primary color d-inline-block rounded-circle mr-2"></span> 
+                        <span class="text-black">Multicolor</span>
+                      </label>
+                    </div>
+                  </div>
+                  <button class="btn btn-secondary btn-sm "  onclick="clearColor()">clear</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+          <!-- price range -->
+            <div class="border p-4 rounded mb-4 ">
+              <div class="widget widget-collapsible">
+              <h3 class="mb-3 h6 text-uppercase text-black d-block widget-title"><a data-toggle="collapse" href="#widget-2" role="button" aria-expanded="true" style="color: black;"
+                aria-controls="widget-1">
+                Price </a>
+              </h3>
+              <div class="collapse show" id="widget-2">
+                <div class="widget-body">
+                  <div class="filter-items">
+                    <div class="filter-item">
+                        <div class="custom-control custom-checkbox">
+                          <input type="checkbox" id="low" name="price" value="low" onchange="selectPrice(0,5000)">
+                          <label for="low" class="text-black">below 500</label>
+                        </div>
+                    </div>
+                    <div class="filter-item">
+                      <div class="custom-control custom-checkbox">
+                        <input type="checkbox" id="avrg" name="price" value="avrg" onchange="selectPrice(500,5000)">
+                        <label for="avrg" class="text-black">500 - 5,000</label>
+                      </div>
+                    </div>
+                    <div class="filter-item">
+                      <div class="custom-control custom-checkbox">
+                        <input type="checkbox" id="costly" name="price" value="costly" onchange="selectPrice(5000,10000)">
+                        <label for="costly" class="text-black">5,000 - 10,000</label>
+                      </div>
+                    </div>
+                    <div class="filter-item">
+                      <div class="custom-control custom-checkbox">
+                        <input type="checkbox" id="high" name="price" value="high" onchange="selectPrice(10000,50000)">
+                        <label for="high" class="text-black">above 10,000</label>
+                      </div>
+                    </div>
+                    <button class="btn btn-secondary btn-sm "  onclick="clearPrice()">clear</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
 
-         
+          <button class="btn btn-secondary btn-sm "  onclick="clearAll()">Clear All</button>
+               <!-- end of side items -->
         
         </div>
-      <!-- </div> -->
-
-     
-     
-     
-    </div>
+     </div>
   </div>
 
   <script>
-  function updateURL(e,queryString) {
-     e.preventDefault()
-        var currentURL = window.location.href;
-        var baseURL = currentURL.split('/?')[0];
-        var currentParams = currentURL.split('?')[1];
-    var queryType = queryString.split('/?')[1]
-        if (!currentParams || currentURL.includes('?page') ) {
-            window.location.href = baseURL+  queryString;
-        } else if (currentParams.includes('&page'))  {
-          queryString = queryString.startsWith('?') ? queryString.split('?')[1]: queryString;
-            window.location.href = currentURL.split('&')[0] + '&' + queryString;
-        }
+            let selectedCategoryItems = "";
+            let selectedColor = "";
+            let selectedMinPrice = "";
+            let selectedMaxPrice = "";
+            let selectedSort = "";
+            let selectedTrend = "";
+            let selectedPage = "";
+           let flag = 0;
+            function selectCategory(data) {
+                const temp = document.getElementById(data);
         
-        // else if ()  {
-        //     window.location.href = baseURL + '/' + queryString;
-        // }      
-  }
+                if (!temp.checked) {
+                    // Deselecting a category
+                    const checkedArray = selectedCategoryItems.split(",").filter(item => item !== data);
+                    selectedCategoryItems = checkedArray.join(',');
+                } else {
+                    // Selecting a category
+                    selectedCategoryItems = selectedCategoryItems ? selectedCategoryItems + "," + data : data;
+                }
+                // Update the URL
+                updateURL();
+            }
+        
+            function selectColor(color) {
+              selectedColor = color;
+                // Update the URL
+                updateURL();
+            }
+            function selectPage(page) {
+              selectedPage = page;
+                // Update the URL
+                updateURL();
+            }
+            function selectSort(value) {
+              selectedSort = value;
+                // Update the URL
+                updateURL();
+            }
+            function selectTrend(value) {
+              selectedTrend = value;
+                // Update the URL
+                updateURL();
+            }
+        
+            function updateURL() {
+                if(selectedMinPrice==null){
+                    selectedMinPrice=""
+                    selectedMaxPrice=""
+                }
+               
+                const url = new URL(window.location.href);
+                url.searchParams.set('categ_type', encodeURIComponent(selectedCategoryItems));
+                url.searchParams.set('color', selectedColor);
+                url.searchParams.set('minPrice', selectedMinPrice);
+                url.searchParams.set('maxPrice', selectedMaxPrice);
+                url.searchParams.set('sort', selectedSort);
+                url.searchParams.set('trend', selectedTrend); 
+                url.searchParams.set('page', selectedPage);                
+                if(flag === 1){
+                  url.searchParams.delete('search');
+                }
+                window.history.pushState(null, '', url);
+                flag = 0
+                location.reload();
+            }
+            
+            function selectPrice(minPrice, maxPrice) {
+                selectedMinPrice=minPrice
+                selectedMaxPrice=maxPrice
+                updateURL();
+            }
+            function clearAll(){
+              selectedCategoryItems = "";
+              selectedColor = "";
+              selectedMinPrice = "";
+              selectedMaxPrice = "";
+              selectedSort = "";
+              selectedTrend = "";
+              selectedPage = "";
+              flag = 1
+                updateURL();
+            }
+
+            function clearCategory(){
+              selectedCategoryItems = "";
+                updateURL();
+            }
+
+            function clearColor(){
+                selectedColor = "";
+                updateURL();
+            }
+            
+            function clearPrice(){
+                selectedMinPrice = "";
+                selectedMaxPrice = "";
+                updateURL();
+            }
+
+            window.onload = function () {
+                const queryString = window.location.search;
+                const urlSearchParams = new URLSearchParams(queryString);
+                const categorySelected = urlSearchParams.get('categ_type');
+                selectedCategoryItems = categorySelected ? decodeURIComponent(categorySelected) : "";
+        
+                const colorSelected = urlSearchParams.get('color');
+                selectedColor = colorSelected || "";
+
+                const sortSelected = urlSearchParams.get('sort');
+                selectedSort = sortSelected || "";
+
+                const trendSelected = urlSearchParams.get('trend');
+                selectedTrend = trendSelected || "";
+
+                const pageSelected = urlSearchParams.get('page');
+                selectedPage = pageSelected || "";
+
+                const minSelected = urlSearchParams.get('minPrice');
+                const maxSelected = urlSearchParams.get('maxPrice');
+                selectedMinPrice = minSelected !== "" ? minSelected :"" ;
+                selectedMaxPrice = maxSelected !== "" ? maxSelected :""
+                // alert(selectedMinPrice)
+                if(minSelected !== "" && maxSelected !== "" ){
+                    // alert(`C${selectedMinPrice}`)
+                    document.getElementById(`C${selectedMinPrice}`).checked =true
+                }
+                if(colorSelected!=""){
+                    // alert(colorSelected)
+                    document.getElementById(selectedColor).checked =true
+                }
+                if(sortSelected!=""){
+                    // alert(sortSelected)
+                    document.getElementById(selectedSort).checked =true
+                }
+                if(trendSelected!=""){
+                    // alert(sortSelected)
+                    document.getElementById(selectedTrend).checked =true
+                }
+                if(pageSelected!=""){
+                    // alert(sortSelected)
+                    document.getElementById(selectedPage).checked =true
+                }
+
+        
+                const checkedCategoryItems = selectedCategoryItems.split(",");
+                for (let i = 0; i < checkedCategoryItems.length; i++) {
+                    document.getElementById(checkedCategoryItems[i]).checked = true;
+                }
+        
+                // Handle gender selection here (e.g., selectGender('men') or selectGender('women')).
+            };
   function changeUrl(e,queryString){
     e.preventDefault()
     var currentURL = window.location.href;

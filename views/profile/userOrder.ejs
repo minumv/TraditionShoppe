@@ -103,6 +103,7 @@
                 </div>
 
                 <div class="d-block">
+                    <div><a href="/getInvoice/<%= odr._id %>/<%= odr.productDetails._id %>"><button class="use-but ord-but bg-light text-center text-dark">Invoice</button></a></div>
                     <div><a href="/getOrderView/<%= odr._id %>/<%= odr.productDetails._id %>"><button class="use-but ord-but bg-light text-center text-dark">View Details</button></a></div>
                     <!-- <div><a href="/review"><button type="submit" class="use-but ord-but bg-light text-center text-dark">Write a review</button></a></div> -->
                     <% if(odr.product_list.paymentstatus === 'pending' && odr.payment === 'Razorpay'){%>
