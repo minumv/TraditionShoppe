@@ -30,9 +30,9 @@
                                     </div>
                                     <div class="cart-details">                                       
                                         <div class="cart-opert but">
-                                            <button onclick="subtractingFromCart('<%=user_cart._id%>','<%=user_cart.user%>','<%=cart.productId%>','<%=pdt.discountedsalePrice%>','<%=index%>')" class="p-1 m-0 side border-0" style="background: transparent;">-</button>
+                                            <button onclick="subtractingFromCart('<%=user_cart._id%>','<%=user_cart.user%>','<%=cart.productId%>','<%=pdt.discountedsalePrice%>','<%=pdt.price_unit%>','<%=index%>')" class="p-1 m-0 side border-0" style="background: transparent;">-</button>
                                             <div class="p-1 m-0"><button id="cart_quantity<%=index%>"><%=cart.quantity %></button></div>
-                                          <button onclick="addingToCart('<%=user_cart._id%>','<%=user_cart.user%>','<%=cart.productId%>','<%=pdt.discountedsalePrice%>','<%=index%>')" class="p-1 m-0 side border-0" style="background: transparent;">+</button>
+                                          <button onclick="addingToCart('<%=user_cart._id%>','<%=user_cart.user%>','<%=cart.productId%>','<%=pdt.discountedsalePrice%>','<%=pdt.price_unit%>','<%=index%>')" class="p-1 m-0 side border-0" style="background: transparent;">+</button>
                                           
                                         </div>
                                         <button onclick="deletingFromCart('<%=user_cart._id%>','<%=user_cart.user%>','<%=cart.productId%>')" class="border-0" style="background: transparent;"><span class="icon icon-trash cart-trash-icon"></span></button>
@@ -60,7 +60,7 @@
                            
                         <li>
                             <div class="cart-footer">
-                                <p>Subtotal (<%=qtyCount%> items):<span>₹<%=amount.toFixed(2)%> </span> </p>
+                                <p>Subtotal (<span id="subcount"><%=qtyCount%></span> items):<span>₹</span><span id="subtotal"><%=amount%></span><span>.00</span></p>
                             </div>
                             
                         </li>
@@ -70,8 +70,8 @@
             <div class="">
                 <div class="col-md-12 mb-0 ">
                     <div class="cart-proceed">
-                        <p class="head">TraditionShoppe Subtotal(<%=qtyCount%><br> items):<span>₹<%=amount.toFixed(2)%> </span></p>
-                        <p class="sub">Total Savings : <span>₹<%=savings.toFixed(2)%> </span></p>
+                        <p class="head">TraditionShoppe Subtotal(<span id="totalcount"><%=qtyCount%></span><br> items):<span>₹</span><span id="amttotal"><%=amount%></span><span>.00</span></p>
+                        <p class="sub">Total Savings : <span>₹</span><span id="savings"><%=savings%></span><span>.00</span></p>
                         <a href="/checkout/<%=user_cart._id%>/<%=amount%>"><button>Proceed to Buy Item</button></a>
                         <div class="d-flex">
                             <div class="line"></div>
@@ -116,7 +116,9 @@
 <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
 
 <script>
-    function addingToCart(cartid,userid,pdtid,discountprice,index){
+    function addingToCart(cartid,userid,pdtid,discountprice,price,index){
+        const savings = document.getElementById('savings').innerHTML
+        const newSavings = parseFloat(savings) + ( price - discountprice )
        // alert(index)
         fetch(`/addCart/${cartid}/${userid}/${pdtid}/${discountprice}`,{
             method:"post",
@@ -130,6 +132,11 @@
                 
                 document.getElementById(`cart_quantity${index}`).innerHTML = data.newQty
                 document.getElementById('qCount').innerHTML = data.qtyCount
+                document.getElementById('subcount').innerHTML = data.qtyCount
+                document.getElementById('totalcount').innerHTML = data.qtyCount
+                document.getElementById('subtotal').innerHTML = data.totalAmount
+                document.getElementById('amttotal').innerHTML = data.totalAmount
+                document.getElementById('savings').innerHTML = newSavings
                 // location.href='/cart'
             } 
             else {
@@ -140,7 +147,9 @@
         })
     }
 
-    function subtractingFromCart(cartid,userid,pdtid,discountprice,index){
+    function subtractingFromCart(cartid,userid,pdtid,discountprice,price,index){
+        const savings = document.getElementById('savings').innerHTML
+        const newSavings = parseFloat(savings) - ( price - discountprice )
 
         fetch(`/subCart/${cartid}/${userid}/${pdtid}/${discountprice}`,{
             method:"post",
@@ -153,6 +162,12 @@
             if(data.success){
                 document.getElementById(`cart_quantity${index}`).innerHTML = data.newQty
                 document.getElementById('qCount').innerHTML = data.qtyCount
+                document.getElementById('subcount').innerHTML = data.qtyCount
+                document.getElementById('totalcount').innerHTML = data.qtyCount
+                document.getElementById('subtotal').innerHTML = data.totalAmount
+                document.getElementById('amttotal').innerHTML = data.totalAmount
+                document.getElementById('savings').innerHTML = newSavings
+
                 // location.href='/cart'
             } 
             else {

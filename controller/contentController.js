@@ -980,195 +980,6 @@ const loadAllProducts = async(req,res)=>{
         console.log(err.message)
     }
 }
-//load all products
-const loadAllProductsOrig = async (req,res)=>{
-    try{    
-                       
-            let matchCondition = ''
-           
-            const search = req.query.search 
-            console.log("search :",search)
-
-            const categ = req.query.categ
-            console.log("categ :",categ)
-
-            const trend = req.query.trend
-            console.log("trend :",trend)
-
-            const price = req.query.price
-            console.log("price :",price)
-
-            const sort = req.query.sort
-            console.log("sort :",sort)
-
-            matchCondition = {
-                $and: [
-                    { status: { $ne: 'inactive' } },
-                    { isListing: true }
-                 ]
-            }
-
-            if(search){
-                matchCondition.$and.push( { "product_name": { $regex: ".*" + search + ".*", $options: 'i' } })
-            }
-            if(categ) {
-                matchCondition.$and.push( {product_type:categ})
-            }
-            if(trend){
-                matchCondition.$and.push( { status: 'new' })                
-            }
-            if(price){
-                let price_range =''
-                if(price === 'low') price_range = { $lt: 500 }
-                else if(price === 'avrg') price_range = {$gt:500,$lt:10000}
-                else if(price === 'costly') price_range = {$gt:10000,$lt:50000}
-                else if(price === 'high') price_range = {$gt:50000} 
-
-                matchCondition.$and.push( {  price_unit:  price_range })
-                      
-            }
-           
-              
-            console.log("matchcondition :",matchCondition)
-            const pageNum = req.query.page || 1
-            const perPage = 9
-            let totalCount =0
-            let pages =0
-            const total = await Products.aggregate([
-                {
-                  $match: matchCondition
-                },
-                {
-                  $group: {
-                    _id: null,
-                    count: { $sum: 1 }
-                  }
-                }
-              ]);
-              if(total.length>0){
-                console.log("total :",total)
-                totalCount = total[0].count
-                pages = Math.ceil( totalCount / perPage )
-                console.log("count",totalCount);
-              }
-
-              let products = []
-            //   let products = await getPaginatedProducts(req,res,perPage,pageNum,matchCondition,false,false)
-
-
-              let sortCondition = ''
-              switch(sort){
-                  case'lowtohigh':{
-                      sortCondition = {discountedsalePrice:1}
-                      products = await getSortedProducts(req,res,perPage,pageNum,matchCondition,sortCondition)
-                      break;
-                  }
-                  case'hightolow':{
-                      sortCondition = {discountedsalePrice:-1}
-                      products = await getSortedProducts(req,res,perPage,pageNum,matchCondition,sortCondition)
-                      break;
-                  }
-                  case'ascending':{
-                      sortCondition = {product_name:1}
-                      products = await getSortedProducts(req,res,perPage,pageNum,matchCondition,sortCondition)
-                      break;
-                  }
-                  case'descending':{
-                      sortCondition = {product_name:-1}
-                      products = await getSortedProducts(req,res,perPage,pageNum,matchCondition,sortCondition)
-                      break;
-                  }
-                 default:{
-                  products = await getPaginatedProducts(req,res,perPage,pageNum,matchCondition)
-                  break;
-                 }
-              }
-           
-           
-           // console.log("products :",products)
-           
-
-
-           //console.log("products",products);    
-           res.render('content/allproducts',{
-            title : "All Products| TraditionShoppe",
-            user : req.session.user,
-            blocked:req.session.blocked,
-            page : 'All products', 
-            qtyCount:req.session.qtyCount,
-            listCount:req.session.listCount,               
-            products,
-            pageNum,
-            perPage,
-            totalCount, 
-            pages,
-            currentUrl: req.originalUrl,         
-            errorMessage:req.flash('errorMessage'),
-            successMessage:req.flash('successMessage')
-           })
-                    
-    }
-    catch(err){
-        console.log(err.message);
-    }
-}
-
-const loadSearchProducts = async (req,res)=>{
-    try{
-        let matchCondition = {
-            $and : [{status : 'active',status : 'new', isListing : true}]
-        }
-    
-        console.log("matchcondition :",matchCondition)
-        const pageNum = req.query.page || 1
-        const perPage = 9
-        let totalCount =0
-        let pages =0
-        const total = await Products.aggregate([
-            {
-            $match: matchCondition
-            },
-            {
-            $group: {
-                _id: null,
-                count: { $sum: 1 }
-            }
-            }
-        ]);
-        if(total.length>0){
-            console.log("total :",total)
-            totalCount = total[0].count
-            pages = Math.ceil( totalCount / perPage )
-            console.log("count",totalCount);
-        }
-      
-
-   
-    const products = await getPaginatedProducts(req,res,perPage,pageNum,matchCondition)
-   // console.log("products :",products)
-       
-            
-                res.render('content/allproducts',{
-                title : "All Products| TraditionShoppe",
-                user : req.session.user,
-                blocked:req.session.blocked,
-                page : 'All products', 
-                qtyCount:req.session.qtyCount,
-                listCount:req.session.listCount,               
-                products : products,
-                discounts : discounts,
-                
-                errorMessage:req.flash('errorMessage'),
-                successMessage:req.flash('successMessage')
-
-                
-            })
-
-    }
-    catch(err){
-        console.log(err.message);
-    }
-}
 
 //load all new handicrafts products (make these  code common)
 const  getnewHandicrafts = async (req,res)=>{
@@ -1886,11 +1697,12 @@ const addQtyToCart = async(req,res)=>{
                         }
                     )
                     const newQty = qty+1
+                    const totalAmount = amount + parseFloat(price)
                     await getQtyCount(req,res);
                     const qtyCount =  req.session.qtyCount
                     console.log('qty added successful');
-                    req.flash("successMessage", "Product is successfully updated to cart...");
-                    res.json({ success: true,newQty,qtyCount});
+                    //req.flash("successMessage", "Product is successfully updated to cart...");
+                    res.json({ success: true,newQty,qtyCount,totalAmount});
                 }
                 
         } else {
@@ -1946,11 +1758,12 @@ const subQtyFromCart = async(req,res)=>{
                 }
             )
             const newQty = qty - 1
+            const totalAmount = amount - parseFloat(price)
             await getQtyCount(req,res);
             const qtyCount =  req.session.qtyCount
             console.log('successful');
-            req.flash("successMessage", "Product is successfully updated to cart...");
-            res.json({ success: true , newQty,qtyCount});
+            //req.flash("successMessage", "Product is successfully updated to cart...");
+            res.json({ success: true , newQty,qtyCount,totalAmount});
 
         } else if (qty<=1){
             if( user_cart.product_list.length === 1 ){
@@ -1958,7 +1771,7 @@ const subQtyFromCart = async(req,res)=>{
                 { _id:cartid })
                 console.log('successful');
                 await getQtyCount(req,res);
-                req.flash("successMessage", "User is deleted from cart...");
+                //req.flash("successMessage", "User is deleted from cart...");
                 res.json({ success: false });
         } else{
             await Cart.updateOne(
@@ -1970,7 +1783,7 @@ const subQtyFromCart = async(req,res)=>{
             })
             console.log('successful');
             await getQtyCount(req,res);
-            req.flash("successMessage", "Product is deleted from cart...");
+           // req.flash("successMessage", "Product is deleted from cart...");
             res.json({ success: false });
         }
     }
@@ -1997,7 +1810,7 @@ const deleteFromCart = async(req,res)=>{
                 { _id:cartid })
                 console.log('successful');
                 await getQtyCount(req,res);
-                req.flash("successMessage", "User is deleted from cart...");
+               // req.flash("successMessage", "User is deleted from cart...");
                 res.json({ success: true });
             } else {
         user_cart.product_list.forEach(product => {
@@ -2017,7 +1830,7 @@ const deleteFromCart = async(req,res)=>{
                       
             await getQtyCount(req,res);
             console.log('successful');
-            req.flash("successMessage", "Product is deleted from cart...");
+           // req.flash("successMessage", "Product is deleted from cart...");
             res.json({success:true})
         }
     }
@@ -2289,6 +2102,9 @@ const couponApply = async (req,res)=>{
         let couponApplied = false;
         let couponDiscount = coupondisc * .01 * totalAmount
         let couponEmpty = false;
+        if(couponDiscount > couponamt){
+            couponDiscount = couponamt
+        }
         let discountedTotal = totalAmount - couponDiscount   
 
         console.log("coupon discount :",couponDiscount);
@@ -2311,7 +2127,7 @@ const couponApply = async (req,res)=>{
         //coupuns empty or not
         if(couponEmpty){
             console.log("coupon empty");           
-            if( (totalAmount < couponminim) || (couponDiscount > couponamt) ){
+            if(totalAmount < couponminim){
                 req.flash("errorMessage", "Selected coupon is not applicable to this purchase..Try another one!!");
                 res.status(400).send({ success: false });
                 return;
@@ -2340,7 +2156,7 @@ const couponApply = async (req,res)=>{
             return;
         } else {
             console.log("coupon not applied yet");            
-            if( (totalAmount < couponminim) || (couponDiscount > couponamt) ){
+            if( totalAmount < couponminim){
                 req.flash("errorMessage", "Selected coupon is not applicable to this purchase..Try another one!!");
                 res.status(400).send({ success: false });
                 return;
@@ -2805,8 +2621,7 @@ module.exports = {
     getnameSortedProducts,
     
     loadAllProducts,
-    loadAllProductsOrig,
-    loadSearchProducts,
+  
     loadProductDetail,
 
     loadNew,

@@ -299,7 +299,7 @@ const submitProducts = async (req,res)=>{
             //  req.flash("errorMessage", "Product registration failed.. Try again!!");
             // res.redirect("/newProducts");
             res.json({success:false})
-        }  
+        }  // 
     }
     catch(err){
         console.log(err.message)

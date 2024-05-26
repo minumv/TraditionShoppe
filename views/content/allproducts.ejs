@@ -171,8 +171,8 @@
                     </div>
                     <div class="filter-item">
                       <div class="custom-control custom-checkbox">
-                        <input type="checkbox" id="kithchen-utensil" name="categ-type" value="kitchen-utensil" onchange="selectCategory('kithchen-utensil')">
-                        <label for="kithchen-utensil" class="text-black">Kitchen Utensil</label>
+                        <input type="checkbox" id="kitchen-utensil" name="categ-type" value="kitchen-utensil" onchange="selectCategory('kitchen-utensil')">
+                        <label for="kitchen-utensil" class="text-black">Kitchen Utensil</label>
                       </div>
                     </div>
                     <div class="filter-item">
@@ -213,8 +213,17 @@
                     <div class="custom-control custom-checkbox">
                       <input type="checkbox" id="brown" name="color" value="brown" class="custom-control-input" onchange="selectColor('brown')">
                       <label for="brown" class="custom-control-label d-flex color-item align-items-center">
-                        <span class=" color d-inline-block rounded-circle mr-2" style="background-color: brown;"></span> 
+                        <span class=" color d-inline-block rounded-circle mr-2" style="background-color: rgb(128, 22, 22);"></span> 
                         <span class="text-black">Brown</span>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="filter-item">
+                    <div class="custom-control custom-checkbox">
+                      <input type="checkbox" id="white" name="color" value="white" class="custom-control-input" onchange="selectColor('white')">
+                      <label for="white" class="custom-control-label d-flex color-item align-items-center">
+                        <span class=" color d-inline-block border rounded-circle mr-2" style="background-color:white"></span> 
+                        <span class="text-black">White</span>
                       </label>
                     </div>
                   </div>
@@ -240,17 +249,35 @@
                     <div class="custom-control custom-checkbox">
                       <input type="checkbox" id="orange" name="color" value="orange" class="custom-control-input" onchange="selectColor('orange')">
                       <label for="orange" class="custom-control-label d-flex color-item align-items-center">
-                        <span class="color d-inline-block rounded-circle mr-2" style="background-color: orange;"></span> 
+                        <span class="color d-inline-block rounded-circle mr-2" style="background-color: rgb(243, 72, 10);"></span> 
                         <span class="text-black">Orange</span>
                       </label>
                     </div>
                   </div>
                   <div class="filter-item">
                     <div class="custom-control custom-checkbox">
-                      <input type="checkbox" id="silver" name="color" value="silver" class="custom-control-input" onchange="selectColor('silver')">
-                      <label for="silver" class="custom-control-label d-flex color-item align-items-center">
+                      <input type="checkbox" id="steel" name="color" value="steel" class="custom-control-input" onchange="selectColor('steel')">
+                      <label for="steel" class="custom-control-label d-flex color-item align-items-center">
                         <span class="color d-inline-block rounded-circle mr-2"  style="background-color: silver;"></span> 
-                        <span class="text-black">Silver</span>
+                        <span class="text-black">Steel</span>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="filter-item">
+                    <div class="custom-control custom-checkbox">
+                      <input type="checkbox" id="blue" name="color" value="blue" class="custom-control-input" onchange="selectColor('blue')">
+                      <label for="blue" class="custom-control-label d-flex color-item align-items-center">
+                        <span class="color d-inline-block rounded-circle mr-2"  style="background-color: rgb(16, 16, 235);"></span> 
+                        <span class="text-black">Blue</span>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="filter-item">
+                    <div class="custom-control custom-checkbox">
+                      <input type="checkbox" id="red" name="color" value="red" class="custom-control-input" onchange="selectColor('red')">
+                      <label for="red" class="custom-control-label d-flex color-item align-items-center">
+                        <span class="color d-inline-block rounded-circle mr-2" style="background-color: rgb(211, 0, 0)" ></span> 
+                        <span class="text-black">Red</span>
                       </label>
                     </div>
                   </div>
@@ -259,25 +286,34 @@
                       <input type="checkbox" id="golden" name="color" value="golden" class="custom-control-input" onchange="selectColor('golden')">
                       <label for="golden" class="custom-control-label d-flex color-item align-items-center">
                         <span class="color d-inline-block rounded-circle mr-2" style="background-color: goldenrod;"></span> 
-                        <span class="text-black">Golden</span>
+                        <span class="text-black">Gold</span>
                       </label>
                     </div>
                   </div>
                   <div class="filter-item">
                     <div class="custom-control custom-checkbox">
-                      <input type="checkbox" id="sandal" name="color" value="sandal" class="custom-control-input" onchange="selectColor('sandal')">
-                      <label for="sandal" class="custom-control-label d-flex color-item align-items-center">
+                      <input type="checkbox" id="navyblue" name="color" value="navyblue" class="custom-control-input" onchange="selectColor('golden')">
+                      <label for="navyblue" class="custom-control-label d-flex color-item align-items-center">
+                        <span class="color d-inline-block rounded-circle mr-2" style="background-color: navy;"></span> 
+                        <span class="text-black">Navy Blue</span>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="filter-item">
+                    <div class="custom-control custom-checkbox">
+                      <input type="checkbox" id="cream" name="color" value="cream" class="custom-control-input" onchange="selectColor('sandal')">
+                      <label for="cream" class="custom-control-label d-flex color-item align-items-center">
                         <span class="color d-inline-block rounded-circle mr-2" style="background-color:	#e9e1c2;"></span> 
-                        <span class="text-black">Sandal</span>
+                        <span class="text-black">Cream</span>
                       </label>
                     </div>
                   </div>
                   <div class="filter-item">
                     <div class="custom-control custom-checkbox">
-                      <input type="checkbox" id="brass" name="color" value="brass" class="custom-control-input" onchange="selectColor('brass')">
-                      <label for="brass" class="custom-control-label d-flex color-item align-items-center">
+                      <input type="checkbox" id="bronze" name="color" value="bronze" class="custom-control-input" onchange="selectColor('brass')">
+                      <label for="bronze" class="custom-control-label d-flex color-item align-items-center">
                         <span class="color d-inline-block rounded-circle mr-2" style="background-color: #B87333;"></span> 
-                        <span class="text-black">Antique Brass</span>
+                        <span class="text-black">Bronze</span>
                       </label>
                     </div>
                   </div>
@@ -287,6 +323,15 @@
                       <label for="grey" class="custom-control-label d-flex color-item align-items-center">
                         <span class="color d-inline-block rounded-circle mr-2" style="background-color: grey;"></span> 
                         <span class="text-black">Grey</span>
+                      </label>
+                    </div>
+                  </div>
+                  <div class="filter-item">
+                    <div class="custom-control custom-checkbox">
+                      <input type="checkbox" id="charcol" name="color" value="charcol" class="custom-control-input" onchange="selectColor('grey')">
+                      <label for="charcol" class="custom-control-label d-flex color-item align-items-center">
+                        <span class="color d-inline-block rounded-circle mr-2" style="background-color: rgb(21, 13, 47);"></span> 
+                        <span class="text-black">Charcol</span>
                       </label>
                     </div>
                   </div>
