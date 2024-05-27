@@ -7,6 +7,36 @@
   width : 100%;
   /* //background-color: aqua; */
   margin-bottom: 25px;
+}
+
+.input-group input,
+.input-group textarea {
+  width: 100%;
+  padding: 10px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  outline: none;
+}
+
+.floating-label {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  pointer-events: none;
+  transition: 0.2s ease all;
+  color: #aaa;
+  font-size: 1rem;
+}
+
+input:focus ~ .floating-label,
+input:not(:placeholder-shown) ~ .floating-label,
+textarea:focus ~ .floating-label,
+textarea:not(:placeholder-shown) ~ .floating-label {
+  top: -20px;
+  left: 10px;
+  font-size: 0.8rem;
+  color: #474b50;
 } 
   .error{
     position:absolute;
@@ -23,7 +53,7 @@
 </style>
 <section>   
       <div class="container">
-        <form role="form" id="profile_form" action="" method="post" enctype="multipart/form-data">    
+        <form role="form" id="profile_form" action="" method="post" enctype="multipart/form-data" onsubmit="return validateForm()">    
           <!-- /upload -->
           <div class="row ">                    
             <div class="col-6">
@@ -40,14 +70,15 @@
                     <% } %>
                     <div class="card-body">             
                       <div class="input-group input-group-outline mb-3">
-                         <input type="text" id="name" class="form-control" name="name" placeholder="Name"  onkeyup="validateName()" >
+                         <input type="text" id="name" class="form-control" name="name" placeholder=""  onchange="validateName()" >
+                         <label for="name" class="floating-label">Name</label>
                          <span id="name-error" class="error"></span>
                         </div>
                       <!-- <div class="input-group input-group-outline mb-3 ">                 
                         <input type="email" class="form-control" placeholder="Category">
                       </div> -->
-                      <div class="input-group input-group-outline d-flex justify-content-center">                  
-                        <div class="mx-4">
+                      <div class="input-group input-group-outline mb-3" style="position: relative; margin-bottom: 20px;">                  
+                        <div class="mx-4" style="position: absolute;left:10px;">
                           <select id="categoryName" class="form-control" required>
                             <option value="">Select Category</option>
                               <% categories.forEach((row, index) => { %>
@@ -55,7 +86,7 @@
                               <% }) %>
                           </select>
                         </div>
-                        <div class="mx-4">
+                        <div class="mx-4"  style="position: absolute;top: 0; left: calc(50% - 120px);">
                           <select id="sellerName" class="form-control" required>
                             <option value="">Select Seller</option>
                               <% sellers.forEach((row, index) => { %>
@@ -63,7 +94,7 @@
                               <% }) %>
                           </select>
                         </div>
-                        <div class="mx-4">
+                        <div class="mx-4" style="position: absolute;right:10px;">
                           <select id="discountName" class="form-control" required>
                             <option value="">Select Discount</option>
                               <% discounts.forEach((row, index) => { %>
@@ -72,101 +103,109 @@
                           </select>
                         </div>
                       </div>
-                      <div class="input-group input-group-outline mb-3">                  
-                        <textarea type="text" id="description" name="description" class="form-control" placeholder="Description" onkeyup="validateDescription()"></textarea>
-                        <span id="description-error" class="error"></span>
-                      </div>
-                      <div class="input-group input-group-outline mb-3">                   
-                          <input type="text" id="stock" name="stock" class="form-control" placeholder="Stock" onkeyup="validateStock()" >
-                          <span id="stock-error" class="error"></span>
+                      <div style="margin-top: 60px;">
+                        <div class="input-group input-group-outline mt-3">                  
+                          <textarea type="text" id="description" name="description" class="form-control" placeholder="" onkeyup="validateDescription()"></textarea>
+                          <label for="description" class="floating-label">Description</label>
+                          <span id="description-error" class="error"></span>
                         </div>
-                      <div class="input-group input-group-outline mb-3">                   
-                          <input type="text" id="price"  name="price" class="form-control" placeholder="Price per Unit" onkeyup="validatePrice()">
-                          <span id="price-error" class="error"></span>
-                        </div>
-                     
-                      </div>
-                      <div class="input-group input-group-outline mb-3 d-flex"> 
-                        <div class="dropdown mx-3">
-                          <select id="material" class="form-control" required>
-                            <option value="">Select Material</option>
-                              <option value="wood">Wood</option>
-                              <option value="fibre">Fibre</option>
-                              <option value="brass">Brass</option>
-                              <option value="metal">Metal</option>
-                              <option value="stone">Stone</option>
-                              <option value="bamboo">Bamboo</option>
-                              <option value="copper">Copper-alloy</option>
-                              <option value="handloom">Handloom</option>
-                              <option value="cotton">Cotton</option>
-                              <option value="rosewood">Rosewood</option>
-                              <option value="metalwood">Metal-wood</option>
-                              <option value="Others">Others</option>
-                          </select>
-                      </div>
-                      <div class="mx-3">
-                        <select id="color" class="form-control" required>
-                          <option value="">Select Color</option>
-                          <option value="brown">Brown</option>
-                          <option value="white">White</option>
-                          <option value="bronze">Bronze</option>
-                          <option value="navyblue">Navy Blue</option>
-                          <option value="cream">Cream</option>
-                            <option value="orange">Orange</option>
-                            <option value="gold">Gold</option>
-                            <option value="steel">Steel</option>
-                            <option value="green">Green</option>
-                            <option value="yellow">Yellow</option>
-                            <option value="grey">Grey</option>
-                            <option value="blue">Blue</option>
-                            <option value="red">Red</option>
-                            <option value="charcol">Charcol</option>
-                            <option value="multi">Multicolor</option>
-                            
-                        </select>
-                      </div>    
-                      <div class="mx-3">
-                        <select id="type" class="form-control" required>
-                          <option value="">Select Type</option>
-                          <option value="decor">decor</option>
-                          <option value="gifts">gifts</option>
-                          <option value="toys">toys</option>
-                            <option value="figurine">figurine</option>
-                            <option value="accessories">accessories</option>
-                            <option value="eco-friendly">eco-friendly</option>
-                            <option value="kitchen-utensil">kitchen-utensil</option>
-                            <option value="natural-products">natural-products</option>
-                            <option value="clothes">clothes</option>
-                            <option value="jewellery">jewellery</option>
-                            <option value="western">western</option>
-                            <option value="others">others</option>
-                            
-                        </select></div>          
-                      <div class="input-group input-group-outline mb-3">                   
-                        <input type="text" id="size" name="size" class="form-control" placeholder="Size (inches)" onkeyup="validateSize()">
-                        <span id="size-error" class="error"></span>
-                      </div>
-                      <div class="input-group input-group-outline mb-3">                   
-                        <input type="text" id="weight" name="weight" class="form-control" placeholder="Weight (grams)" onkeyup="validateWeight()">
-                        <span id="weight-error" class="error"></span>
-                      </div>                
-                      </div>
-                      <div class="input-group input-group-outline mb-3 d-flex"> 
+                        <div class="input-group input-group-outline mb-3">                   
+                            <input type="text" id="stock" name="stock" class="form-control" placeholder="" onchange="validateStock()" >
+                           <label for="stock" class="floating-label">Stock</label>
+                           <span id="stock-error" class="error"></span>
+                          </div>
+                        <div class="input-group input-group-outline mb-3">                   
+                            <input type="text" id="price"  name="price" class="form-control" placeholder="" onchange="validatePrice()">
+                           <label for="price" class="floating-label">Price</label>
+                           <span id="price-error" class="error"></span>
+                          </div>
                        
+                        </div>
+                        <div class="input-group input-group-outline mb-4 d-flex"> 
+                          <div class="dropdown mx-3 mb-3">
+                            <select id="material" class="form-control" required>
+                              <option value="">Select Material</option>
+                                <option value="wood">Wood</option>
+                                <option value="fibre">Fibre</option>
+                                <option value="brass">Brass</option>
+                                <option value="metal">Metal</option>
+                                <option value="stone">Stone</option>
+                                <option value="bamboo">Bamboo</option>
+                                <option value="copper">Copper-alloy</option>
+                                <option value="handloom">Handloom</option>
+                                <option value="cotton">Cotton</option>
+                                <option value="rosewood">Rosewood</option>
+                                <option value="metalwood">Metal-wood</option>
+                                <option value="Others">Others</option>
+                            </select>
+                        </div>
+                        <div class="mx-3">
+                          <select id="color" class="form-control" required>
+                            <option value="">Select Color</option>
+                            <option value="brown">Brown</option>
+                            <option value="white">White</option>
+                            <option value="bronze">Bronze</option>
+                            <option value="navyblue">Navy Blue</option>
+                            <option value="cream">Cream</option>
+                              <option value="orange">Orange</option>
+                              <option value="gold">Gold</option>
+                              <option value="steel">Steel</option>
+                              <option value="green">Green</option>
+                              <option value="yellow">Yellow</option>
+                              <option value="grey">Grey</option>
+                              <option value="blue">Blue</option>
+                              <option value="red">Red</option>
+                              <option value="charcol">Charcol</option>
+                              <option value="multi">Multicolor</option>
+                              
+                          </select>
+                        </div>    
+                        <div class="mx-3">
+                          <select id="type" class="form-control" required>
+                            <option value="">Select Type</option>
+                            <option value="decor">decor</option>
+                            <option value="gifts">gifts</option>
+                            <option value="toys">toys</option>
+                              <option value="figurine">figurine</option>
+                              <option value="accessories">accessories</option>
+                              <option value="eco-friendly">eco-friendly</option>
+                              <option value="kitchen-utensil">kitchen-utensil</option>
+                              <option value="natural-products">natural-products</option>
+                              <option value="clothes">clothes</option>
+                              <option value="jewellery">jewellery</option>
+                              <option value="western">western</option>
+                              <option value="others">others</option>
+                              
+                          </select></div>          
+                        <div class="input-group input-group-outline mb-3">                   
+                          <input type="text" id="size" name="size" class="form-control" placeholder="" onchange="validateSize()">
+                          <label for="size" class="floating-label">Size (inches)</label>
+                          <span id="size-error" class="error"></span>
+                        </div>
+                        <div class="input-group input-group-outline mb-3">                   
+                          <input type="text" id="weight" name="weight" class="form-control" placeholder="" onchange="validateWeight()">
+                          <label for="weight" class="floating-label">Weight(grams)</label>
+                          <span id="weight-error" class="error"></span>
+                        </div>                
+                        </div>
+                        <div class="input-group input-group-outline mb-3 d-flex"> 
+                         
+                          
+  
+                        <div>
+                             <input type="file" class="form-control mx-3" 
+                              id="file-input" name="croppedImage" accept="image/*" 
+                              onchange="handleFileInputChange(event)" multiple required>                            
+                        </div>             
+                      </div>
+                          
+                          <div class="text-center d-flex justify-content-end">                         
+                              <button  id="addButton" type="submit"  class="btn btn-lg bg-gradient-primary btn-lg w-100 mt-4 mb-0 me-2">Submit</button>
+                           </div>
                         
-
-                      <div>
-                           <input type="file" class="form-control mx-3" 
-                            id="file-input" name="croppedImage" accept="image/*" 
-                            onchange="handleFileInputChange(event)" multiple required>                            
-                      </div>             
-                    </div>
-                        
-                        <div class="text-center d-flex justify-content-end">                         
-                            <button  id="addButton" type="submit"  class="btn btn-lg bg-gradient-primary btn-lg w-100 mt-4 mb-0 me-2">Submit</button>
-                         </div>
-                      
-                    </div>
+                      </div>
+                      </div>
+                     
                   
                 </div> 
              
@@ -208,10 +247,12 @@
 	
 		if(name.length === 0){
 			nameError.innerHTML = 'Name is required'
+      nameError.style.display = 'block';
 			return false
 		}
 		if(!name.match(/^[a-zA-Z]+[\-'\s]?[a-zA-Z ]+$/)){
 			nameError.innerHTML = 'Name should be valid'
+      nameError.style.display = 'block';
 			return false
 		}
 		nameError.innerHTML = '<i class = "fas fa-check-circle"></i>'
@@ -222,6 +263,11 @@
 	
 		if(description.length === 0){
 			descriptionError.innerHTML = 'Description is required'
+			return false
+		}
+
+    if(!description.match(/^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?][a-zA-Z0-9\s!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]*$/)){
+			descriptionError.innerHTML = 'Description should be valid'
 			return false
 		}
 		
@@ -237,10 +283,10 @@
 			return false
 		}
 		if(!stock.match(/^(?!0)\d{1,5}$/)){
-			nameError.innerHTML = 'Stock should be valid'
+			stockError.innerHTML = 'Stock should be valid'
 			return false
 		}
-		nameError.innerHTML = '<i class = "fas fa-check-circle"></i>'
+		stockError.innerHTML = '<i class = "fas fa-check-circle"></i>'
 		return true
 	}
   function validatePrice(){
@@ -287,6 +333,16 @@
 		weightError.innerHTML = '<i class = "fas fa-check-circle"></i>'
 		return true
 	}
+
+  function validateForm() {
+    const isNameValid = validateName();
+    const isDescriptionValid = validateDescription();
+    const isPriceValid = validatePrice();
+    const isStockValid = validateStock();
+    const isSizeValid = validateSize();
+    const isWeightValid = validateWeight();
+    return isNameValid && isDescriptionValid && isPriceValid && isStockValid && isSizeValid && isWeightValid;
+  }
   
   
   let cropper ;

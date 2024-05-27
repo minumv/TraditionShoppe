@@ -1,7 +1,59 @@
 <%- include('../layout/adminHeader') %>
+<style>
+  .input-group {
+    /* display  : flex;
+    flex-direction: column; */
+  position:relative;
+  width : 100%;
+  /* //background-color: aqua; */
+  margin-bottom: 25px;
+}
+
+.input-group input,
+.input-group textarea {
+  width: 100%;
+  padding: 10px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  outline: none;
+}
+
+.floating-label {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  pointer-events: none;
+  transition: 0.2s ease all;
+  color: #aaa;
+  font-size: 1rem;
+}
+
+input:focus ~ .floating-label,
+input:not(:placeholder-shown) ~ .floating-label,
+textarea:focus ~ .floating-label,
+textarea:not(:placeholder-shown) ~ .floating-label {
+  top: -20px;
+  left: 10px;
+  font-size: 0.8rem;
+  color: #474b50;
+} 
+  .error{
+    position:absolute;
+    right:8px;
+    top:10px;
+   color:#ed1557;
+   font-size: 13px;
+   font-weight: bold;
+}
+
+.error i {
+    color:seagreen;
+}
+</style>
 <section>   
       <div class="container">
-        <form role="form"  action="/newOffer" method="post">    
+        <form role="form"  action="/newOffer" method="post" onsubmit="return validateForm()">    
         <div class="row ">                    
             <div class="col-6">
                 <div class="card card-plain">
@@ -28,8 +80,10 @@
                       </div>
                    </div>                  
                       <div class="input-group input-group-outline mb-3">
-                        <input type="text" name="percentage" class="form-control" placeholder="Enter Discount Percentage" required pattern="^(?!0(?:\.0+)?$)(?:100(?:\.0+)?|\d{0,2}(?:\.\d+)?)$">
-                     </div>   
+                        <input type="text" id="percentage" name="percentage" class="form-control" placeholder="" onchange="validateDisPer()">
+                        <label for="percentage" class="floating-label">Enter Discount Percentage</label>
+                        <span id="discount-error" class="error"></span>
+                      </div>   
                      <div class="input-group input-group-outline mb-3">
                         <input type="date" name="start" class="form-control" placeholder="Select Start Date dd-mm-yyyy" required>
                      </div>   
@@ -55,6 +109,32 @@
   </section>
 
 <script>
+
+const discountError = document.getElementById('discount-error')
+function validateDisPer(){
+		const percentage = document.getElementById('percentage').value
+	
+		if(percentage.length === 0){
+			discountError.innerHTML = 'Discount is required'
+			return false
+		}
+
+    if(!percentage.match(/^(?!0(?:\.0+)?$)(?:100(?:\.0+)?|\d{0,2}(?:\.\d+)?)$/)){
+      discountError.innerHTML = 'Discount should be valid'
+			return false
+		}
+		
+		discountError.innerHTML = '<i class = "fas fa-check-circle"></i>'
+		return true
+	}
+  function validateForm() {
+   
+    const isDiscountValid = validateDisPer();
+    
+    return isDiscountValid ;
+  }
+
+
   document.getElementById('offertype').addEventListener('change', function() {
     const selectedType = this.value;
     
@@ -87,9 +167,7 @@ function addOfferDetails(){
     const start = document.querySelector('input[name="start"]').value
     const end = document.querySelector('input[name="end"]').value
 
-    if( offer_type === '' || offer_name === '' || percentage === '' || start === '' || end === ''){
-      alert('Please fill the fields!!')
-    }
+   
     const offerData = {
       offer_type, offer_name, percentage, start, end
     }

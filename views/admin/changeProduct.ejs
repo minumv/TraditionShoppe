@@ -1,7 +1,60 @@
 <%- include('../layout/adminHeader') %>
+<style>
+    .input-group {
+      /* display  : flex;
+      flex-direction: column; */
+    position:relative;
+    width : 100%;
+    /* //background-color: aqua; */
+    margin-bottom: 25px;
+  }
+  
+  .input-group input,
+  .input-group textarea {
+    width: 100%;
+    padding: 10px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    outline: none;
+  }
+  
+  .floating-label {
+    position: absolute;
+    left: 10px;
+    top: 10px;
+    pointer-events: none;
+    transition: 0.2s ease all;
+    color: #aaa;
+    font-size: 1rem;
+  }
+  
+  input:focus ~ .floating-label,
+  input:not(:placeholder-shown) ~ .floating-label,
+  textarea:focus ~ .floating-label,
+  textarea:not(:placeholder-shown) ~ .floating-label {
+    top: -20px;
+    left: 10px;
+    font-size: 0.8rem;
+    color: #474b50;
+  } 
+    .error{
+      position:absolute;
+      right:8px;
+      top:10px;
+     color:#ed1557;
+     font-size: 13px;
+     font-weight: bold;
+  }
+  
+  .error i {
+      color:seagreen;
+  }
+  </style>
+
 <section>   
       <div class="container">
-        <form role="form" id="product-form" action="/update/<%= products._id %>" method="post">    
+        <form role="form" id="product-form" action="/update/<%= products._id %>" method="post" onsubmit="return validateForm()">    
         <div class="row ">                    
             <div class="col-6">
                 <div class="card card-plain">
@@ -19,8 +72,10 @@
                      
                     <div class="card-body">             
                       <div class="input-group input-group-outline mb-3">
-                         <input type="text" name="name" class="form-control" value="<%= products.product_name %>">
-                      </div>
+                         <input type="text" id="name" name="name" class="form-control" value="<%= products.product_name %>" onchange="validateName()">
+                         <label for="name" class="floating-label">Name</label>
+                         <span id="name-error" class="error"></span>
+                    </div>
                      
                       <div class="input-group input-group-outline mb-3 d-flex justify-content-center">                  
                         <div class="dropdown mx-4">
@@ -69,17 +124,23 @@
                         </div>
                       </div>
                       <div class="input-group input-group-outline mb-3">                  
-                        <textarea type="text" name="description" class="form-control" value=""><%= products.description %></textarea>
-                      </div>
+                        <textarea type="text" id="description" name="description" class="form-control" value="" onkeyup="validateDescription()"><%= products.description %></textarea>
+                        <label for="description" class="floating-label">Description</label>
+                        <span id="description-error" class="error"></span>
+                    </div>
                       <div class="input-group input-group-outline mb-3">                   
-                          <input type="text" name="stock" class="form-control" value="<%= products.stock %>">
-                      </div>
+                          <input type="text" id="stock" name="stock" class="form-control" value="<%= products.stock %>" onchange="validateStock()" >
+                          <label for="stock" class="floating-label">Stock</label>
+                          <span id="stock-error" class="error"></span>
+                    </div>
                       <div class="input-group input-group-outline mb-3">                   
-                          <input type="text" name="price" class="form-control" value="<%= products.price_unit %>">
-                      </div>
+                          <input type="text" id="price" name="price" class="form-control" value="<%= products.price_unit %>" validatePrice()">
+                          <label for="price" class="floating-label">Price</label>
+                          <span id="price-error" class="error"></span>
+                        </div>
                       <div class="input-group input-group-outline mb-3 d-flex"> 
-                            <div class="dropdown mx-3">
-                                <select id="material" class="form-control">
+                            <div class="dropdown mx-3" >
+                                <select id="material" class="form-control" required>
                                     <option value="<%= products.material %>"><%= products.material %></option>
                                     <option value="wood">Wood</option>
                                     <option value="fibre">Fibre</option>
@@ -96,7 +157,7 @@
                                   </select>
                             </div>
                             <div class="dropdown mx-3">
-                                <select id="color" class="form-control">
+                                <select id="color" class="form-control" required>
                                     <option value="<%= products.color %>"><%= products.color %></option>
                                     <option value="brown">Brown</option>
                           <option value="white">White</option>
@@ -117,7 +178,7 @@
                                   </select>
                             </div>   
                             <div class="mx-3">
-                                <select id="type" class="form-control">
+                                <select id="type" class="form-control" required>
                                   <option value="<%= products.product_type %>"><%= products.product_type %></option>
                                   <option value="Decor">decor</option>
                                   <option value="Gifts">gifts</option>
@@ -132,16 +193,20 @@
                                     
                                 </select></div>               
                             <div class="input-group input-group-outline mb-3">                   
-                                <input type="text" name="size" class="form-control" value="<%= products.size %>">
+                                <input type="text" id="size" name="size" class="form-control" value="<%= products.size %>" onchange="validateSize()">
+                                <label for="size" class="floating-label">Size (inches)</label>
+                                <span id="size-error" class="error"></span>
                             </div>
                             <div class="input-group input-group-outline mb-3">                   
-                                <input type="text" name="weight" class="form-control" value="<%= products.weight %>">
+                                <input type="text" id="weight" name="weight" class="form-control" value="<%= products.weight %>" onchange="validateWeight()">
+                                <label for="weight" class="floating-label">Weight(grams)</label>
+                                <span id="weight-error" class="error"></span>
                             </div>      
                            
                       </div>
                       <div class="input-group input-group-outline mb-3 d-flex">  
                         <div class="mx-3">
-                            <select id="status" class="form-control">
+                            <select id="status" class="form-control" required>
                               <option value="<%= products.status %>"><%= products.status %></option>
                               <option value="new">new</option>
                               <option value="active">active</option>
@@ -149,7 +214,7 @@
                                 
                             </select></div> 
                             <div class="mx-3">
-                                <select id="list" class="form-control">
+                                <select id="list" class="form-control" required>
                                   <option value="<%= products.isListing %>"><%= products.isListing %></option>
                                   <option value="true">true</option>
                                   <option value="false">false</option>                                                             
@@ -208,6 +273,115 @@
   </section>
 
   <script>
+
+const nameError = document.getElementById('name-error')
+	const stockError = document.getElementById('stock-error')
+	const descriptionError = document.getElementById('description-error')
+	const sizeError = document.getElementById('size-error')
+	const weightError = document.getElementById('weight-error')
+	const priceError = document.getElementById('price-error')
+
+  function validateName(){
+		const name = document.getElementById('name').value
+	
+		if(name.length === 0){
+			nameError.innerHTML = 'Name is required'
+      nameError.style.display = 'block';
+			return false
+		}
+		if(!name.match(/^[a-zA-Z]+[\-'\s]?[a-zA-Z ]+$/)){
+			nameError.innerHTML = 'Name should be valid'
+      nameError.style.display = 'block';
+			return false
+		}
+		nameError.innerHTML = '<i class = "fas fa-check-circle"></i>'
+		return true
+	}
+  function validateDescription(){
+		const description = document.getElementById('description').value
+	
+		if(description.length === 0){
+			descriptionError.innerHTML = 'Description is required'
+			return false
+		}
+
+    if(!description.match(/^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?][a-zA-Z0-9\s!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]*$/)){
+			descriptionError.innerHTML = 'Description should be valid'
+			return false
+		}
+		
+		descriptionError.innerHTML = '<i class = "fas fa-check-circle"></i>'
+		return true
+	}
+
+  function validateStock(){
+		const stock = document.getElementById('stock').value
+	
+		if(stock.length === 0){
+			stockError.innerHTML = 'Stock is required'
+			return false
+		}
+		if(!stock.match(/^(?!0)\d{1,5}$/)){
+			stockError.innerHTML = 'Stock should be valid'
+			return false
+		}
+		stockError.innerHTML = '<i class = "fas fa-check-circle"></i>'
+		return true
+	}
+  function validatePrice(){
+		const price = document.getElementById('price').value
+	
+		if(price.length === 0){
+			priceError.innerHTML = 'Price is required'
+			return false
+		}
+		if(!price.match(/^(?!0)\d{1,4}(?:\.\d+)?$/)){
+			priceError.innerHTML = 'Price should be valid'
+			return false
+		}
+		priceError.innerHTML = '<i class = "fas fa-check-circle"></i>'
+		return true
+	}
+
+  function validateSize(){
+		const size = document.getElementById('size').value
+	
+		if(size.length === 0){
+			sizeError.innerHTML = 'Size is required'
+			return false
+		}
+		if(!size.match(/^(?!0)\d{1,4}(?:\.\d+)?$/)){
+			sizeError.innerHTML = 'Size should be valid'
+			return false
+		}
+		sizeError.innerHTML = '<i class = "fas fa-check-circle"></i>'
+		return true
+	}
+
+  function validateWeight(){
+		const weight = document.getElementById('weight').value
+	
+		if(weight.length === 0){
+			weightError.innerHTML = 'Weight is required'
+			return false
+		}
+		if(!weight.match(/^(?!0)\d{1,4}(?:\.\d+)?$/)){
+			weightError.innerHTML = 'Weight should be valid'
+			return false
+		}
+		weightError.innerHTML = '<i class = "fas fa-check-circle"></i>'
+		return true
+	}
+
+  function validateForm() {
+    const isNameValid = validateName();
+    const isDescriptionValid = validateDescription();
+    const isPriceValid = validatePrice();
+    const isStockValid = validateStock();
+    const isSizeValid = validateSize();
+    const isWeightValid = validateWeight();
+    return isNameValid && isDescriptionValid && isPriceValid && isStockValid && isSizeValid && isWeightValid;
+  }
 
     function removeImage(pdtid,images){
         const data = { 

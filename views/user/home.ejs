@@ -71,7 +71,9 @@
   
                       <p class="text-black font-weight-light">Rs.<%=row.discountedsalePrice %></p>
                     </div>
-                    
+                    <%if(row.pdtoffer !== 0 || row.categoffer !== 0){%>
+                      <p class="text-success font-weight-bold">Offer  price : ₹<%=row.discountedsalePrice %></p>
+                      <%}%>
                   </div>
                 </div>
               </a>

@@ -1,7 +1,29 @@
 <%- include('../layout/adminHeader') %>
+<style>
+  .input-group {
+    /* display  : flex;
+    flex-direction: column; */
+  position:relative;
+  width : 100%;
+  /* //background-color: aqua; */
+  margin-bottom: 25px;
+} 
+  .error{
+    position:absolute;
+    right:8px;
+    top:10px;
+   color:#ed1557;
+   font-size: 13px;
+   font-weight: bold;
+}
+
+.error i {
+    color:seagreen;
+}
+</style>
 <section>   
       <div class="container">
-        <form role="form"  action="/addCategory" method="post">    
+        <form role="form"  action="/addCategory" method="post" onsubmit="return validateForm()">    
         <div class="row ">                    
             <div class="col-6">
                 <div class="card card-plain">
@@ -12,12 +34,14 @@
 
                     <div class="card-body">             
                       <div class="input-group input-group-outline mb-3">
-                         <input type="text" name="name" class="form-control" placeholder="Name" required pattern="^[a-zA-Z]+[\-'\s]?[a-zA-Z ]+$">
+                         <input type="text" id="name" name="name" class="form-control" placeholder="Name" onchange="validateName()">
+						             <span id="name-error" class="error"></span>                        
                       </div>
                      
                       <div class="input-group input-group-outline mb-3">                  
-                        <textarea type="text" name="description" class="form-control" placeholder="Description" required></textarea>
-                      </div>                    
+                        <textarea type="text" id="description" name="description" class="form-control" placeholder="Description" onkeyup="validateDescription()"></textarea>
+						             <span id="description-error" class="error"></span>                     
+                       </div>                    
                                            
                         <div class="text-center d-flex justify-content-end">                         
                             <input type="submit"    class="btn btn-lg bg-gradient-primary btn-lg w-100 mt-4 mb-0 me-2">Add</button>
@@ -35,6 +59,45 @@
         </form>        
        </div>   
   </section>
+<script>
+	const nameError = document.getElementById('name-error')
+	const descriptionError = document.getElementById('description-error')
 
+  function validateName(){
+		const name = document.getElementById('name').value.trim()
+	
+		if(name.length === 0){
+			nameError.innerHTML = 'Name is required'
+			return false
+		}
+		// if(!name.match(/^[a-zA-Z][a-zA-Z\s]*$/)){
+		// 	nameError.innerHTML = 'Name should be valid'
+		// 	return false
+		// }
+		nameError.innerHTML = '<i class = "fas fa-check-circle"></i>'
+		return true
+	}
+
+  function validateDescription(){
+		const description = document.getElementById('description').value.trim()
+	
+		if(description.length === 0){
+			descriptionError.innerHTML = 'Description is required'
+			return false
+		}
+    if(!description.match(/^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?][a-zA-Z0-9\s!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]*$/)){
+			descriptionError.innerHTML = 'Description should be valid'
+			return false
+		}
+		
+		descriptionError.innerHTML = '<i class = "fas fa-check-circle"></i>'
+		return true
+	}
+  function validateForm() {
+    const isNameValid = validateName();
+    const isDescriptionValid = validateDescription();
+    return isNameValid && isDescriptionValid;
+  }
+</script>
 
   <%- include('../layout/adminFooter') %>

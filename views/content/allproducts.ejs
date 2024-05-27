@@ -72,6 +72,9 @@
                     
                       <p class="text-black font-weight-light">Rs.<%=pdt.discountedsalePrice %></p>
                     </div>
+                    <%if(pdt.pdtoffer !== 0 || pdt.categoffer !== 0){%>
+                      <p class="text-success font-weight-bold">Offer  price : ₹<%=pdt.discountedsalePrice %></p>
+                      <%}%>
                   </div>
                 </div>
               <!-- </a> -->
