@@ -234,15 +234,8 @@
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <script>
 
-function displayMessage(message) {
-    swal("Alert!", message, "error");
-        // var messageDiv = document.createElement('div');
-        // messageDiv.className = messageType;
-        // messageDiv.innerHTML = message;
-        // document.body.appendChild(messageDiv);
-        // setTimeout(function () {
-        //     document.body.removeChild(messageDiv);
-        // }, 3000);
+    function displayMessage(message) {
+        swal("Alert!", message, "error");
     }                    
 
 
@@ -260,7 +253,7 @@ function displayMessage(message) {
         }
         //console.log("coupondata :",couponData)
 
-        fetch(`/applyCoupon/${userid}`,{
+        fetch(`/applyCoupon/${userid}/${cartid}`,{
             method : 'POST',
             headers : {
                 'Content-Type' : 'application/json'
@@ -299,6 +292,10 @@ console.log("pay :",paymentMethod,"total :",total)
         }else if(total < 1000 && paymentMethod.value === "COD"){
            // event.preventDefault();
             displayMessage('Please go for online Payment for order lesser tha RS.1000/-');
+            //return;
+        }else if(total > 100000 && paymentMethod.value === "Razorpay"){
+           // event.preventDefault();
+            displayMessage('Maximum payment limit is  RS.100000/-');
             //return;
         } else {
                 const checkoutData = {

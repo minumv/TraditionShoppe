@@ -82,7 +82,11 @@
                           <p class="text-xs font-weight-bold mb-0" ><%= row.product_list.quantity %> </p>                            
                     </td>
                   <td class="align-middle  text-sm">
-                    <p class="text-xs font-weight-bold mb-0"> <%= row.productDetails.stock %> </p>
+                    <%if(row.productDetails.stock===0){%>
+                      <p class="text-xs font-weight-bold mb-0 text-danger">Out of stock</p>
+                    <%} else { %>
+                      <p class="text-xs font-weight-bold mb-0"> <%= row.productDetails.stock %> </p>
+                    <%}%>
                 </td>
                   <td class="align-middle  text-sm">
                     <p class="text-xs font-weight-bold mb-0" style="width: 80px;"> <%= row.productDetails.price_unit %> </p>
@@ -116,13 +120,26 @@
     </div>
    
   </div>
+<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
 <script>
+
+  function displayMessage(message) {
+      swal("Alert!", message, "error");       
+  }  
+
   function getdate(){
     const fromdate = document.querySelector('input[name="fromdate"]').value
     const todate = document.querySelector('input[name="todate"]').value
-    const dateset ={
+    
+    if(new Date(fromdate) > new Date(todate)){
+      displayMessage('From date should be less than todate');
+    }else if(new Date(fromdate) > new Date() || new Date(todate) > new Date()){
+      displayMessage('Please select valid date');
+    } else {
+      const dateset ={
       fromdate,todate
     }
+    console.log("dateset :",dateset)
     fetch('/getdate',{
       method:"post",
       headers:{
@@ -138,24 +155,9 @@
         location.href = '/salesreport'
       }
     })
+    } 
+  
   }
-  // function getTodate(){
-    
-  //   fetch('/gettodate',{
-  //     method:"post",
-  //     headers:{
-  //       'Content-Type':'application/json'
-  //     },
-  //     body:JSON.stringify({todate})
-  //   })
-  //   .then((res)=>res.json())
-  //   .then((data)=>{
-  //     if(data.success){
-  //       location.href = '/salesreport'
-  //     } else {
-  //       location.href = '/salesreport'
-  //     }
-  //   })
-  // }
+ 
 </script>
   <%- include('../layout/reportFooter') %>

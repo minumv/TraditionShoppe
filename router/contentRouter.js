@@ -82,7 +82,7 @@ contentRoute.post("/updateSelectedAddress",contentController.selectedAddress)
 contentRoute.post("/updateSelectedMethod",contentController.selectedMethod)
 
 /******************************/
-contentRoute.post("/applyCoupon/:userid",contentController.couponApply)
+contentRoute.post("/applyCoupon/:userid/:cartid",contentController.couponApply)
 
 /**********************make cod payment********************* */
 contentRoute.post("/makeOrder",contentController.makeCODPayment)

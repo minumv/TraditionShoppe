@@ -2079,17 +2079,27 @@ const couponApply = async (req,res)=>{
         const userid = req.params.userid
         console.log("userid :",userid)
 
+        const cartid = req.params.cartid
+        console.log("cartid :",cartid)
+
         console.log("req-body :",req.body)
         const { couponCode , totalAmount } = req.body
 
         const user = await User.find({ _id:userid }).exec()
         const coupon = await Coupon.find({ coupon_code : couponCode},{_id:1,discount_per:1,minimum_purchase:1,maximum_discount_amt:1}).exec()
 
+        //to change the total with coupon amount for each product in cart
+        let pdtCount = 0;
+        const cart = await Cart.findOne({_id:cartid}).exec()
+        console.log("cart:",cart)
+        cart.product_list.forEach((lst)=>{
+            pdtCount++
+        })
+        console.log('pdt count :',pdtCount)
         console.log("user :",user)
-        console.log("coupon :",coupon)
-
-    
+        console.log("coupon :",coupon)    
         console.log("total Amount :",totalAmount);
+
         let couponid , coupondisc, couponminim, couponamt;
        
         coupon.forEach((cpn)=>{
@@ -2106,7 +2116,10 @@ const couponApply = async (req,res)=>{
             couponDiscount = couponamt
         }
         let discountedTotal = totalAmount - couponDiscount   
-
+        //coupon amount for each product
+        let productCoupon = couponDiscount / pdtCount
+        productCoupon = parseFloat(productCoupon.toFixed(2));
+        console.log("prdt coupon :",productCoupon)
         console.log("coupon discount :",couponDiscount);
         console.log("total discount :",discountedTotal);
         user.forEach((usr)=>{
@@ -2116,10 +2129,9 @@ const couponApply = async (req,res)=>{
                 usr.coupons.forEach((cpn)=>{
                     if(cpn === null){
                         couponApplied = false
+                    } else if( cpn.equals(couponid)){
+                        couponApplied = true
                     }
-                else if( cpn.equals(couponid)){
-                    couponApplied = true
-                }
             })}
         })
         
@@ -2143,6 +2155,7 @@ const couponApply = async (req,res)=>{
                 req.session.couponDiscountTotal = discountedTotal
                 req.session.coupondiscount = couponDiscount
                 req.session.couponid = couponid
+                req.session.productCoupon = productCoupon
 
                 console.log("coupon applied first time successfully..");
                 req.flash("successMessage", "Coupon applied successfully...");
@@ -2172,7 +2185,9 @@ const couponApply = async (req,res)=>{
                 
                 req.session.couponDiscountTotal = discountedTotal 
                 req.session.coupondiscount = couponDiscount 
-                req.session.couponid = couponid  
+                req.session.couponid = couponid 
+                req.session.productCoupon = productCoupon
+
                 console.log("coupon applied amount : " + discountedTotal);      
                 console.log("coupon applied successfull..");
                 req.flash("successMessage", "Coupon applied successfully...");
@@ -2224,10 +2239,16 @@ const makeCODPayment = async(req,res)=>{
         }
 
         const user = await User.findOne({_id:userid}).exec()
+        const cartDet = await Cart.findOne({_id:cartid}).exec()
+
         let paymntamnt = total
         console.log('total before coupon:',paymntamnt)
         if(req.session.couponDiscountTotal){
             paymntamnt = req.session.couponDiscountTotal 
+            cartDet.product_list.forEach((lst)=>{
+                //set product total by reducing coupon amt
+                lst.total -= req.session.productCoupon
+             })
         }
         console.log('total after coupon:',paymntamnt)
 
@@ -2243,7 +2264,10 @@ const makeCODPayment = async(req,res)=>{
                 res.json({wallet_empty : true})
             } else {
               
-        const cartDet = await Cart.findOne({_id:cartid}).exec()
+      
+        //change each cart product total with coupon value
+
+       
 
         const currentDate = moment().format('ddd MMM DD YYYY');
         const deliveryDate = moment().add(7,'days').format('ddd MMM DD YYYY') //expected

@@ -6,13 +6,13 @@ const isAuthenticated = async (req, res, next)=>{
         next();
       } else {
         // User is not logged in, redirect to the login page with an error message
-        req.flash("errorMessage", "You are not authenticated to access this site!!");
+      //  req.flash("errorMessage", "You are not authenticated to access this site!!");
        // console.log("is authenticated?")
        res.redirect("/signin/userLogin")
         // res.redirect("/index");
         
       }
-   
+      
      
     } catch (error) {
       console.log(error.message);
@@ -40,27 +40,27 @@ const isAuthenticated = async (req, res, next)=>{
 
   const isAdminAuthenticated = async (req, res, next)=>{
     try {
-      if (req.session.admin) {
+      if (req.session && req.session.admin) {
         // User is logged in, proceed to the next middleware
         next();
       } else {
         // User is not logged in, redirect to the login page with an error message
-        req.flash("errorMessage", "You are not authenticated to access this site!!");
+       // req.flash("errorMessage", "You are not authenticated to access this site!!");
        // console.log("is authenticated?")
        res.redirect("/admin/login")
         // res.redirect("/index");
         
       }
-   
+     
      
     } catch (error) {
       console.log(error.message);
     }
       
   }
-  const isAdminLoggedOut = async(req,res)=>{
+  const isAdminLoggedOut = async(req,res,next)=>{
     try {
-      if (req.session.admin) {
+      if (req.session && req.session.admin) {
         // User is logged in, redirect to the login page
         res.redirect("/admin/login");
       } else {

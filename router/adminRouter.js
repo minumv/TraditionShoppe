@@ -17,9 +17,9 @@ adminRoute.use(express.static('public'));
 /*****************Routing Customer page****************** */
 adminRoute.get("/admin",adminController.loadAdminLogin)
 adminRoute.get("/admin/login",userAuthent.isAdminLoggedOut,adminController.loadAdminLogin)
-adminRoute.get("/admin/dashboard",adminController.loadAdminHome)
-adminRoute.get("/admin/customers",adminController.loadCustomer)
-adminRoute.get("/admin/customer/update/:id",adminController.loadCustomerEdit)
+adminRoute.get("/admin/dashboard",userAuthent.isAdminAuthenticated,adminController.loadAdminHome)
+adminRoute.get("/admin/customers",userAuthent.isAdminAuthenticated,adminController.loadCustomer)
+adminRoute.get("/admin/customer/update/:id",userAuthent.isAdminAuthenticated,adminController.loadCustomerEdit)
 
 adminRoute.post("/admin/login",adminController.verifyAdminLogin)
 adminRoute.post("/verify/:id",adminController.verifyCustomer)
@@ -32,32 +32,32 @@ adminRoute.post("/delete/:id",adminController.deleteCustomer)
 // adminRoute.get("/admin/orders",adminController.loadOrders) 
 
 /****************add coupon *********************/
-adminRoute.get("/getCoupon",adminController.loadCouponPage) 
-adminRoute.get("/newCoupon",adminController.addCoupon) 
+adminRoute.get("/getCoupon",userAuthent.isAdminAuthenticated,adminController.loadCouponPage) 
+adminRoute.get("/newCoupon",userAuthent.isAdminAuthenticated,adminController.addCoupon) 
 adminRoute.post("/newCoupon",adminController.addCouponDetails)
-adminRoute.get("/getUpdate/:id",adminController.getUpdatePage) 
+adminRoute.get("/getUpdate/:id",userAuthent.isAdminAuthenticated,adminController.getUpdatePage) 
 adminRoute.post("/updateCoupon/:id",adminController.updateCouponDetails)
 adminRoute.post("/deleteCoupon/:id",adminController.deleteCouponDetails)
 
 /****************add offer *********************/
 
-adminRoute.get("/getOffer",adminController.loadOfferPage) 
-adminRoute.get("/newOffer",adminController.addOffer)
+adminRoute.get("/getOffer",userAuthent.isAdminAuthenticated,adminController.loadOfferPage) 
+adminRoute.get("/newOffer",userAuthent.isAdminAuthenticated,adminController.addOffer)
 // adminRoute.post("/getOfferType",adminController.storeOfferType) 
 adminRoute.post("/newOffer",adminController.addOfferDetails)
-adminRoute.get("/getUpdateOffer/:id",adminController.getUpdateOfferPage)
+adminRoute.get("/getUpdateOffer/:id",userAuthent.isAdminAuthenticated,adminController.getUpdateOfferPage)
 // adminRoute.post("/updateOfferType",adminController.changeOfferType) 
 adminRoute.post("/updateOffer/:id",adminController.updateOfferDetails)
 adminRoute.post("/deleteOffer/:id",adminController.deleteOfferDetails)
 
-adminRoute.get("/getNames/:type",adminController.addNames)
+adminRoute.get("/getNames/:type",userAuthent.isAdminAuthenticated,adminController.addNames)
 
 
 
 /****************sales report*********************/
 adminRoute.post("/getdate",adminController.storeFromdate)
 adminRoute.get("/gettodate",adminController.storeTodate)
-adminRoute.get("/salesreport",adminController.loadSalesReport) 
+adminRoute.get("/salesreport",userAuthent.isAdminAuthenticated,adminController.loadSalesReport) 
 
 
 

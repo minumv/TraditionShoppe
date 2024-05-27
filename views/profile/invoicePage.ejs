@@ -36,17 +36,27 @@
 
         <hr>
         <%orders.forEach((odr)=>{%> 
-        <div id="invoice-details" class="flex-container">
-            <div id="user-details" class="width-50">
-                <p><strong><%=odr.addressDetails.name%></strong></p>
-                <p><%=odr.addressDetails.house%>,<%=odr.addressDetails.city%></p>
-                <p>PIN<%=odr.addressDetails.pincode%>,<%=odr.addressDetails.state%></p>
-                <p>India</p>
+        <div id="invoice-details" class="flex-container d-flex justify-content-between">
+            <div>
+                <div id="user-details" class="width-50" style="margin-bottom: 25px;">
+                    <p><strong><%=odr.addressDetails.name%></strong></p>
+                    <p><%=odr.addressDetails.house%>,<%=odr.addressDetails.street%></p>
+                    <p class="text-uppercase"><%=odr.addressDetails.city%>,<%=odr.addressDetails.state%>,<%=odr.addressDetails.pincode%></p>
+                    <p class="text-uppercase">India</p>
+                </div>
+                <%let formattedDate = new Date(odr.order_date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })%>
+               
+                <div class="num width-50">
+                    <p><strong>Order Number:</strong>ORDR_<%=odr._id%></p>
+                    <p><strong>Order Date:</strong><%=formattedDate%></p>
+                </div>
             </div>
-            <%let formattedDate = new Date(odr.order_date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })%>
-            <div class="num width-50">
-                <p><strong>Order:</strong>ORDR_<%=odr._id%></p>
-                <p><strong>Date:</strong><%=formattedDate%></p>
+            <div>                
+                <div id="invoice" class="text-right">
+                    <p><strong>Place of Derlivery : </strong><%=odr.addressDetails.city%>,<%=odr.addressDetails.state%></p>                    
+                    <p><strong>Invoice </strong>IN-00<%=odr._id.toString().slice(-4)%></p>
+                    <p><strong>Invoice Date </strong><%=formattedDate%>%></p>
+                </div>
             </div>
         </div>
 
@@ -55,36 +65,43 @@
                 <tr>
                     <th>Products</th>
                     <th>Quantity</th>
-                    <th>Price</th>
-                    <th>Discounted Price</th>
-                    
+                    <th>Unit Price</th>
+                    <th>Discount</th>
+                    <th>Net Amount</th>                    
                 </tr>
+
             </thead>
             <tbody>
-                
-                <%let mrp = odr.productDetails.price_unit * odr. product_list[0].quantity %>
-                <% let disc = mrp - odr. product_list[0].total %>
-                <tr>
-                    <td><%=odr.productDetails.product_name%></td>
-                    <td><%=odr.product_list[0].quantity%></td>
-                    <td>₹<%=mrp%>.00</td>
-                    <td>₹<%=disc%>.00</td>                    
-                </tr>
-               
+                <% let couponDisc = 0%>
+                <%products.forEach((pdt)=>{%>
+                    <%let mrp = pdt.price_unit * odr.product.quantity %>                    
+                    <% let netAmount = pdt.discountedsalePrice.toFixed(2) * odr.product.quantity %>
+                    <%let disc = mrp - netAmount %>
+                    <%if(odr.coupon){%>
+                        <% couponDisc = netAmount.toFixed(2) - (  odr.product.total.toFixed(2) - odr.fixedDeliveryCharge.toFixed(2) ) %>
+                    <%}%>
+                    <tr>
+                        <td><%=pdt.product_name%></td>
+                        <td><%= odr.product.quantity%></td>
+                        <td>₹<%=pdt.price_unit.toFixed(2)%></td>
+                        <td>₹<%=disc.toFixed(2)%></td>                    
+                        <td>₹<%=netAmount.toFixed(2)%></td>                    
+                    </tr>                  
+                <%})%>
             </tbody>
         </table>
 
         <div id="invoice-footer" class="text-right">
             <%if(odr.coupon){%>
-            <p>Coupon Discount Applied</p>
+            <p><strong>Coupon Discount:</strong>₹<%= couponDisc.toFixed(2)%></p>
            <%}%>
-            <p><strong>Delivery Charge:</strong> ₹<%odr.fixedDeliveryCharge%>.00</p>
+            <p><strong>Delivery Charge:</strong> ₹<%=odr.fixedDeliveryCharge.toFixed(2)%></p>
             <hr>
-            <p id="total" class="font-bold"><strong>Total:</strong>₹<%=odr. product_list[0].total%>.00</p>
+            <p id="total" class="font-bold" style="font-size: 20px;"><strong>Total:₹<%=odr.product.total%></strong></p>
         </div>
         <%})%>
         <div id="auto-generated" class="text-center" style="margin-bottom: 100px;">
-            <p>Automatically generated Invoice</p>
+            <p>Please note that this automatically generated invoice is not a demand for payment</p>
         </div>
     </div>
 

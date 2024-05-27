@@ -502,9 +502,13 @@ const loadIndex = async (req,res)=>{
             isListing:true}
         const products = await content.getProducts(req,res,condition)
         
+        await getQtyCount(req,res); 
+        await getListCount(req,res);
         
         res.render('user/index',{
             title: "Home | TraditionShoppe", 
+            qtyCount:req.session.qtyCount,
+            listCount:req.session.listCount,
             user:req.session.user, 
             products,                     
             errorMessage:req.flash('errorMessage'),
@@ -938,7 +942,11 @@ const loadInvoicePage = async(req,res)=>{
                 }
             }           
         ])
-        console.log("orders:",orders)
+        //console.log("orders:",orders)
+        let condition = {
+            _id:pdtid}
+        const products = await content.getProducts(req,res,condition)
+        //console.log("productdet :",products)
         res.render('profile/invoicePage',{
         title:"My Order Details | TraditionShoppe",
         user : req.session.user,
@@ -948,6 +956,7 @@ const loadInvoicePage = async(req,res)=>{
         listCount:req.session.listCount,           
         orders,
         users,
+        products,
         errorMessage:req.flash('errorMessage'),
         successMessage:req.flash('successMessage')
         })

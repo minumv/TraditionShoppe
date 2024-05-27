@@ -904,46 +904,57 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
                 matchCondition={
                 $and: [
                     { "product_list.orderstatus": 'delivered' },
-                    { order_date: { $gte: new Date(fromdate), $lte: new Date(todate) } }
+                    { "product_list.delivered_date": { $gte: new Date(fromdate), $lte: new Date(todate) } }
                 ] }           
             } else if(filter){
-                const currentDate = new Date();
+                const currentDate = new Date();               
+
                 if(filter === 'today'){
-                    
+                    const startOfDay = new Date(currentDate);
+                    startOfDay.setHours(5, 30, 0, 0);
+                    const endOfDay = new Date(currentDate);
+                    endOfDay.setDate(currentDate.getDate() + 1)
+                    endOfDay.setHours(5, 29, 59, 999);
+                    console.log("start :",startOfDay,"end : ",endOfDay)
+                   
                     matchCondition={
                         $and: [
                             {  "product_list.orderstatus": "delivered"  },
-                            {order_date: currentDate }
+                            { "product_list.delivered_date":{ '$gte': startOfDay, '$lt': endOfDay } }
                         ] }    
                 } else if(filter === 'yesterday'){
                    
-                    const yesterday = new Date(currentDate);
-                    yesterday.setDate(currentDate.getDate() - 1); // Subtract 1 day
-                    // Set hours, minutes, seconds, and milliseconds to 0 to get the start of yesterday
-                    yesterday.setHours(0, 0, 0, 0);
-                    console.log("yesterday",yesterday)
+                    const startOfyesterday = new Date(currentDate); 
+                    startOfyesterday.setDate(currentDate.getDate() - 1)                   
+                    startOfyesterday.setHours(5, 30, 0, 0);
+                    const endOfyesterday = new Date(currentDate);                    
+                     
+                    endOfyesterday.setHours(5, 29, 59, 999);
+                    console.log("start :",startOfyesterday,"end : ",endOfyesterday)
                     matchCondition = {
                         $and: [
                             { "product_list.orderstatus": "delivered" },
-                            { order_date: { $gte: yesterday, $lt: currentDate } } // Using $lt to exclude today's orders
+                            { "product_list.delivered_date":{ '$gte': startOfyesterday, '$lt': endOfyesterday }  } 
                         ]
+                        // { $gte: yesterday, $lt: currentDate }
                     };
 
                 } else if(filter === 'lastweek'){
                     
-                    // Calculate the start date of last week
+                    
                     const lastWeekStartDate = new Date(currentDate);
-                    lastWeekStartDate.setDate(currentDate.getDate() - currentDate.getDay() - 6); // Go back to the previous Sunday and subtract 6 days to get the start of last week
-                    // Set hours, minutes, seconds, and milliseconds to 0 to get the start of the day
-                    lastWeekStartDate.setHours(0, 0, 0, 0);
-                    // Calculate the end date of last week
+                    lastWeekStartDate.setDate(currentDate.getDate() - currentDate.getDay() - 7);
+                    
+                    lastWeekStartDate.setHours(5, 30, 0, 0);
+                  
                     const lastWeekEndDate = new Date(lastWeekStartDate);
-                    lastWeekEndDate.setDate(lastWeekStartDate.getDate() + 6); // Add 6 days to get the end of last week
+                    lastWeekEndDate.setDate(lastWeekStartDate.getDate() + 7); 
+                    lastWeekEndDate.setHours(5, 29, 59, 999);
                     console.log("lastWeek",lastWeekStartDate,lastWeekEndDate,)
                     matchCondition = {
                         $and: [
                             { "product_list.orderstatus": "delivered" },
-                            { order_date: { $gte: lastWeekStartDate, $lte: lastWeekEndDate } }
+                            { "product_list.delivered_date": { $gte: lastWeekStartDate, $lte: lastWeekEndDate } }
                         ]
                     };
                     
@@ -956,7 +967,7 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
                     matchCondition = {
                         $and: [
                             {  "product_list.orderstatus": "delivered"  },
-                            { order_date: { $gte: lastMonthStartDate, $lte: lastMonthEndDate } }
+                            { "product_list.delivered_date": { $gte: lastMonthStartDate, $lte: lastMonthEndDate } }
                         ]
                     };
 
@@ -1051,35 +1062,7 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
         }
     }
 
-    //  //load Sales report page
-    //  const loadSettings= async (req, res)=>{
-    //     try {
-    //         res.render('admin/settings',{
-    //             title : "Admin Panel - TraditionShoppe",
-    //             page:"Settings",
-    //             errorMessage : req.flash('errorMessage'),
-    //             successMessage : req.flash('successMessage')
-    //         })
-            
-    //     } catch (err) {
-    //         console.log(err.message);
-    //     }
-    // }
-
-    //  //load Sales report page ***** change this after adding session
-    //  const logOut= async (req, res)=>{
-    //     try {
-    //         res.render('admin/settings',{
-    //             title : "Admin Panel - TraditionShoppe",
-    //             page:"Settings",
-    //             errorMessage : req.flash('errorMessage'),
-    //             successMessage : req.flash('successMessage')
-    //         })
-            
-    //     } catch (err) {
-    //         console.log(err.message);
-    //     }
-    // }
+   
 
     const logout = async(req,res)=>{
         try{
@@ -1087,7 +1070,7 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
             // Clear the user session
             req.session.destroy();         
             // Redirect to the login page
-            res.redirect("/admin/login");
+            res.redirect("/admin");
         } catch (error){
             console.log(error.message);
         }
