@@ -134,7 +134,7 @@ const getProducts = async(req,res,condition)=>{
             {
                 $lookup : {
                     from : 'offers',
-                    let: { categoryName: '$categoryName' }, // Define variables for local and foreign fields
+                    let: { categoryName: '$categoryInfo.category_name' }, // Define variables for local and foreign fields
                     pipeline: [
                         {
                             $match: {
@@ -195,10 +195,64 @@ const getProducts = async(req,res,condition)=>{
                             },
                             else: "$discountedPrice" // If no offer is applicable or discountInfo is null, keep the original discountedPrice
                         }
+                    },
+                    numRatings: { $size: { $ifNull: ["$ratings", []] } }
+                }
+            },
+            {
+                $unwind: {
+                    path: "$feedback",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'feedback.reviewby',
+                    foreignField: '_id',
+                    as: 'reviewbyInfo'
+                }
+            },
+            {
+                $addFields: {
+                    'feedback.reviewbyInfo': { $arrayElemAt: ['$reviewbyInfo', 0] }
+                }
+            },
+            {
+                $unwind: {
+                    path: "$ratings",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'ratings.ratedby',
+                    foreignField: '_id',
+                    as: 'ratedbyInfo'
+                }
+            },
+            {
+                $addFields: {
+                    'ratings.ratedbyInfo': { $arrayElemAt: ['$ratedbyInfo', 0] }
+                }
+            },
+            {
+                $group: {
+                    _id: '$_id',
+                    feedback: { $push: '$feedback' },
+                    ratings: { $push: '$ratings' },
+                    productDetails: { $first: '$$ROOT' }
+                }
+            },
+            {
+                $replaceRoot: {
+                    newRoot: {
+                        $mergeObjects: ['$productDetails', { feedback: '$feedback', ratings: '$ratings' }]
                     }
                 }
-            }            
-        ])
+            }
+        ]);
         return products
     }
     catch(err){
@@ -874,7 +928,7 @@ const loadAllProducts = async(req,res)=>{
               {
                 $lookup: {
                   from: 'offers',
-                  let: { categoryName: '$categoryName' },
+                  let: { categoryName: '$categoryInfo.category_name' },
                   pipeline: [
                     {
                       $match: {
@@ -935,9 +989,12 @@ const loadAllProducts = async(req,res)=>{
                       },
                       else: "$discountedPrice"
                     }
-                  }
+                  },
+                  numRatings: { $size: { $ifNull: ["$ratings", []] }}
+
                 }
               },
+              
               sortStage,
               { $skip: pageDB * perPage },
               { $limit: perPage },
@@ -953,7 +1010,7 @@ const loadAllProducts = async(req,res)=>{
         
         const products = results[0].products;
 
-        //console.log("products :",products)
+        console.log("products :",products)
 
         const totalCount = results[0].productCount[0] ? results[0].productCount[0].count : 0;
         const pages = Math.ceil(totalCount / perPage);
@@ -1458,6 +1515,7 @@ const loadProductDetail = async (req,res)=>{
         let pdtid = new mongoose.Types.ObjectId(req.params.id)
         
         const user_id= req.session.user
+        //const users = await User.findById(user_id)
         let condition = { _id:pdtid }
         
         const products = await getProducts(req,res,condition)
@@ -1469,6 +1527,8 @@ const loadProductDetail = async (req,res)=>{
                 ]}
         
         const allproducts = await getProducts(req,res, condition)
+
+        //console.log("productdetails :",products)
         
         await getQtyCount (req,res)
         await getListCount (req,res)
@@ -1482,7 +1542,8 @@ const loadProductDetail = async (req,res)=>{
             qtyCount:req.session.qtyCount,
             listCount:req.session.listCount,         
             products,
-            allproducts,         
+            allproducts, 
+           // users,        
             errorMessage:req.flash('errorMessage'),
             successMessage:req.flash('successMessage')
         })
@@ -1899,13 +1960,14 @@ const loadCheckout = async(req,res)=>{
         
        
         const userid = req.session.user
-        const coupondisc = req.query.coupondisc
+       // if(req.query){}
+        let coupondisc = req.query.coupondisc
         console.log("checkout query:",req.query)
         console.log("coupondis :",coupondisc)
         
         const cartDet = await Cart.find({_id:req.params.cartid}).exec()
         const userAddress = await Address.find({user_id:userid}).exec()
-        const amount = req.params.amount
+        let amount = req.params.amount
         let deliveryCharge = 0
         if (amount < 1500){
             deliveryCharge = 80

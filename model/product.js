@@ -56,6 +56,23 @@ const productSchema = new mongoose.Schema({
         type : Array,
         require : true 
     },
+    ratings:[
+        {
+            star : Number,
+            ratedby : {  type : mongoose.Schema.Types.ObjectId, ref : "User"}
+        }
+    ],
+    totalrating : {
+        type : Number,
+        default : 0
+    },
+    feedback:[
+        {
+            reviews : String,
+            reviewby : {  type : mongoose.Schema.Types.ObjectId, ref : "User"},
+            reviewDate : Date
+        }
+    ],
     status : {
         type : String,
         enum: ['new','active','inactive'],

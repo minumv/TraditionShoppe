@@ -7,7 +7,7 @@ body {
   }
 
 .base_container{
-    height:800px;
+    height:1000px;
     /* box-sizing:border-box */
 }
 .product_view{
@@ -17,12 +17,61 @@ body {
     border-radius: 10px;   
     box-shadow:  0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
-.detail_view{
+.detail_view{   /*product description*/
     width:670px;
     height :590px;
     padding-left: 40px;
     padding-top: 15px;
+    
 }
+.feedback_view {
+    max-height: 400px; /* Define the maximum height before the scrollbar appears */
+    overflow-y: auto; /* Allow vertical scrolling */
+    min-height: auto; /* Allows height to be determined by content */
+    padding: 15px; /* Adds space inside the div */
+    margin-bottom: 20px; /* Adds space below the div */
+    /* border: 1px solid #ddd; 
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+    border-radius: 5px; */
+    background-color: #f9f9f9; /* Optional: Adds a background color */
+}
+
+/* Additional styling for content inside the div */
+.feedback_view .user-info {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.feedback_view .user-info img {
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.feedback_view .review-text {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #333;
+}
+
+/* Optional: To style the scrollbar (for WebKit browsers) */
+.feedback_view::-webkit-scrollbar {
+    width: 8px;
+}
+
+.feedback_view::-webkit-scrollbar-thumb {
+    background: #ccc; 
+    border-radius: 4px;
+}
+
+.feedback_view::-webkit-scrollbar-thumb:hover {
+    background: #b3b3b3; 
+}
+
+.feedback_view::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
 .main_image{
     width:670px;
     height :590px;
@@ -98,6 +147,7 @@ body {
     color:rgb(8, 4, 218);
     font-weight: 200;
 }
+
 
 /*********image zooming effect************/
 

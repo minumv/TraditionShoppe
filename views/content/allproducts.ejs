@@ -1,5 +1,6 @@
 <%- include('../layout/userHeader') %>
 
+
 <div class="bg-light py-3">
     <div class="container">
       <div class="row">
@@ -64,17 +65,31 @@
                       <!-- &#10084; -->
                     </button>
                     <a href="/viewProduct/<%= pdt._id %>"><img src="../upload/<%= pdt.images[0]%>" alt="Image placeholder" class="img-fluid"></a>
+                    <%if(pdt.totalrating > 0){%>
+                      <span class="review_box"><p class="text-black"><%=pdt.totalrating%>&nbsp;<i class="fas fa-star" style="color:#00bfa5;"></i>&nbsp;|&nbsp;<%=pdt.numRatings%></p></span>
+
+                    <%} else {%>
+                      <span class="review_box"><p class="text-dark">0&nbsp;<i class="fas fa-star" style="color:#00bfa5;"></i>&nbsp;|&nbsp;0</p></span>
+                    <%}%>
+                    
                   </figure>
                   <div class="block-4-text p-4">
                     <h3><a href="/viewProduct/<%= pdt._id %>"><%= pdt.product_name %></a></h3>
-                    <div class="d-flex justify-content-around mt-2 ">
-                      <p class=" mb-0 text-danger font-weight-light"><del>RS.<%= pdt.price_unit %></del></p>
-                    
-                      <p class="text-black font-weight-light">Rs.<%=pdt.discountedsalePrice %></p>
+                    <div class="d-flex justify-content-around mb-0">
+                      <p class=" mb-0 text-danger font-weight-light price"><del>RS.<%= pdt.price_unit %></del></p>
+                      <p class="text-black font-weight-light price">Rs.<%=pdt.discountedsalePrice %></p>
                     </div>
+                    <div class="d-block" style="margin-top: -8px;">
                     <%if(pdt.pdtoffer !== 0 || pdt.categoffer !== 0){%>
-                      <p class="text-success font-weight-bold">Offer  price : ₹<%=pdt.discountedsalePrice %></p>
+                      <p class="text-success mb-0">Offer  price : ₹<%=pdt.discountedsalePrice %></p>
                       <%}%>
+                      <%if(pdt.stock === 0){%>
+                        <p class="text-danger mb-0">Out of stock</p>
+                      <%} else if(pdt.stock <= 5){%>
+                        <p class="mb-0 text-danger">Only <%=pdt.stock %> left</p>
+                        
+                        <%}%>
+                      </div>  
                   </div>
                 </div>
               <!-- </a> -->
@@ -286,8 +301,8 @@
                   </div>
                   <div class="filter-item">
                     <div class="custom-control custom-checkbox">
-                      <input type="checkbox" id="golden" name="color" value="golden" class="custom-control-input" onchange="selectColor('golden')">
-                      <label for="golden" class="custom-control-label d-flex color-item align-items-center">
+                      <input type="checkbox" id="gold" name="color" value="gold" class="custom-control-input" onchange="selectColor('gold')">
+                      <label for="gold" class="custom-control-label d-flex color-item align-items-center">
                         <span class="color d-inline-block rounded-circle mr-2" style="background-color: goldenrod;"></span> 
                         <span class="text-black">Gold</span>
                       </label>
@@ -295,7 +310,7 @@
                   </div>
                   <div class="filter-item">
                     <div class="custom-control custom-checkbox">
-                      <input type="checkbox" id="navyblue" name="color" value="navyblue" class="custom-control-input" onchange="selectColor('golden')">
+                      <input type="checkbox" id="navyblue" name="color" value="navyblue" class="custom-control-input" onchange="selectColor('gold')">
                       <label for="navyblue" class="custom-control-label d-flex color-item align-items-center">
                         <span class="color d-inline-block rounded-circle mr-2" style="background-color: navy;"></span> 
                         <span class="text-black">Navy Blue</span>
@@ -304,7 +319,7 @@
                   </div>
                   <div class="filter-item">
                     <div class="custom-control custom-checkbox">
-                      <input type="checkbox" id="cream" name="color" value="cream" class="custom-control-input" onchange="selectColor('sandal')">
+                      <input type="checkbox" id="cream" name="color" value="cream" class="custom-control-input" onchange="selectColor('cream')">
                       <label for="cream" class="custom-control-label d-flex color-item align-items-center">
                         <span class="color d-inline-block rounded-circle mr-2" style="background-color:	#e9e1c2;"></span> 
                         <span class="text-black">Cream</span>
@@ -341,7 +356,7 @@
                   <div class="filter-item">
                     <div class="custom-control custom-checkbox">
                       <input type="checkbox" id="multi" name="color" value="multi" class="custom-control-input" onchange="selectColor('multi')">
-                      <label for="color-purple" class="custom-control-label d-flex color-item align-items-center">
+                      <label for="multi" class="custom-control-label d-flex color-item align-items-center">
                         <span class="bg-primary color d-inline-block rounded-circle mr-2"></span> 
                         <span class="text-black">Multicolor</span>
                       </label>

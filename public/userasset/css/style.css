@@ -624,19 +624,27 @@ a {
   .block-4 .block-4-text h3 {
     font-size: 18px;
     font-weight: 200;
-    margin-bottom: 0; }
+    margin-bottom: 0; 
+  }
     .block-4 .block-4-text h3 a {
-      text-decoration: none; color:rgb(79, 77, 77); }
+      text-decoration: none; color:rgb(79, 77, 77);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: block; }
+      .block-4 .block-4-text  .price{
+        font-size: 15px;
+      }
       
       .block-4 .block-4-text-1 h3 {
-        font-size: 20px;
-      
+        font-size: 15px;
         margin-bottom: 0; }
         .block-4 .block-4-text-1 h3 a {
-          text-decoration: none;}
+          text-decoration: none;
+        }
           
       .block-4{
-        height: 520px;
+        height: 500px;
       }
      
       .div-height{
@@ -655,17 +663,17 @@ a {
         border-bottom-left-radius: 20px;
         border-bottom-right-radius: 15px;
       }
-       #wish-but{
+       .review_box{
         position: absolute;
-        top: 10px;
-        right: 30px;
-        font-size: 25px;
-        color:rgb(249, 251, 249);
-        cursor: pointer;
-        background: transparent;
-        border: none;
+        top: 54%;
+        left: 27px;
+        font-size: 13px;
+        color:rgb(28, 31, 28); 
+        width:50px;
+        height:25px;       
+        background-color: rgb(232, 227, 227);
+        border: none;      
         
-        /* transform: translate(-50%, -50%); */
       }
       .wish-close{
         position: absolute;
@@ -976,9 +984,7 @@ a {
     padding:10px;
     margin: 10px;
   }
-  .first-col .second-col third-col{
-    
-  }
+ 
 
   .foot-email{
     height:60px;

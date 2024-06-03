@@ -1,0 +1,110 @@
+<%- include('../layout/profileHeader') %>
+<style>
+    span i {
+        font-size: 40px;
+        color:rgb(99, 97, 97);
+    }
+    .star_but{
+        margin-right: 2px;
+        border: none;
+        background: 0 0;
+        padding: 0;
+        cursor: pointer;
+    }
+    .star_but:focus{
+        outline: none;
+    }
+</style>
+<div class="container d-block">
+    <div class="d-block">
+        <div class="text-left text-dark font-weight-bold mb-3">Create Review</div>
+       
+        <div class="d-flex align-items-center">
+            <img width="100" height="100" src="<%= `/upload/${product.images[0]}` %>" class="rounded me-3"/>
+            <p class="ms-3 mt-4"><%=product.product_name%></p>
+        </div>       
+    </div>
+    <hr>
+    <div class="d-block">
+        <div class="d-flex justify-content-between">
+            <div class="text-left font-weight-bold text-dark mb-3">Rate your product</div>
+            <div class="text-right"><button type="button" class="star_but" onclick="clearReview(1,5)" style="color:blueviolet;">Clear</button></div>
+        </div>
+        <div class="d-flex">
+            <button type="button" class="star_but" onclick="setReview('star1')"><span id="star1"><i class="far fa-star"></i></span></button>
+            <button type="button" class="star_but" onclick="setReview('star2')"><span id="star2"><i class="far fa-star"></i></span></button>
+            <button type="button" class="star_but" onclick="setReview('star3')"><span id="star3"><i class="far fa-star"></i></span></button>
+            <button type="button" class="star_but" onclick="setReview('star4')"><span id="star4"><i class="far fa-star"></i></span></button>
+            <button type="button" class="star_but" onclick="setReview('star5')"><span id="star5"><i class="far fa-star"></i></span></button>
+            <!-- <span><i class="fas fa-star" style="color:#4F0341;"></i></span> -->
+        </div>
+    </div>
+    <hr>
+    <div class="d-block">
+        <div class="text-left text-dark font-weight-bold mb-3">Write a feedback</div>
+        <div>
+            <textarea style="width:500px;height:200px;" name="feedback" id="feedback" placeholder="What did you like or dislike? What did you use this product for?"></textarea>
+        </div>
+    </div> 
+    <div><button type="button" onclick="sendReview('<%=product._id%>')" class="nav-but" style="background-color: #4F0341; color: white;">Submit</button></div>
+
+</div>
+
+</div>
+<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+<script>
+    let starCount = 0 ;
+
+    function displayMessage(message) {
+        swal("Alert!", message, "error");
+    }                    
+
+    function setReview(id){        
+        starCount = parseInt(id.slice(-1));
+        console.log(starCount)
+        let setValue = '<i class="fas fa-star" style="color:#4F0341;"></i>';
+        for( let i = 1 ; i <= starCount ; i++ ){
+            document.getElementById(`star${i}`).innerHTML = setValue ;
+        }
+        if( starCount !== 5){
+            clearReview( starCount+1,5 )
+        }             
+    }
+
+    function clearReview(a,b){
+        starCount = a-1 ;
+        let clearValue = '<i class="far fa-star"></i>'
+        for( let i = a ; i <= b ; i++ ){
+            document.getElementById(`star${i}`).innerHTML = clearValue ;
+        }      
+        
+    }
+
+    function sendReview(pdtid){
+        const feedback = document.getElementById('feedback').value
+        const star = starCount;
+        if( star === 0 || feedback === null){
+            displayMessage('Your feedback is valuable for us..Please rate our product.');
+        }
+        console.log( feedback, star )
+        const reviewData = {
+            star,feedback,pdtid
+        }
+        fetch('/addReview',{
+            method : 'POST',
+            headers : {
+                'Content-Type' : 'application/json'
+            },
+            body : JSON.stringify(reviewData)
+        }).then(res=>res.json())
+        .then(data =>{
+            if(data.success){                
+                location.href = '/getOrder'
+            } else {
+                location.href = `/getReview/${pdtid}`
+            }
+        })
+    }
+    
+</script>
+<%- include('../layout/userFooter') %>

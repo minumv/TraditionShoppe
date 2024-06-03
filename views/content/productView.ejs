@@ -1,5 +1,18 @@
 <%- include('../layout/userHeader') %>
+<style>
+  .zoom-in {
+    overflow: hidden;
+  }
+  
+  .zoom-in img {
+    transition: transform 0.5s ease;
+  }
+  
+  .zoom-in:hover img {
+    transform: scale(1.2);
+  }
 
+</style>
 <main>
     <div class="bg-light py-3">
         <% products.forEach((pdt, index) => { %>
@@ -11,9 +24,9 @@
     </div>
     <div class="container base_container d-flex">
         <div id="product-view" class="product_view img-zoom-container"  >
-            <div class="main_image">
+            <div class="main_image zoom-in  ">
                 <picture>
-                    <img id="mainImage" src="../upload/<%= pdt.images[0] %>" alt="" >
+                    <img id="mainImage" src="../upload/<%= pdt.images[0] %>"  alt="" >
                 </picture>
             </div> 
             <br>           
@@ -42,22 +55,31 @@
                   <% } else {%>
                     <%stock = "Out of Stock" %>
                     <% }%>
-                <p class="text-warning">rating </p>&ensp;&ensp; <p style="color :rgb(42, 75, 165); font-size: 20px; font-weight: 600;"><%= stock %></p>&ensp;&ensp; 
-            </div>
+                <p class="text-warning">
+                  
+                    <% for( let i = 1 ; i <= 5 ; i++ ){%>
+                      <%if( i<= pdt.totalrating){%>
+                        <span><i class="fas fa-star" ></i></span>
+                      <%} else {%>
+                        <span><i class="far fa-star"></i></span>
+                        <%}%>
+                  <%}%></p><p class="text-silver">&nbsp;|&nbsp;<%=pdt.numRatings%>&nbsp;rating</p>&ensp;&ensp; <p style="color :#00bfa5; font-size: 20px; font-weight: 600;"><%= stock %></p>&ensp;&ensp; 
+            
+                </div>
             <div class="price-value">
               <% let per = 0 %>
               <% if( pdt.pdtoffer!== 0 && pdt.categoffer!== 0 ) {%> 
                   <% if( pdt.pdtoffer >= pdt.categoffer ){ %>
-                    <% per =   pdt. productoffer. discount_per %>
+                    <% per =   pdt.productoffer.discount_per %>
                   <%} else {%>
-                    <% per =  pdt.categoryoffer. discount_per %>
+                    <% per =  pdt.categoryoffer.discount_per %>
                   <%}%>
               <%} else if ( pdt.pdtoffer === 0 && pdt.categoffer === 0 ) {%>
                 <% per =  10 %>
               <%} else if( pdt.pdtoffer >= pdt.categoffer ){ %>
-                <% per =  pdt. productoffer. discount_per %>
+                <% per =  pdt.productoffer.discount_per %>
               <%} else {%>
-                <% per =  pdt.categoryoffer. discount_per %>
+                <% per =  pdt.categoryoffer.discount_per %>
               <%}%>
                 <div class="d-flex">
                   <p class="p-per">-<%= per %> % </p>&ensp;&ensp; <p class="p-price">₹<%=pdt.discountedsalePrice %></p>&ensp;&ensp;
@@ -85,16 +107,11 @@
                 
                 
             </div>
-            <div class="wish-save d-flex">
-                <a class = "link-wish"href="/addtowishlist/<%= pdt._id %>" ><span class="icon icon-heart-o">&nbsp;Add to wishlist</span></a>&ensp;&ensp;&ensp;&nbsp;
-               
-            </div>           
+           
             <br>          
             <div class="nav-but-div">
-                <!-- <a href="/addtocart/<%= pdt._id %>/<%=pdt.discountedsalePrice %>"><button class="use-but ord-but text-center nav-but text-white" style="background-color:#4F0341;font-size:18px ;">Add to Cart</button></a>&ensp; -->
                 <button type="button" onclick="addingtoCart('<%= pdt._id %>','<%=pdt.discountedsalePrice %>')" class="use-but ord-but text-center nav-but text-white" style="background-color:#4F0341;font-size:18px ;">Add to Cart</button></a>&ensp;
-                <!-- <a href="/checkout/<%=user_id%>/<%=pdt.discountedsalePrice %>"><button class="use-but ord-but text-center nav-but text-white" style="background-color:#4F0341 ;font-size:18px ;">Buy Now</button></a> -->
-
+                <a class = "link-wish"href="/addtowishlist/<%= pdt._id %>" ><button class="use-but ord-but text-center nav-but text-white" style="background-color:#4F0341 ;font-size:18px;"><span class="icon icon-heart-o">&nbsp;Add to wishlist</span></button></a>&ensp;&ensp;&ensp;&nbsp;
             </div>
             <% if (errorMessage.length > 0) { %>                
               <div class="alert alert-danger" role="alert"> <%- errorMessage %>  </div>                  
@@ -102,6 +119,38 @@
             <% if (successMessage.length > 0) { %>                
               <div class="alert alert-success" role="alert"> <%- successMessage %>  </div>                    
             <% } %>
+            <div class="feedback_view">
+              <p>Customer feedback</p>
+              <% 
+    let processedUsers = new Set();
+    pdt.feedback.forEach((usr) => { 
+        if (processedUsers.has(usr.reviewby.toString())) {
+            return;
+        }
+        processedUsers.add(usr.reviewby.toString());
+
+        const userRating = pdt.ratings.find((ratn) => usr.reviewby.toString() === ratn.ratedby.toString());
+        if (userRating) { 
+    %>
+                      <div class="d-flex">
+                          <img src="/userasset/images/user.png" class="rounded-circle" width="25" height="25">
+                          &ensp;<p class="text-dark font-weight-bold"><%= usr.reviewbyInfo.name %></p>
+                      </div>
+                      <p class="text-warning">
+                          <% for (let i = 1; i <= 5; i++) { %>
+                              <% if (i <= userRating.star) { %>
+                                  <span><i class="fas fa-star"></i></span>
+                              <% } else { %>
+                                  <span><i class="far fa-star"></i></span>
+                              <% } %>
+                          <% } %>
+                      </p>
+                      <% let reviewDate = new Date(usr.reviewDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) %>
+                      <p>Review on <%= reviewDate %></p>
+                      <p><%= usr.reviews %></p>
+                  <% } %>
+              <% }) %>
+          </div>
             <div class ="line-div"></div>
         </div>
     </div>
@@ -119,7 +168,7 @@
                     <div class="nonloop-block-3 owl-carousel">
                       
                     <% allproducts.forEach((allpdt, index) => { %>   
-                      <% if ( (pdt.product_type === allpdt.product_type) || (pdt.material === allpdt.material)){%>                
+                      <% if ( (pdt.product_type === allpdt.product_type) || (pdt.material === allpdt.material)|| (pdt.category === allpdt.category)){%>                
                       
                         <div class="col-sm-6 col-lg-4 mb-4" data-aos="fade-up">
                             <a href="/viewProduct/<%= allpdt._id %>">
@@ -174,5 +223,11 @@
     })
   }
 </script>
+<!-- <script src="https://code.jquery.com/jquery-3.4.0.min.js"
+    integrity="sha384-JUMjoW8OzDJw4oFpWIB2Bu/c6768ObEthBMVSiIx4ruBIEdyNSUQAjJNFqT5pnJ6" crossorigin="anonymous">
+    </script>
 
+<script src="/javascripts/zscript.js"></script>
+<script src="/javascripts/zoomsl.min.js"></script> -->
+<!-- <script src="/user/js/jquery.elevateZoom.min.js"></script> -->
 <%- include('../layout/userFooter') %>

@@ -112,6 +112,8 @@
                         <div><a href="/cancelPage/<%= odr._id %>/<%= odr.productDetails._id %>"><button type="submit" class="use-but ord-but bg-light text-center text-dark">Cancel Order</button></a></div>
                     <%} else if(odr.product_list.orderstatus === 'delivered'){%> 
                         <div><a href="/returnPage/<%= odr._id %>/<%= odr.productDetails._id %>"><button type="submit" class="use-but ord-but bg-white text-dark">Return Product</button></a></div>  
+                        <div><a href="/getReview/<%= odr.productDetails._id %>"><button type="submit" class="use-but ord-but bg-white text-dark">Write a Review</button></a></div> 
+                        
                         <%}%>
                     
                 </div>   

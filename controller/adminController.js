@@ -775,10 +775,7 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
     const updateOfferDetails = async (req,res) =>{
         try{
             const id = req.params.id          
-            if( req.body.offer_name === '' || req.body.offer_type === '' || req.body.percentage === '' || req.body.start === '' || req.body.end === ''){
-                req.flash("errorMessage", "Please fill the Fields!!");
-                res.json({success:false})
-            } else {
+           
                 let stat = true
                 let start = new Date(req.body.start)
                 let end = new Date(req.body.end)
@@ -805,7 +802,7 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
                         res.json({success:false})
                     }
                 }
-            }    
+               
     
         catch(err){
             console.log(err.message);

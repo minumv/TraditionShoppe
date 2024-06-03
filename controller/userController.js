@@ -972,20 +972,104 @@ const loadbuyLast30 = async(req,res)=>{
 
     
 
-    const email = req.session.user
-    const users = await User.find({email:email}).exec()        
-    const orders = await Order.find({$expr: {
-        $gt: [
-           "$order_date",
-           {
-              $dateSubtract: {
-                 startDate: { $dateTrunc: { date: "$$NOW", unit: "day" } },
-                 unit: "day",
-                 amount: 30
-              }
-           }
-        ]
-     }}).exec()  
+    const users = await User.findOne({_id:req.session.user}).exec()
+        
+    const pageNum = req.query.page || 1
+    const perPage = 9
+    const total = await Order.aggregate([
+        {
+            $match: { user:users._id }
+        },
+        {
+            $unwind : "$product_list"
+        },
+        {
+            $group: {
+                _id: null,
+                count: { $sum: 1 }
+            }
+        }
+    ])
+    let totalCount = 1
+    console.log(total)
+    if(total.length>0){               
+        totalCount = total[0].count
+    }             
+    const pages = Math.ceil( totalCount / perPage )
+    
+
+const orders = await Order.aggregate([
+    {
+         $match: {
+            user: users._id,
+            $expr: {
+                $gt: [
+                    "$order_date",
+                    {
+                        $dateSubtract: {
+                            startDate: { $dateTrunc: { date: "$$NOW", unit: "day" } },
+                            unit: "day",
+                            amount: 30
+                        }
+                    }
+                ]
+            }
+        }
+    }, 
+    {
+        $unwind: "$product_list"   
+    },          
+    {
+        $lookup: {
+            from: "addresses", // Assuming 'addresses' is the name of your Address collection
+            localField: "address", // Field in the 'orders' collection
+            foreignField: "_id", // Field in the 'addresses' collection
+            as: "addressDetails"
+        }
+    },
+    {
+        $unwind: {
+            path: "$addressDetails",
+            preserveNullAndEmptyArrays: true
+        }
+    },
+    {
+        $lookup: {
+            from: "products", // Assuming 'addresses' is the name of your Address collection
+            localField: "product_list.productId", // Field in the 'orders' collection
+            foreignField: "_id", // Field in the 'addresses' collection
+            as: "productDetails"
+        }
+    },
+    {
+        $unwind: {
+            path: "$productDetails",
+            preserveNullAndEmptyArrays: true
+        }
+    },
+    {
+        $sort: { order_date : -1 }
+    },
+    {
+        $skip: ( pageNum - 1 ) * perPage
+    },
+    {
+        $limit: perPage
+    },
+   
+]);   
+    // const orders = await Order.find({$expr: {
+    //     $gt: [
+    //        "$order_date",
+    //        {
+    //           $dateSubtract: {
+    //              startDate: { $dateTrunc: { date: "$$NOW", unit: "day" } },
+    //              unit: "day",
+    //              amount: 30
+    //           }
+    //        }
+    //     ]
+    //  }}).exec()  
      
      console.log(orders);
     const cart  = await Cart.find().exec()       
@@ -1000,14 +1084,16 @@ const loadbuyLast30 = async(req,res)=>{
         res.render('profile/userOrder',{
             title:"My Order | TraditionShoppe",
             user : req.session.user,
+            blocked:req.session.blocked,
             page:'Your Orders',
             qtyCount:req.session.qtyCount,
             listCount:req.session.listCount,
-            products:products,
-            users:users,
-            orders:orders,
-            cart:cart,   
-            address:address,        
+            orders, 
+            users,
+            pageNum,
+            perPage,
+            totalCount, 
+            pages,     
             errorMessage:req.flash('errorMessage'),
             successMessage:req.flash('successMessage')
 
@@ -1017,40 +1103,104 @@ const loadbuyLast30 = async(req,res)=>{
 const load2023 = async(req,res)=>{
     try{
         
-        const email = req.session.user
-        const users = await User.find({email:email}).exec()        
-        const orders = await Order.find({
-            $expr: {
-                $and: [
-                  { $gte: [{ $year: "$order_date" }, 2023] },
-                  { $lt: [{ $year: "$order_date" }, 2024] } // Exclude 2024
-                ]
-              }
-            }).exec()  
-         
-         console.log(orders);
-         console.log(orders);
-        const cart  = await Cart.find().exec()       
-        const products = await Products.find({ isListing:true }).exec()
-        const address = await Address.find().exec()   
+        const users = await User.findOne({_id:req.session.user}).exec()
+        
+        const pageNum = req.query.page || 1
+        const perPage = 9
+        const total = await Order.aggregate([
+            {
+                $match: { user:users._id }
+            },
+            {
+                $unwind : "$product_list"
+            },
+            {
+                $group: {
+                    _id: null,
+                    count: { $sum: 1 }
+                }
+            }
+        ])
+        let totalCount = 1
+        console.log(total)
+        if(total.length>0){               
+            totalCount = total[0].count
+        }             
+        const pages = Math.ceil( totalCount / perPage )
+        
     
-            let qtyCount = await getQtyCount(req,res);
-            let listCount = await getListCount(req,res);    
+    const orders = await Order.aggregate([
+        {
+            $match: {
+                user: users._id,
+                $expr: {
+                    $and: [
+                        { $gte: [{ $year: "$order_date" }, 2023] },
+                        { $lt: [{ $year: "$order_date" }, 2024] } // Exclude 2024
+                    ]
+                }
+            }
+        }, 
+        {
+            $unwind: "$product_list"   
+        },          
+        {
+            $lookup: {
+                from: "addresses", // Assuming 'addresses' is the name of your Address collection
+                localField: "address", // Field in the 'orders' collection
+                foreignField: "_id", // Field in the 'addresses' collection
+                as: "addressDetails"
+            }
+        },
+        {
+            $unwind: {
+                path: "$addressDetails",
+                preserveNullAndEmptyArrays: true
+            }
+        },
+        {
+            $lookup: {
+                from: "products", // Assuming 'addresses' is the name of your Address collection
+                localField: "product_list.productId", // Field in the 'orders' collection
+                foreignField: "_id", // Field in the 'addresses' collection
+                as: "productDetails"
+            }
+        },
+        {
+            $unwind: {
+                path: "$productDetails",
+                preserveNullAndEmptyArrays: true
+            }
+        },
+        {
+            $sort: { order_date : -1 }
+        },
+        {
+            $skip: ( pageNum - 1 ) * perPage
+        },
+        {
+            $limit: perPage
+        },
+       
+    ]);   
+        
             res.render('profile/userOrder',{
-            title:"My Order | TraditionShoppe",
-            user : req.session.user,
-            page:'Your Orders',
-            qtyCount:qtyCount,
-            listCount:listCount,
-            products:products,
-            users:users,
-            orders:orders,
-            cart:cart,   
-            address:address,        
-            errorMessage:req.flash('errorMessage'),
-            successMessage:req.flash('successMessage')
-
-        })
+                title:"My Order | TraditionShoppe",
+                user : req.session.user,
+                blocked:req.session.blocked,
+                page:'Your Orders',
+                qtyCount:req.session.qtyCount,
+                listCount:req.session.listCount,
+                orders, 
+                users,
+                pageNum,
+                perPage,
+                totalCount, 
+                pages,     
+                errorMessage:req.flash('errorMessage'),
+                successMessage:req.flash('successMessage')
+    
+            })
     }
     catch(err){
         console.log(err.message);
@@ -1060,40 +1210,104 @@ const load2023 = async(req,res)=>{
 const load2022 = async(req,res)=>{
     try{
         
-        const email = req.session.user
-        const users = await User.find({email:email}).exec()        
-        const orders = await Order.find({
-            $expr: {
-                $and: [
-                  { $gte: [{ $year: "$order_date" }, 2022] },
-                  { $lt: [{ $year: "$order_date" }, 2023] } // Exclude 2024
-                ]
-              }
-            }).exec()  
-         
-         console.log(orders);
-         console.log(orders);
-        const cart  = await Cart.find().exec()       
-        const products = await Products.find({ isListing:true }).exec()
-        const address = await Address.find().exec()   
+        const users = await User.findOne({_id:req.session.user}).exec()
+        
+        const pageNum = req.query.page || 1
+        const perPage = 9
+        const total = await Order.aggregate([
+            {
+                $match: { user:users._id }
+            },
+            {
+                $unwind : "$product_list"
+            },
+            {
+                $group: {
+                    _id: null,
+                    count: { $sum: 1 }
+                }
+            }
+        ])
+        let totalCount = 1
+        console.log(total)
+        if(total.length>0){               
+            totalCount = total[0].count
+        }             
+        const pages = Math.ceil( totalCount / perPage )
+        
     
-            let qtyCount = await getQtyCount(req,res);
-            let listCount = await getListCount(req,res);    
+    const orders = await Order.aggregate([
+        {
+            $match: {
+                user: users._id,
+                $expr: {
+                    $and: [
+                        { $gte: [{ $year: "$order_date" }, 2022] },
+                        { $lt: [{ $year: "$order_date" }, 2023] } // Exclude 2024
+                    ]
+                }
+            }
+        }, 
+        {
+            $unwind: "$product_list"   
+        },          
+        {
+            $lookup: {
+                from: "addresses", // Assuming 'addresses' is the name of your Address collection
+                localField: "address", // Field in the 'orders' collection
+                foreignField: "_id", // Field in the 'addresses' collection
+                as: "addressDetails"
+            }
+        },
+        {
+            $unwind: {
+                path: "$addressDetails",
+                preserveNullAndEmptyArrays: true
+            }
+        },
+        {
+            $lookup: {
+                from: "products", // Assuming 'addresses' is the name of your Address collection
+                localField: "product_list.productId", // Field in the 'orders' collection
+                foreignField: "_id", // Field in the 'addresses' collection
+                as: "productDetails"
+            }
+        },
+        {
+            $unwind: {
+                path: "$productDetails",
+                preserveNullAndEmptyArrays: true
+            }
+        },
+        {
+            $sort: { order_date : -1 }
+        },
+        {
+            $skip: ( pageNum - 1 ) * perPage
+        },
+        {
+            $limit: perPage
+        },
+       
+    ]);   
+        
             res.render('profile/userOrder',{
-            title:"My Order | TraditionShoppe",
-            user : req.session.user,
-            page:'Your Orders',
-            qtyCount:qtyCount,
-            listCount:listCount,
-            products:products,
-            users:users,
-            orders:orders,
-            cart:cart,   
-            address:address,        
-            errorMessage:req.flash('errorMessage'),
-            successMessage:req.flash('successMessage')
-
-        })
+                title:"My Order | TraditionShoppe",
+                user : req.session.user,
+                blocked:req.session.blocked,
+                page:'Your Orders',
+                qtyCount:req.session.qtyCount,
+                listCount:req.session.listCount,
+                orders, 
+                users,
+                pageNum,
+                perPage,
+                totalCount, 
+                pages,     
+                errorMessage:req.flash('errorMessage'),
+                successMessage:req.flash('successMessage')
+    
+            })
     }
     catch(err){
         console.log(err.message);
@@ -1102,40 +1316,104 @@ const load2022 = async(req,res)=>{
 const load2021 = async(req,res)=>{
     try{
         
-        const email = req.session.user
-        const users = await User.find({email:email}).exec()        
-        const orders = await Order.find({
-            $expr: {
-                $and: [
-                  { $gte: [{ $year: "$order_date" }, 2021] },
-                  { $lt: [{ $year: "$order_date" }, 2022] } // Exclude 2024
-                ]
-              }
-            }).exec()  
-         
-         console.log(orders);
-         console.log(orders);
-        const cart  = await Cart.find().exec()       
-        const products = await Products.find({ isListing:true }).exec()
-        const address = await Address.find().exec()   
+        const users = await User.findOne({_id:req.session.user}).exec()
+        
+        const pageNum = req.query.page || 1
+        const perPage = 9
+        const total = await Order.aggregate([
+            {
+                $match: { user:users._id }
+            },
+            {
+                $unwind : "$product_list"
+            },
+            {
+                $group: {
+                    _id: null,
+                    count: { $sum: 1 }
+                }
+            }
+        ])
+        let totalCount = 1
+        console.log(total)
+        if(total.length>0){               
+            totalCount = total[0].count
+        }             
+        const pages = Math.ceil( totalCount / perPage )
+        
     
-            let qtyCount = await getQtyCount(req,res);
-            let listCount = await getListCount(req,res);    
+    const orders = await Order.aggregate([
+        {
+            $match: {
+                user: users._id,
+                $expr: {
+                    $and: [
+                        { $gte: [{ $year: "$order_date" }, 2021] },
+                        { $lt: [{ $year: "$order_date" }, 2022] } // Exclude 2024
+                    ]
+                }
+            }
+        }, 
+        {
+            $unwind: "$product_list"   
+        },          
+        {
+            $lookup: {
+                from: "addresses", // Assuming 'addresses' is the name of your Address collection
+                localField: "address", // Field in the 'orders' collection
+                foreignField: "_id", // Field in the 'addresses' collection
+                as: "addressDetails"
+            }
+        },
+        {
+            $unwind: {
+                path: "$addressDetails",
+                preserveNullAndEmptyArrays: true
+            }
+        },
+        {
+            $lookup: {
+                from: "products", // Assuming 'addresses' is the name of your Address collection
+                localField: "product_list.productId", // Field in the 'orders' collection
+                foreignField: "_id", // Field in the 'addresses' collection
+                as: "productDetails"
+            }
+        },
+        {
+            $unwind: {
+                path: "$productDetails",
+                preserveNullAndEmptyArrays: true
+            }
+        },
+        {
+            $sort: { order_date : -1 }
+        },
+        {
+            $skip: ( pageNum - 1 ) * perPage
+        },
+        {
+            $limit: perPage
+        },
+       
+    ]);   
+        
             res.render('profile/userOrder',{
-            title:"My Order | TraditionShoppe",
-            user : req.session.user,
-            page:'Your Orders',
-            qtyCount:qtyCount,
-            listCount:listCount,
-            products:products,
-            users:users,
-            orders:orders,
-            cart:cart,   
-            address:address,        
-            errorMessage:req.flash('errorMessage'),
-            successMessage:req.flash('successMessage')
-
-        })
+                title:"My Order | TraditionShoppe",
+                user : req.session.user,
+                blocked:req.session.blocked,
+                page:'Your Orders',
+                qtyCount:req.session.qtyCount,
+                listCount:req.session.listCount,
+                orders, 
+                users,
+                pageNum,
+                perPage,
+                totalCount, 
+                pages,     
+                errorMessage:req.flash('errorMessage'),
+                successMessage:req.flash('successMessage')
+    
+            })
     }
     catch(err){
         console.log(err.message);
@@ -1145,36 +1423,103 @@ const load2021 = async(req,res)=>{
 const loadOlder = async(req,res)=>{
     try{
         
-        const email = req.session.user
-        const users = await User.find({email:email}).exec()        
-        const orders = await Order.find({
-            $expr: {
-                 $gt: [{ $year: "$order_date" }, 2021] },
-            }).exec()  
-         
-         console.log(orders);
-         console.log(orders);
-        const cart  = await Cart.find().exec()       
-        const products = await Products.find({ isListing:true }).exec()
-        const address = await Address.find().exec()   
+        const users = await User.findOne({_id:req.session.user}).exec()
+        
+        const pageNum = req.query.page || 1
+        const perPage = 9
+        const total = await Order.aggregate([
+            {
+                $match: { user:users._id }
+            },
+            {
+                $unwind : "$product_list"
+            },
+            {
+                $group: {
+                    _id: null,
+                    count: { $sum: 1 }
+                }
+            }
+        ])
+        let totalCount = 1
+        console.log(total)
+        if(total.length>0){               
+            totalCount = total[0].count
+        }             
+        const pages = Math.ceil( totalCount / perPage )
+        
     
-            let qtyCount = await getQtyCount(req,res);
-            let listCount = await getListCount(req,res);    
+    const orders = await Order.aggregate([
+        {
+            $match: {
+                user: users._id,
+                $expr: {
+                   
+                         $lt: [{ $year: "$order_date" }, 2021]  // Exclude 2024
+                    
+                }
+            }
+        }, 
+        {
+            $unwind: "$product_list"   
+        },          
+        {
+            $lookup: {
+                from: "addresses", // Assuming 'addresses' is the name of your Address collection
+                localField: "address", // Field in the 'orders' collection
+                foreignField: "_id", // Field in the 'addresses' collection
+                as: "addressDetails"
+            }
+        },
+        {
+            $unwind: {
+                path: "$addressDetails",
+                preserveNullAndEmptyArrays: true
+            }
+        },
+        {
+            $lookup: {
+                from: "products", // Assuming 'addresses' is the name of your Address collection
+                localField: "product_list.productId", // Field in the 'orders' collection
+                foreignField: "_id", // Field in the 'addresses' collection
+                as: "productDetails"
+            }
+        },
+        {
+            $unwind: {
+                path: "$productDetails",
+                preserveNullAndEmptyArrays: true
+            }
+        },
+        {
+            $sort: { order_date : -1 }
+        },
+        {
+            $skip: ( pageNum - 1 ) * perPage
+        },
+        {
+            $limit: perPage
+        },
+       
+    ]);   
+        
             res.render('profile/userOrder',{
-            title:"My Order | TraditionShoppe",
-            user : req.session.user,
-            page:'Your Orders',
-            qtyCount:qtyCount,
-            listCount:listCount,
-            products:products,
-            users:users,
-            orders:orders,
-            cart:cart,   
-            address:address,        
-            errorMessage:req.flash('errorMessage'),
-            successMessage:req.flash('successMessage')
-
-        })
+                title:"My Order | TraditionShoppe",
+                user : req.session.user,
+                blocked:req.session.blocked,
+                page:'Your Orders',
+                qtyCount:req.session.qtyCount,
+                listCount:req.session.listCount,
+                orders, 
+                users,
+                pageNum,
+                perPage,
+                totalCount, 
+                pages,     
+                errorMessage:req.flash('errorMessage'),
+                successMessage:req.flash('successMessage')
+    
+            })
     }
     catch(err){
         console.log(err.message);
@@ -1472,6 +1817,162 @@ const setAddressDefault = async (req,res)=>{
     }
 }
 
+/********************Review********************* */
+const loadReview = async ( req,res )=>{
+    try{
+        const pdtid = req.params.pdtid
+        const users = await User.findOne({_id:req.session.user}).exec()
+        const product = await Products.findById(pdtid) 
+        res.render('profile/userReview',{
+            title:"Rate our product | TraditionShoppe",
+            user : req.session.user,
+            blocked:req.session.blocked,
+            page:'Your review',
+            qtyCount:req.session.qtyCount,
+            listCount:req.session.listCount,            
+            users, 
+            product,                   
+            errorMessage:req.flash('errorMessage'),
+            successMessage:req.flash('successMessage')
+
+        })
+    }
+    catch(err){
+        console.log(err.message);
+    }
+}
+const storeReview = async ( req,res )=>{
+    try{
+        const userid = req.session.user
+        const { star , feedback , pdtid } = req.body
+        const product = await Products.findById(pdtid)
+
+        console.log(req.body)
+        
+        let ratedAlready = await Products.findOne({ 
+            _id: pdtid, 
+            "ratings.ratedby": userid 
+        }, { "ratings.$": 1 });
+
+        // Check if the user has already given feedback
+        let feedbackGiven = await Products.findOne({
+            _id: pdtid,
+            "feedback.reviewby": userid
+        }, { "feedback.$": 1 });
+
+        if (ratedAlready) {
+            const updateRating = await Products.updateOne(
+                {
+                    _id: pdtid,
+                    "ratings.ratedby": userid
+                },
+                {
+                    $set: { "ratings.$.star": star }
+                },
+                {
+                    new: true
+                }
+            );
+
+            if (!updateRating) {
+                req.flash("errorMessage", "Your rating is not updated!!!");
+                return res.json({ success: false });
+            }
+        } else {
+            const rateProduct = await Products.findByIdAndUpdate(
+                pdtid,
+                {
+                    $push: {
+                        ratings: {
+                            star: star,
+                            ratedby: userid
+                        }
+                    }
+                },
+                {
+                    new: true
+                }
+            );
+
+            if (!rateProduct) {
+                req.flash("errorMessage", "Your rating is not added!!!");
+                return res.json({ success: false });
+            }
+        }
+
+        if (feedback) {
+            if (feedbackGiven) {
+                const updateFeedback = await Products.updateOne(
+                    {
+                        _id: pdtid,
+                        "feedback.reviewby": userid
+                    },
+                    {
+                        $set: {
+                            "feedback.$.reviews": feedback,
+                            "feedback.$.reviewDate": Date.now()
+                        }
+                    },
+                    {
+                        new: true
+                    }
+                );
+
+                if (!updateFeedback) {
+                    req.flash("errorMessage", "Your feedback is not updated!!!");
+                    return res.json({ success: false });
+                }
+            } else {
+                const addFeedback = await Products.findByIdAndUpdate(
+                    pdtid,
+                    {
+                        $push: {
+                            feedback: {
+                                reviews: feedback,
+                                reviewby: userid,
+                                reviewDate: Date.now()
+                            }
+                        }
+                    },
+                    {
+                        new: true
+                    }
+                );
+
+                if (!addFeedback) {
+                    req.flash("errorMessage", "Your feedback is not added!!!");
+                    return res.json({ success: false });
+                }
+            }
+        }
+
+        const getAllRatings = await Products.findById(pdtid)
+        let totalRating = getAllRatings.ratings.length
+        let ratingSum = getAllRatings.ratings
+        .map((item) => item.star)
+        .reduce(( prev,curr ) => prev + curr, 0)
+        let actualRating = Math.round( ratingSum / totalRating )
+        let finalProduct = await Products.findByIdAndUpdate(
+            pdtid,
+            {
+                totalrating : actualRating
+            },
+            {
+                new : true
+            }
+        )
+        if(finalProduct){
+            res.json({success:true})
+        } else {
+            req.flash("errorMessage", "Your review is not added !!!");
+            res.json({success:false})
+        }
+    }
+    catch(err){
+        console.log(err.message);
+    }
+}
+
 /********************coupon********************* */
 const loadcoupon = async (req,res)=>{
     try{
@@ -1715,8 +2216,8 @@ module.exports = {
 
     loadcoupon,
 
-    // loadReview,
-    // storReview,
+    loadReview,
+    storeReview,
 
     loadAddress,
     loadnewAddress,
