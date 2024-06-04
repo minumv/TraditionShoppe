@@ -143,16 +143,26 @@ const failureGoogleLogin = async (req,res)=>{
     }   
 }
 
-//login using facebook
-const facebookSignin = async (req,res)=>{
-
+const loadReset = async(req,res)=>{
+    try{
+        const userid = req.params.id
+        res.render('signin/resetPassword',{
+            title: "Reset Password | TraditionShoppe", 
+            userid,           
+            errorMessage:req.flash('errorMessage'),
+            successMessage:req.flash('successMessage')
+        })
+    }
+    catch(err){
+        console.log(err.message);
+    }
 }
 
 //load mobile number
 const loadForget= async (req,res)=>{
     try{
-        const userid = req.session.user     
-        res.render('user/forgetPassword',{
+        //const userid = req.session.user     
+        res.render('signin/forgetPassword',{
             title: "Reset Password | TraditionShoppe",
             
             errorMessage:req.flash('errorMessage'),
@@ -163,12 +173,76 @@ const loadForget= async (req,res)=>{
         console.log(err.message);
     }
 }
+const sendResetLink = async(req,res)=>{
+    try{
+        const email = req.body.email
+        const user = await User.findOne({email:email}).exec()
+        const mailOptions = {
+            from: process.env.AUTH_EMAIL,
+            to: email,
+            subject: 'Reset Password',
+            html:`
+            <div style="text-align:left; padding: 20px;">
+                <div class="text-lft" style="margin-bottom: 20px;">        
+                    <span  style="margin-left: 10px; font-weight: bold; color:  #00bfa5;font-family: 'icomoon'; font-size: 24px;">TraditionShoppe</span>
+                </div>
+                <hr style="border-top: 1px solid #ccc; margin: 20px 0;">
+                <div style="text-align: left;">
+                    <p style="color:#4F0341;">Hello <strong>${user.name}</strong>,</p>
+                    <p>You have requested to reset the password of your <b>TraditionShoppe</b> account.</p>
+                    <p>Please click this link to change your password:</p>
+                    <a href="http://localhost:4000/signin/resetPassword/${user._id}">http://localhost:4000/signin/resetPassword/${user._id}</a>
+                    <p>See you soon on our website.</p>
+                    <p style="margin-top: 20px;">Sportingly,</p>
+                    <p style="color:#4F0341;">The TraditionShoppe Team</p>
+                </div>
+            </div>`,
+        }
 
+        await transporter.sendMail(mailOptions)
+        res.render('signin/resetFeedback',{
+            title:'Feedback| TraditionShoppe',            
+        })
+            
+
+    }
+    catch(err){
+        console.log(err.message);
+    }
+}
+const resetingPassword = async (req,res)=>{
+    try{
+        const userid = req.params.id
+        console.log(userid , req.body)
+        const user = await User.findOne({_id:userid}).exec() 
+        if(req.body.password === req.body.confirmpassword){
+            const hashPassword = await bcrypt.hash(req.body.password,10)
+            console.log(hashPassword)
+            await User.updateOne(
+                {_id:userid},
+                    {$set : {
+                        password : hashPassword
+                }})
+                console.log("password change successfully!")
+                req.flash("errorMessage", "Password changed successfully..");    
+                res.json({success:true})
+            } else {
+                console.log("password mismatch!")
+                req.flash("errorMessage", "New password should match with confirm password!!");    
+                res.json({success:false})
+            }
+        
+    } catch(err){
+        console.log(err.message);
+    }
+   
+}
 
 //load new password page
 const loadChangePassword = async (req,res)=>{
     try{
-        const userid = req.session.user  
+        const userid = req.session.user 
+        console.log(userid) 
         res.render('signin/changePassword',{           
             title: "Change your password| TraditionShoppe",
             userid,
@@ -184,11 +258,12 @@ const loadChangePassword = async (req,res)=>{
 const changingPassword = async (req,res)=>{
     try{
         const userid = req.session.user
+        console.log(req.body)
         const user = await User.findOne({_id:userid}).exec() 
         const passwordMatch = bcrypt.compare(req.body.password,user.password)
         if(passwordMatch){
             if(req.body.newpassword === req.body.confirmpassword){
-                const hashPassword = bcrypt.hash(req.body.newpassword,10)
+                const hashPassword = await bcrypt.hash(req.body.newpassword,10)
                 await User.updateOne(
                 {_id:userid},
                     {$set : {
@@ -362,13 +437,30 @@ const referalUserUpdate = async(req,res,obj)=>{
 const sendOtpEmail = async({_id,email},res)=>{
     try{
         const otp = `${Math.floor(1000+Math.random()*9000)}`;
-        
+        const user = await User.findById(_id)
         //mail options
         const mailOptions = {
             from: process.env.AUTH_EMAIL,
             to: email,
             subject: 'Verify Your Email',
-            html:`<p><b> ${otp}</b> is your OTP to verify your email and complete the signup process.<br> OTP will expires in 5 minutes..</p>`,
+            html: `
+            <div style="text-align:left; padding: 20px;">
+                <div style="margin-bottom: 20px;">           
+                    <img src="http://localhost:4000/userasset/images/logo.png" alt="main_logo" style="height: 100px;">
+                    <span  style="margin-left: 10px; font-weight: bold; color:  #00bfa5;font-family: 'icomoon'; font-size: 24px;">TraditionShoppe</span>
+                </div>
+                <hr style="border-top: 1px solid #ccc; margin: 20px 0;">
+                <div style="text-align: left;">                
+                    <p>Hello <strong>${user.name}</strong>,</p>
+                    <p>Thank you for choosing <b>TraditionShoppe</b>. Use this OTP to complete your Sign Up procedures and verifyy your account on <b>TraditionShoppe</b>.The OTP will expires in 1 minutes. </p>
+                    <br>
+                    <p>Remember, Never share this OTP with anyone. Our cutomer service team will never ask you for your password, OTP, credit card or banking info.</p><br>
+                    <p style="display: inline-block; padding: 10px 20px; color: white; background-color: #4F0341; text-decoration: none; border-radius: 5px;">${otp}</p>
+                    <p>We hope to see you again soon. <br>Regards,<br>
+                    Team <b>TraditionShoppe</b></p>
+                </div>
+            </div>
+        `,
         }
 
         //hash the otp
@@ -384,6 +476,7 @@ const sendOtpEmail = async({_id,email},res)=>{
         await newOTP.save();
         console.log("otp generation :",newOTP);
         await transporter.sendMail(mailOptions)
+        res.render()
              
     }
     catch(err){
@@ -2183,16 +2276,17 @@ module.exports = {
     verifyLogin,
 
     successGoogleLogin,
-    failureGoogleLogin,   
-
-    facebookSignin,
+    failureGoogleLogin,      
 
     loadForget,
+    loadReset,
     loadChangePassword,
     loadSignup,
     loadOtp,
 
     changingPassword,
+    resetingPassword,
+    sendResetLink,
 
     loadHome,
     loadIndex,
@@ -2246,14 +2340,6 @@ module.exports = {
     loadOlder,
 
     getQtyCount,
-    getListCount
-   
+    getListCount  
 
-    // successLogin
-
-    
-    // loadDashboard,
-    // loadUpdate,
-    // userUpdate,
-    // loadDelete
 }

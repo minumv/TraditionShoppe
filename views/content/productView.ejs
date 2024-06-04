@@ -49,22 +49,21 @@
                 <p><%= pdt.product_name%></p>
             </div>
             <div  class="information d-flex">
-              <% let stock = ""; %>  
-              <%if( pdt.stock>0) {%>
-                <% stock ="In Stock" %>
-                  <% } else {%>
-                    <%stock = "Out of Stock" %>
-                    <% }%>
-                <p class="text-warning">
-                  
+             
+                <p class="text-warning">                  
                     <% for( let i = 1 ; i <= 5 ; i++ ){%>
                       <%if( i<= pdt.totalrating){%>
                         <span><i class="fas fa-star" ></i></span>
                       <%} else {%>
                         <span><i class="far fa-star"></i></span>
                         <%}%>
-                  <%}%></p><p class="text-silver">&nbsp;|&nbsp;<%=pdt.numRatings%>&nbsp;rating</p>&ensp;&ensp; <p style="color :#00bfa5; font-size: 20px; font-weight: 600;"><%= stock %></p>&ensp;&ensp; 
-            
+                  <%}%></p><p class="text-silver">&nbsp;|&nbsp;<%=pdt.numRatings%>&nbsp;rating</p>&ensp;&ensp;
+                        
+              <%if( pdt.stock>0) {%>
+                <p style="color :#00bfa5; font-size: 20px; font-weight: 600;">In Stock</p>&ensp;&ensp; 
+              <% } else {%>
+                <p style="color :#bf1300; font-size: 20px; font-weight: 600;">Out of Stock</p>&ensp;&ensp; 
+              <% }%>
                 </div>
             <div class="price-value">
               <% let per = 0 %>
@@ -110,9 +109,15 @@
            
             <br>          
             <div class="nav-but-div">
+              <%if( pdt.stock>0) {%>
                 <button type="button" onclick="addingtoCart('<%= pdt._id %>','<%=pdt.discountedsalePrice %>')" class="use-but ord-but text-center nav-but text-white" style="background-color:#4F0341;font-size:18px ;">Add to Cart</button></a>&ensp;
                 <a class = "link-wish"href="/addtowishlist/<%= pdt._id %>" ><button class="use-but ord-but text-center nav-but text-white" style="background-color:#4F0341 ;font-size:18px;"><span class="icon icon-heart-o">&nbsp;Add to wishlist</span></button></a>&ensp;&ensp;&ensp;&nbsp;
-            </div>
+                <%} else {%>
+                  <button type="button" class="use-but ord-but text-center nav-but text-white" style="background-color:#cccccc; font-size:18px;" disabled>Add to Cart</button>&ensp;
+                  <button class="use-but ord-but text-center nav-but text-white" style="background-color:#cccccc; font-size:18px;" disabled><span class="icon icon-heart-o">&nbsp;Add to wishlist</span>
+                  </button> &ensp;&ensp;&ensp;&nbsp;
+                <%}%> 
+              </div>
             <% if (errorMessage.length > 0) { %>                
               <div class="alert alert-danger" role="alert"> <%- errorMessage %>  </div>                  
             <% } %>
@@ -122,16 +127,16 @@
             <div class="feedback_view">
               <p>Customer feedback</p>
               <% 
-    let processedUsers = new Set();
-    pdt.feedback.forEach((usr) => { 
-        if (processedUsers.has(usr.reviewby.toString())) {
-            return;
-        }
-        processedUsers.add(usr.reviewby.toString());
+                  let processedUsers = new Set();
+                  pdt.feedback.forEach((usr) => { 
+                      if (processedUsers.has(usr.reviewby.toString())) {
+                          return;
+                      }
+                      processedUsers.add(usr.reviewby.toString());
 
-        const userRating = pdt.ratings.find((ratn) => usr.reviewby.toString() === ratn.ratedby.toString());
-        if (userRating) { 
-    %>
+                  const userRating = pdt.ratings.find((ratn) => usr.reviewby.toString() === ratn.ratedby.toString());
+                  if (userRating) { 
+              %>
                       <div class="d-flex">
                           <img src="/userasset/images/user.png" class="rounded-circle" width="25" height="25">
                           &ensp;<p class="text-dark font-weight-bold"><%= usr.reviewbyInfo.name %></p>

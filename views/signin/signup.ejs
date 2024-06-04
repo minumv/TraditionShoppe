@@ -1,10 +1,10 @@
 <%- include('../layout/authheader') %>
 
-<body>
+<body  style="background-color: rgb(245, 226, 237);">
 <div class="container">
 	<div class="d-flex justify-content-center h-100">
-		<div class="card" style="height: 570px;width:450px; top:10%;">
-			<div class="card-header">
+		<div class="card" style="height: 600px;width:450px; top:10%; background-color: white;border-radius: 25px;">
+			<div class="card-header mt-4">
 				<h3 style="color:#4F0341">Sign Up</h3>				
 				<div class="d-flex justify-content-end social_icon">
 					<!-- <span><i class="fab fa-facebook-square"></i></span> -->
@@ -52,7 +52,7 @@
 						<input type="password" id="password2" name ="confirmpassword" class="form-control" placeholder="confirm password" onkeyup="validateConfirm()">
 						<span id="confirm-error" class="error"></span>
 					</div>
-					<div class="input-group form-group">
+					<div class="input-group form-group mb-0">
 						<div class="input-group-prepend">
 							<span class="input-group-text"><i class="fas fa-code"></i></span>
 						</div>
@@ -61,9 +61,10 @@
 						<%} else {%>
 							<input type="text" id="refferal" name="refferal" class="form-control" placeholder="Referral Code " onkeyup="validateRefferal()">
 						<%}%>
-						<span style="font-size:13px;">*Add refferal code here if any, otherwise type 'No'</span>
+						
 						<span id="refferal-error" class="error"></span>
 					</div>
+					<div><span style="font-size:13px;">*Add refferal code here if any, otherwise type 'No'</span></div>
 					<!-- <div class="row align-items-center remember">
 						<input type="checkbox">Remember Me
 					</div> -->

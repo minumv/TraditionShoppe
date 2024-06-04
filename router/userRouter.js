@@ -42,11 +42,14 @@ userRoute.get('/failure',userController.failureGoogleLogin)
 /*******************signup and login using credentials*************************/
 userRoute.get("/signin/userLogin",userAuthent.isLoggedOut,userController.loadLogin)
 userRoute.get("/signin/forgetPassword",userController.loadForget)
+userRoute.get("/signin/resetPassword/:id",userController.loadReset)
 userRoute.get("/signin/changePassword",userController.loadChangePassword)
 userRoute.get("/signin/signup",userAuthent.isLoggedOut,userController.loadSignup)
 userRoute.get("/signin/otpPage",userController.loadOtp)
 
 userRoute.post("/changePassword/:id",userController.changingPassword)
+userRoute.post("/resetPassword/:id",userController.resetingPassword)
+userRoute.post("/forgotMail",userController.sendResetLink)
 
 /************user home navigation****************/
 

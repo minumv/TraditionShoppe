@@ -1,10 +1,10 @@
 <%- include('../layout/authheader') %>
 
-<body>
+<body style="background-color: rgb(245, 226, 237);">
 <div class="container">
 	<div class="d-flex justify-content-center h-100">
-		<div class="card">
-			<div class="card-header">
+		<div class="card" style="padding:10px;background-color: white;border-radius: 25px; height:420px;width:450px;">
+			<div class="card-header mt-4">
 				<h3 style="color:#4F0341">Log In</h3>
 				<div class="d-flex justify-content-end social_icon">
 					<!-- <span><i class="fab fa-facebook-square"></i></span> -->
@@ -12,23 +12,23 @@
 					<!-- <span><i class="fab fa-twitter-square"></i></span> -->
 				</div>
 			</div>
-			<div class="card-body">
+			<div class="card-body p-4">
 				<form action="/checkLogin" method = "post">
 					<div class="input-group form-group">
 						<div class="input-group-prepend">
 							<span class="input-group-text"><i class="fas fa-user"></i></span>
 						</div>
-						<input type="text" name="email" value="afreen@gmail.com" class="form-control" placeholder="username" required>
+						<input id="email" type="text" name="email" value="afreen@gmail.com" class="form-control" placeholder="username" required>
 						
 					</div>
 					<div class="input-group form-group">
 						<div class="input-group-prepend">
 							<span class="input-group-text"><i class="fas fa-key"></i></span>
 						</div>
-						<input type="password" name="password" value="afreen123" class="form-control" placeholder="password" required >
+						<input type="password" id="password" name="password" value="afreen123" class="form-control" placeholder="password" required >
 					</div>
 					<div class="row align-items-center remember">
-						<input type="checkbox">Remember Me
+						<input  id="rememberMe" type="checkbox">Remember Me
 					</div>
 					<div class="form-group">
 						<input type="submit" value="Login" class="btn float-right login_btn">
@@ -55,5 +55,34 @@
 	</div>
 	
 </div>
+<script>
+	 function saveCredentials() {
+            if (document.getElementById('rememberMe').checked) {
+                localStorage.setItem('email', document.getElementById('email').value);
+                localStorage.setItem('password', document.getElementById('password').value);
+                localStorage.setItem('rememberMe', 'true');
+            } else {
+                localStorage.removeItem('email');
+                localStorage.removeItem('password');
+                localStorage.removeItem('rememberMe');
+            }
+        }
+
+        // Function to load email and password from local storage
+        function loadCredentials() {
+            if (localStorage.getItem('rememberMe') === 'true') {
+                document.getElementById('email').value = localStorage.getItem('email');
+                document.getElementById('password').value = localStorage.getItem('password');
+                document.getElementById('rememberMe').checked = true;
+            }
+        }
+
+        // Call loadCredentials when the page loads
+        window.onload = function() {
+            loadCredentials();
+            // Add event listener to the rememberMe checkbox
+            document.getElementById('rememberMe').addEventListener('change', saveCredentials);
+        };
+</script>
 
 <%- include('../layout/authfooter') %>
