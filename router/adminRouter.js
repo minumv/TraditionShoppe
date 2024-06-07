@@ -1,11 +1,8 @@
 const express = require("express")
 const adminRoute = express()
 const bodyParser = require('body-parser')
-
 const adminController = require('../controller/adminController')
 const userAuthent = require('../middleware/userAuthent')
-
-
 
 adminRoute.set('view engine','ejs')
 
@@ -61,7 +58,7 @@ adminRoute.get("/salesreport",userAuthent.isAdminAuthenticated,adminController.l
 
 
 
-// adminRoute.get("/admin/banner",adminController.loadBanner)  
+ 
 // adminRoute.get("/admin/salesreport",adminController.loadSales) 
 // adminRoute.get("/admin/settings",adminController.loadSettings) 
 adminRoute.get("/admin/logout",adminController.logout) 

@@ -1,94 +1,101 @@
 <%- include('../layout/profileHeader') %>
+<style>
+     .error{         
+         color:#ed1557;
+         font-size: 13px;
+         font-weight: bold;
+      }
+      
+      .error i {
+          color:seagreen;
+      }
+</style>
 <div class="d-flex justify-content-center align-items-center" style="width:1210px;">
     <div class="">
-    
-        <div class="d-flex justify-content-center align-items-center"><span class="addr-head">Add Address</span></div>
-        <form action="" id="addressForm">
-        <div class="addr-box">           
+        <form action="/addnewAddress" method="post" onsubmit="return validateForm()">
+        <div class="d-flex justify-content-center align-items-center"><span style="font-weight:600;font-size:28px;color:#4F0341;margin-left:-100px;">Add Address</span></div>
+      
+        <div class="addr-box" style="width:650px;">           
                   
                     <div  class="m-3 d-flex">
                         <span class="addrs-text-box text-span">Name</span>
-                        <input class="addrs-text-box" type="text" name="name"  required pattern="^[a-zA-Z]+[\-'\s]?[a-zA-Z ]+$">
+                        <input class="addrs-text-box" type="text" name="name" id="name" onkeyup="validateName()" >
+                        <span id="name-error" class="error"></span>                    
                     </div>
                     <div  class="m-3 d-flex">
                         <span class="addrs-text-box text-span">Mobile</span>
-                        <input class="addrs-text-box" type="text" name="mobile">
+                        <input class="addrs-text-box" type="text" name="mobile" id="mobile" onkeyup="validateMobile()">
+                        <span id="phone-error" class="error"></span>                    
                     </div >
                     <div  class="m-3 d-flex">
                         <span class="addrs-text-box text-span">Pin No</span>
-                        <input class="addrs-text-box" type="text" name="pin" >
+                        <input class="addrs-text-box" type="text" name="pin" id="pin" onkeyup="validatePin()" >
+                        <span id="pin-error" class="error"></span>
                     </div>
                     <div  class="m-3 d-flex">
                         <span class="addrs-text-box text-span">House</span>
-                        <input class="addrs-text-box" type="text" name="house">
+                        <input class="addrs-text-box" type="text" name="house" id="house" onkeyup="validateHouse()">
+                        <span id="house-error" class="error"></span>
                     </div>
+                    
                     <div  class="m-3 d-flex">
                         <span class="addrs-text-box text-span">Street</span>
-                        <input class="addrs-text-box" type="text" name="street">
+                        <input class="addrs-text-box" type="text" name="street" id="street" onkeyup="validateStreet()">
+                        <span id="street-error" class="error"></span>
                     </div>               
                     <div  class="m-3 d-flex">
                         <span class="addrs-text-box text-span">Landmark</span>
-                        <input class="addrs-text-box" type="text" name="landmark">
+                        <input class="addrs-text-box" type="text" id="landmark" name="landmark" onkeyup="validateLandmark()" >
+                        <span id="landmark-error" class="error"></span>
                     </div>                
                     <div  class="m-3 d-flex">
                         <span class="addrs-text-box text-span">City</span>
-                        <input class="addrs-text-box" type="text" name="city">
+                        <input class="addrs-text-box" type="text" name="city" id="city" onkeyup="validateTown()">
+                        <span id="city-error" class="error"></span>
                     </div>
                     <div  class="m-3 d-flex">
                         <span class="addrs-text-box text-span">State</span>
-                        <input class="addrs-text-box" type="text" name="state" >
+                        <input class="addrs-text-box" type="text" name="state" id="state" onkeyup="validateState()">
+                        <span id="state-error" class="error"></span>
                     </div>
                     <div  class="m-3 d-flex">
                         <span class="addrs-text-box text-span">Country</span>
-                        <input class="addrs-text-box" type="text" name="country">
+                        <input class="addrs-text-box" type="text" name="country" id="country" onkeyup="validateCountry()">
+                        <span id="country-error" class="error"></span>
                     </div>
                     
                 
                 <div  class="m-3">
-                    <button type="button" onclick="storeAddress(event)" class="use-but ord-but  text-white" style="background-color: #4F0341; width:400px;margin-left:0px;height:50px;">Save this address</button>
+                    <button type="submit"  class="use-but ord-but  text-white" style="background-color: #4F0341; width:400px;margin-left:0px;height:50px;">Save this address</button>
                 </div>
-                
+           </form>     
         </div>
+        <% if (errorMessage.length > 0) { %>                
+            <div id="errorMessageDiv" class="alert alert-danger mt-3" role="alert"> <%- errorMessage %>  </div>                
+                             <script>                                
+                               setTimeout(function() {
+                                  var errorMessageDiv = document.getElementById("errorMessageDiv");
+                                  if (errorMessageDiv) {
+                                      errorMessageDiv.style.display = "none";
+                                  }
+                              }, 4000); 
+                          </script>
+          <% } %>
+          <% if (successMessage.length > 0) { %>                
+            <div id="successMessageDiv" class="alert alert-success" role="alert"> <%- successMessage %>  </div>                    
+            <script>                                
+              setTimeout(function() {
+                 var successMessageDiv = document.getElementById("successMessageDiv");
+                 if (successMessageDiv) {
+                  successMessageDiv.style.display = "none";
+                 }
+             }, 4000); 
+         </script>
+            <% } %>
     </form>
     </div>
 
     </div>
 </div>
-
-<script>
-    function storeAddress(){
-        event.preventDefault()
-
-        const name =document.querySelector('input[name="name"]').value;
-        const mobile =document.querySelector('input[name="mobile"]').value;
-        const house =document.querySelector('input[name="house"]').value;
-        const street =document.querySelector('input[name="street"]').value;
-        const landmark =document.querySelector('input[name="landmark"]').value;
-        const city =document.querySelector('input[name="city"]').value;
-        const pin =document.querySelector('input[name="pin"]').value;
-        const state =document.querySelector('input[name="state"]').value;
-        const country =document.querySelector('input[name="country"]').value;
-
-        const formData = {
-            name,mobile,house,street,landmark,city,pin,state,country
-        }
-        console.log("form data :",formData)
-       
-     fetch(`/addnewAddress`,{
-       method : "post", 
-       headers : {
-                'Content-Type' : 'application/json'
-            },      
-       body:  JSON.stringify(formData)
-     })
-     .then(res=>res.json())
-     .then(data=>{
-       if(data.success){
-         location.href = '/getAddress'
-       } else {
-         location.href = '/getAddress'
-       }
-     })
-   }
-</script>
+<script src="/js/validate.js"></script>
 <%- include('../layout/userFooter') %>

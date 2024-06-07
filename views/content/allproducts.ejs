@@ -32,46 +32,40 @@
                 <div class="btn-group">
                   <button type="button" class="btn btn-secondary btn-sm dropdown-toggle" id="dropdownMenuReference" data-toggle="dropdown">Reference</button>
                   <div class="dropdown-menu" aria-labelledby="dropdownMenuReference">
-                     
-
-
-                                      <!--most sold calculte from paymnt product list  -->
-                    <a class="dropdown-item" href="" onclick="selectSort('ascending')">aA-zZ</a>
-                    <a class="dropdown-item" href="" onclick="selectSort('descending')">zZ-aA</a>
+                    
+                    <a class="dropdown-item" href="" onclick="selectSort('mostrated')">Most Rated</a>
                     <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href="" onclick="selectSort('ascending')">aA-zZ</a>
+                    <a class="dropdown-item" href="" onclick="selectSort('descending')">zZ-aA</a>                    
                     <a class="dropdown-item" href="" onclick="selectSort('lowtohigh')" >Price, low to high</a>
                     <a class="dropdown-item" href="" onclick="selectSort('hightolow')">Price, high to low</a>
                     
                   </div>
                 </div>
+                <div style="margin-left: 4px;">
+                  <button class="btn btn-secondary btn-sm "  onclick="clearAll()">Clear All</button>
+
+                </div>
+                
               </div>
             </div>
           </div>
           <div class="row mb-5">
             <%if(products.length>0){%>
-            <% products.forEach((pdt, index) => { %>
-              
+            <% products.forEach((pdt, index) => { %>            
                 
-
-            <div class="col-sm-6 col-lg-4 mb-4" data-aos="fade-up">
-              <!-- <a href="/viewProduct/<%= pdt._id %>"> -->
+            <div class="col-sm-6 col-lg-4 mb-4" data-aos="fade-up">             
                 <div class="block-4 div-height text-center border">
                  
-
-
-
                   <figure class="block-4-image-1">
                     <button id="wish-but" class="icon icon-heart" type="button" onclick="clickWishButton(event)">
-                      <!-- &#10084; -->
                     </button>
                     <a href="/viewProduct/<%= pdt._id %>"><img src="../upload/<%= pdt.images[0]%>" alt="Image placeholder" class="img-fluid"></a>
                     <%if(pdt.totalrating > 0){%>
                       <span class="review_box"><p class="text-black"><%=pdt.totalrating%>&nbsp;<i class="fas fa-star" style="color:#00bfa5;"></i>&nbsp;|&nbsp;<%=pdt.numRatings%></p></span>
-
                     <%} else {%>
                       <span class="review_box"><p class="text-dark">0&nbsp;<i class="fas fa-star" style="color:#00bfa5;"></i>&nbsp;|&nbsp;0</p></span>
                     <%}%>
-                    
                   </figure>
                   <div class="block-4-text p-4">
                     <h3><a href="/viewProduct/<%= pdt._id %>"><%= pdt.product_name %></a></h3>
@@ -92,15 +86,12 @@
                       </div>  
                   </div>
                 </div>
-              <!-- </a> -->
             </div>
          
             <%})%>
         <%} else {%>
           <div class="col-sm-6 col-lg-4 mb-4" >  
-         
             <div class="d-flex justify-content-center" > <h1>There is no such product in here!!</h1></div>
-          
           </div>
           <%}%>
 
@@ -114,10 +105,8 @@
                   <% for(let i = 1 ; i <= pages ; i++){%>
                     <% if( i== pageNum ) {%>
                      <li class="active"><a href="" onclick="selectPage('<%= i %>')"><span><%= i %></span></a></li>
-                     <!-- <li class="active"><a href="/allproducts/?page=<%= i %>"><span><%= i %></span></a></li> -->
                     <% } else { %>
                     <li><a href="" onclick="selectPage('<%= i %>')"><span><%= i %></span></a></li>
-                    <!-- <li><a href="/allproducts/?page=<%= i %>"><span><%= i %></span></a></li> -->
                     <% } %>
                   <% } %>
                   <li><a href="#">&gt;</a></li>
@@ -128,19 +117,9 @@
         </div>
         <%}%>
         <div class="col-md-3 order-1 mb-5 mb-md-0">
-          <!-- <div class="border p-4 rounded mb-4"> -->
-            <!-- <h3 class="mb-3 h6 text-uppercase text-black d-block">Trending</h3> -->
-            <!-- <ul class="list-unstyled mb-0"> -->
-              <!-- <li class="mb-1"><a href="/allproducts/?trend=best" class="d-flex"><span class="text-black">Best Sellers</span> <span class="text-black ml-auto">(2,220)</span></a></li>
-              <li class="mb-1"><a href="/allproducts/?trend=pop" class="d-flex"><span class="text-black">Popular Products</span> <span class="text-black ml-auto">(2,550)</span></a></li> -->
-              <!-- <li class="mb-1"><a onclick="updateURL(event,'/?trend=new')" class="d-flex"><span class="text-black">New Arrivals</span> <span class="text-black ml-auto">(2,124)</span></a></li> -->
-            <!-- </ul> -->
-          <!-- </div> -->
-        <!-- </div> -->
-
+       
         <!-- category -->
        
-
           <div class="border p-4 rounded mb-4 ">
             <div class="widget widget-collapsible">
             <h3 class="mb-3 h6 text-uppercase text-black d-block widget-title"><a data-toggle="collapse" href="#widget-1" role="button" aria-expanded="true" style="color: black;"
@@ -217,7 +196,9 @@
               </div>
             </div>
           </div>
+
            <!-- color -->
+
            <div class="border p-4 rounded mb-4 ">
             <div class="widget widget-collapsible">
             <h3 class="mb-3 h6 text-uppercase text-black d-block widget-title"><a data-toggle="collapse" href="#widget-2" role="button" aria-expanded="true" style="color: black;"
@@ -368,7 +349,9 @@
             </div>
           </div>
         </div>
+
           <!-- price range -->
+
             <div class="border p-4 rounded mb-4 ">
               <div class="widget widget-collapsible">
               <h3 class="mb-3 h6 text-uppercase text-black d-block widget-title"><a data-toggle="collapse" href="#widget-2" role="button" aria-expanded="true" style="color: black;"
@@ -380,7 +363,7 @@
                   <div class="filter-items">
                     <div class="filter-item">
                         <div class="custom-control custom-checkbox">
-                          <input type="checkbox" id="low" name="price" value="low" onchange="selectPrice(0,5000)">
+                          <input type="checkbox" id="low" name="price" value="low" onchange="selectPrice(0,500)">
                           <label for="low" class="text-black">below 500</label>
                         </div>
                     </div>
@@ -409,7 +392,6 @@
             </div>
           </div>
 
-          <button class="btn btn-secondary btn-sm "  onclick="clearAll()">Clear All</button>
                <!-- end of side items -->
         
         </div>
@@ -429,35 +411,35 @@
                 const temp = document.getElementById(data);
         
                 if (!temp.checked) {
-                    // Deselecting a category
                     const checkedArray = selectedCategoryItems.split(",").filter(item => item !== data);
                     selectedCategoryItems = checkedArray.join(',');
                 } else {
-                    // Selecting a category
                     selectedCategoryItems = selectedCategoryItems ? selectedCategoryItems + "," + data : data;
+                  updateURL();
                 }
-                // Update the URL
-                updateURL();
             }
         
-            function selectColor(color) {
-              selectedColor = color;
-                // Update the URL
+            function selectColor(data) {
+              const temp = document.getElementById(data);
+        
+              if (!temp.checked) {
+                  const checkedArray = selectedColor.split(",").filter(item => item !== data);
+                  selectedColor = checkedArray.join(',');
+              } else {
+                  selectedColor = selectedColor ? selectedColor + "," + data : data;
+              }
                 updateURL();
             }
             function selectPage(page) {
               selectedPage = page;
-                // Update the URL
                 updateURL();
             }
             function selectSort(value) {
               selectedSort = value;
-                // Update the URL
                 updateURL();
             }
             function selectTrend(value) {
               selectedTrend = value;
-                // Update the URL
                 updateURL();
             }
         
@@ -469,7 +451,7 @@
                
                 const url = new URL(window.location.href);
                 url.searchParams.set('categ_type', encodeURIComponent(selectedCategoryItems));
-                url.searchParams.set('color', selectedColor);
+                url.searchParams.set('color', encodeURIComponent(selectedColor));
                 url.searchParams.set('minPrice', selectedMinPrice);
                 url.searchParams.set('maxPrice', selectedMaxPrice);
                 url.searchParams.set('sort', selectedSort);
@@ -523,7 +505,7 @@
                 selectedCategoryItems = categorySelected ? decodeURIComponent(categorySelected) : "";
         
                 const colorSelected = urlSearchParams.get('color');
-                selectedColor = colorSelected || "";
+                selectedColor = colorSelected ? decodeURIComponent(colorSelected) : "";
 
                 const sortSelected = urlSearchParams.get('sort');
                 selectedSort = sortSelected || "";
@@ -538,25 +520,19 @@
                 const maxSelected = urlSearchParams.get('maxPrice');
                 selectedMinPrice = minSelected !== "" ? minSelected :"" ;
                 selectedMaxPrice = maxSelected !== "" ? maxSelected :""
-                // alert(selectedMinPrice)
                 if(minSelected !== "" && maxSelected !== "" ){
-                    // alert(`C${selectedMinPrice}`)
                     document.getElementById(`C${selectedMinPrice}`).checked =true
                 }
-                if(colorSelected!=""){
-                    // alert(colorSelected)
-                    document.getElementById(selectedColor).checked =true
-                }
+               // if(colorSelected!=""){
+                    //document.getElementById(selectedColor).checked =true
+               // }
                 if(sortSelected!=""){
-                    // alert(sortSelected)
                     document.getElementById(selectedSort).checked =true
                 }
                 if(trendSelected!=""){
-                    // alert(sortSelected)
                     document.getElementById(selectedTrend).checked =true
                 }
                 if(pageSelected!=""){
-                    // alert(sortSelected)
                     document.getElementById(selectedPage).checked =true
                 }
 
@@ -565,8 +541,11 @@
                 for (let i = 0; i < checkedCategoryItems.length; i++) {
                     document.getElementById(checkedCategoryItems[i]).checked = true;
                 }
+                const checkedColor = selectedColor.split(",");
+                for (let i = 0; i < checkedColor.length; i++) {
+                    document.getElementById(checkedColor[i]).checked = true;
+                }
         
-                // Handle gender selection here (e.g., selectGender('men') or selectGender('women')).
             };
   function changeUrl(e,queryString){
     e.preventDefault()

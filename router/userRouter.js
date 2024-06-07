@@ -1,7 +1,7 @@
 const express = require("express")
 const userRoute = express()
 const passport = require('passport')
-const passportFile =require('../passportFile')
+
 
 userRoute.use(passport.initialize())
 userRoute.use(passport.session())
@@ -9,8 +9,6 @@ userRoute.use(passport.session())
 const userController = require('../controller/userController')
 
 const userAuthent = require('../middleware/userAuthent')
-
-// const {otpValidator} = require('../middleware/validations')
 
 userRoute.set('view engine','ejs')
 
@@ -97,16 +95,11 @@ userRoute.post("/changeprofile/:id",userAuthent.isAuthenticated,userController.e
 userRoute.get("/getOrder",userAuthent.isAuthenticated,userController.loadOrder)
 userRoute.get("/getOrderView/:odrid/:pdtid",userAuthent.isAuthenticated,userController.loadOrderView)
 userRoute.get("/getInvoice/:odrid/:pdtid",userController.loadInvoicePage)
-userRoute.get("/orderlast30",userAuthent.isAuthenticated,userController.loadbuyLast30)
-userRoute.get("/order2023",userAuthent.isAuthenticated,userController.load2023)
-userRoute.get("/order2022",userAuthent.isAuthenticated,userController.load2022)
-userRoute.get("/order2021",userAuthent.isAuthenticated,userController.load2021)
-userRoute.get("/oldorders",userAuthent.isAuthenticated,userController.loadOlder)
 
 /**************review*******************/
 userRoute.get("/getReview/:pdtid",userAuthent.isAuthenticated,userController.loadReview)
 userRoute.post("/addReview",userAuthent.isAuthenticated,userController.storeReview)
-// userRoute.get("/getusercoupon",userAuthent.isAuthenticated,userController.loadcoupon)
+userRoute.get("/getusercoupon",userAuthent.isAuthenticated,userController.loadcoupon)
 
 /**************address*******************/
 userRoute.get("/getAddress",userAuthent.isAuthenticated,userController.loadAddress)
@@ -124,12 +117,6 @@ userRoute.get("/getWallet",userAuthent.isAuthenticated,userController.loadWallet
 /**************wishlist*******************/
 userRoute.get("/getList",userAuthent.isAuthenticated,userController.loadList)
 userRoute.post("/removeList/:id",userAuthent.isAuthenticated,userController.removeProduct)
-
-
-
-// userRoute.get("/orderList",userAuthent.isAuthenticated,userController.loadorderList)
-userRoute.get("/buyAgain",userAuthent.isAuthenticated,userController.loadbuyList)
-userRoute.get("/cancelList",userAuthent.isAuthenticated,userController.loadcancelList)
 
 
 

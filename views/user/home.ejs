@@ -1,8 +1,11 @@
 <%- include('../layout/userHeader') %>
-
-<div class="site-blocks-cover" style="background-image: url(/userasset/images/home_ban.png);" data-aos="fade">
-    
-  
+<%if (banner && banner.images && banner.images.length > 0) {%>
+  <%console.log("lastImage")%>
+  <% let lastImage =  `/upload/${banner.images[banner.images.length - 1]}`;%>
+  <%console.log(lastImage)%>
+<div class="site-blocks-cover" style="background-image: url('<%= lastImage %>');" data-aos="fade">
+ <%}%>   
+ <%console.log(banner.images )%>
   <div class="container">
     <div class=" d-flex topper align-items-center justify-content-center purp-back " >                               
       <span class="text-white">Flat 200 off on your 1st order collect <span class="text-light"> coupon code : TRDTNSH200</span> </span>
@@ -106,8 +109,8 @@
             <p>In an era where classic cultural products are rare. TraditionShoppe provides in-depth online and online solutions that quench one's thirst for Indian knowledge systems, heritage, art and culture.</p>
             <p><a href="#" class="btn btn-sm text-white purp-back">Discover More</a></p>
           </div>
-          <div class="col-md-12 col-lg-7 mb-5">
-            <a href="#"><img src="/userasset/images/deepam.png" alt="Image placeholder" class="img-fluid rounded"></a>
+          <div class="col-md-12 col-lg-7 mb-5">           
+              <a href="#"><img src="/upload/<%=loadPdt.pdtExpl.images[0]%>" alt="Image placeholder" class="img-fluid rounded"></a>           
           </div>
         
         </div>
@@ -127,7 +130,7 @@
         <div class="col-sm-6 col-md-6 col-lg-4 mb-4 mb-lg-0" data-aos="fade" data-aos-delay="">
           <a class="block-2-item" href="#">
             <figure class="image">
-              <img src="/userasset/images/woodtoy1.png" alt="" class="img-fluid">
+              <img src="/upload/<%=loadPdt.pdtToy.images[0]%>" alt="" class="img-fluid">
             </figure>
             <div class="text">
               <span class="text-uppercase">View</span>
@@ -198,7 +201,7 @@
     </div>
   </div>
   <div class="site-section site-blocks-2">
-   
+    
   </div>
 
   

@@ -35,42 +35,53 @@
 
 </form>
   </div>
-
+  <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
   <script>
 
-     // request for cancel   onclick="requestCancel(orderid)"
-
      function handleCancel(orderid,pdtid) {
-    alert("button clicked");
-    
-    // Get selected values from dropdowns
-    const reason = $('#cancelreason').val();
-    console.log("reason:" + reason);
+        swal({
+                title: "Are you sure?",
+                text: "Do you want to cancel this product!",
+                icon: "warning",
+                buttons: true,
+                dangerMode: true,
+            }).then((willDelete) => {  
+                if (willDelete) {
+                        // swal("Your request has been sent!", {
+                        // icon: "success",
+                        // });
+                        const reason = $('#cancelreason').val();
+                        console.log("reason:" + reason);
 
-    // Your fetch code or any other code to handle the button click
-    fetch('/getReturnReason', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            cancel_reason: reason
-        })
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return response.json();
-    })
-    .then(data => {
-        // Handle success response
-        console.log('Server response:', data);
-        requestCancel(orderid,pdtid);
-    })
-    .catch(error => {
-        console.error('Fetch Error:', error);
-    });
+                        fetch('/getCancelReason', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                cancel_reason: reason
+                            })
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Network response was not ok');
+                            }
+                            return response.json();
+                        })
+                        .then(data => {                       
+                            console.log('Server response:', data);
+                            requestCancel(orderid,pdtid);
+                        })
+                        .catch(error => {
+                            console.error('Fetch Error:', error);
+                        });   
+                } else {
+                    //swal("Your request is cancelled!");
+                    location.href = '/getOrder'
+                }             
+                              
+            });
+   
 }
 
      function requestCancel(ordrid,pdtid){

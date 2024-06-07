@@ -53,7 +53,7 @@ textarea:not(:placeholder-shown) ~ .floating-label {
 </style>
 <section>   
       <div class="container">
-        <form role="form"  action="/newOffer" method="post" onsubmit="return validateForm()">    
+        <form role="form"  action="/newOffer" method="post" onsubmit="return validateOffer()">    
         <div class="row ">                    
             <div class="col-6">
                 <div class="card card-plain">
@@ -92,11 +92,19 @@ textarea:not(:placeholder-shown) ~ .floating-label {
                      </div>                                         
                                            
                         <div class="text-center d-flex justify-content-end">                         
-                            <button type="button" id="addOfferButton"  onclick="addOfferDetails()"   class="btn btn-lg bg-gradient-secondary btn-lg w-100 mt-4 mb-0 me-2">Add</button>
+                            <button type="button" id="addOfferButton"  onclick="addOfferDetails()"   class="btn btn-lg bg-gradient-primary btn-lg w-100 mt-4 mb-0 me-2">Submit</button>
                          </div>
                          <% if (errorMessage.length > 0) { %>                
-                            <div id="errorAlert" class="alert alert-danger text-white mt-4" role="alert"> <%- errorMessage %>  </div>                  
-                        <% } %>
+                          <div id="errorMessageDiv" class="alert alert-danger mt-3" role="alert"> <%- errorMessage %>  </div>                
+                                             <script>                                
+                                               setTimeout(function() {
+                                                  var errorMessageDiv = document.getElementById("errorMessageDiv");
+                                                  if (errorMessageDiv) {
+                                                      errorMessageDiv.style.display = "none";
+                                                  }
+                                              }, 4000); 
+                                          </script>
+                          <% } %>
                           
 
                     </div>
@@ -107,32 +115,8 @@ textarea:not(:placeholder-shown) ~ .floating-label {
         </form>        
        </div>   
   </section>
-
+  <script src="/js/validate.js"></script>
 <script>
-
-const discountError = document.getElementById('discount-error')
-function validateDisPer(){
-		const percentage = document.getElementById('percentage').value
-	
-		if(percentage.length === 0){
-			discountError.innerHTML = 'Discount is required'
-			return false
-		}
-
-    if(!percentage.match(/^(?!0(?:\.0+)?$)(?:100(?:\.0+)?|\d{0,2}(?:\.\d+)?)$/)){
-      discountError.innerHTML = 'Discount should be valid'
-			return false
-		}
-		
-		discountError.innerHTML = '<i class = "fas fa-check-circle"></i>'
-		return true
-	}
-  function validateForm() {
-   
-    const isDiscountValid = validateDisPer();
-    
-    return isDiscountValid ;
-  }
 
 
   document.getElementById('offertype').addEventListener('change', function() {

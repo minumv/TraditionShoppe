@@ -2,16 +2,11 @@ const express = require("express")
 const moment = require('moment');
 const User = require('../model/user')
 const Product = require('../model/product')
-const Category = require('../model/category')
 const Wallet = require('../model/wallet')
-const Discount = require('../model/discount')
 const Cart = require('../model/cart')
 const Order = require('../model/order')
-const Address = require('../model/address')
 const mongoose = require('mongoose');
 
-
-// const userAuthent = require('../middleware/userAuthent')
 
 
 /****************load admin order page*******************/
@@ -197,10 +192,10 @@ const mongoose = require('mongoose');
           },
           {
             $lookup: {
-              from: "products", // the foreign collection name
-              localField: "product_list.productId", //the foreign collection id in our local collection
-              foreignField: "_id", //foreign collection id
-              as: "productInfo", //new field added
+              from: "products", 
+              localField: "product_list.productId", 
+              foreignField: "_id", 
+              as: "productInfo", 
             },
           },
           {
@@ -208,10 +203,10 @@ const mongoose = require('mongoose');
           },
           {
             $lookup: {
-              from: "categories", // the foreign collection name
-              localField: "productInfo.category", //the foreign collection id in our local collection
-              foreignField: "_id", //foreign collection id
-              as: "categoryInfo", //new field added
+              from: "categories", 
+              localField: "productInfo.category", 
+              foreignField: "_id", 
+              as: "categoryInfo",
             },
           },
           {
@@ -328,9 +323,9 @@ const mongoose = require('mongoose');
       
     
 
-/**********************************************************************/
+/****************************order user handling******************************************/
 
-        /*   load cancel page */
+        /*   load user cancel page */
 const loadCancelPage = async(req,res)=>{
     try{
         const orderid = req.params.odrid
@@ -356,7 +351,7 @@ const loadCancelPage = async(req,res)=>{
 
 }
 
-/*   load return page */
+/*   load user return page */
 const loadReturnPage = async(req,res)=>{
     try{
         const orderid = req.params.odrid
@@ -413,7 +408,7 @@ const selectReturnReason = async(req,res)=>{
     }
 }
 
-
+//request for order cancel
 const cancelOrder = async (req,res)=>{
     try{
         console.log("cancel request");        
@@ -446,9 +441,7 @@ const cancelOrder = async (req,res)=>{
     }
 }
 
-
-
-
+//request return cancel
 const returnOrder = async (req,res)=>{
     try{
         
@@ -480,9 +473,7 @@ const returnOrder = async (req,res)=>{
         } else {
             req.flash("errorMessage", "You cannot return this product, the days exceeds !!");
             res.status(400).send({success:false})
-        }
-
-        
+        } 
         
     }
     catch(err){
@@ -492,8 +483,7 @@ const returnOrder = async (req,res)=>{
 
 
 /************admin action handle****************/
-
-
+//change order status based on admin actions
 const changeOrderStatus= async(req,res)=>{
     try{
         console.log("change status @",req.params.odrid)
@@ -540,17 +530,15 @@ const changeOrderStatus= async(req,res)=>{
         console.log(err.message);
     }
 }
+//approve order by admin
 const OrderApproved = async (req,res)=>{
     try{
         const odrid = req.params.odrid
         const pdtid = req.params.pdtid
-        const userid = req.params.userid
-       
+        const userid = req.params.userid       
         
         const order = await Order.findOne({_id:odrid,"product_list.productId":pdtid}, { "product_list.$": 1 }).exec()
-        // order.product_list.forEach((odr)=>{
-        //     qty = odr.quantity
-        // })
+        
         console.log("order det :",order)
         let qty = order.product_list[0].quantity
         console.log("qty :",qty);
@@ -566,7 +554,6 @@ const OrderApproved = async (req,res)=>{
         const returnDate = new Date(currentDate.setDate(currentDate.getDate() + 14));
         console.log ("return date :",returnDate)
 
-
         const orderStat = await Order.updateOne(
             { _id: odrid,"product_list.productId":pdtid},
            { $set: { 
@@ -574,7 +561,7 @@ const OrderApproved = async (req,res)=>{
                 "product_list.$[elem].paymentstatus":"completed",               
                 "product_list.$[elem].delivered_date":new Date(),
                 "product_list.$[elem].return_date": returnDate
-                // update delivery date
+                
             } },
             { arrayFilters: [{ "elem.productId": pdtid }] } )
 
@@ -609,7 +596,7 @@ const OrderApproved = async (req,res)=>{
         console.log(err.message);
     }
 }
-
+//approve return by admin
 const OrderReturned = async (req,res)=>{
     try{
        
@@ -617,7 +604,6 @@ const OrderReturned = async (req,res)=>{
         const pdtid = req.params.pdtid     
         const orders = await Order.findOne({_id:odrid,"product_list.productId":pdtid},{ "product_list.$": 1,payment:1 }).populate('user').exec()       
         console.log("orders",orders)
-
        
         let qty = 0
         let total = 0
@@ -682,7 +668,7 @@ const OrderReturned = async (req,res)=>{
     }
 }
 
-/*   load buylist */
+/*   approve cancel by admin */
     const OrderCancelled = async (req,res)=>{
         try{
             const pdtid = req.params.pdtid
@@ -708,6 +694,7 @@ const OrderReturned = async (req,res)=>{
                     } },
                     { arrayFilters: [{ "elem.productId": pdtid }] }   
                 )
+                
                 //update wallet(Add paymentamount) based on payment method
                 console.log('order cancelled, adding to wallet')
                 console.log('user wallet',orders.user.wallet)

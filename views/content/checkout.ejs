@@ -13,13 +13,62 @@
     <link rel="stylesheet" href="/userasset/css/jquery-ui.css">
     <link rel="stylesheet" href="/userasset/css/owl.carousel.min.css">
     <link rel="stylesheet" href="/userasset/css/owl.theme.default.min.css">
-
+    <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
 
     <link rel="stylesheet" href="/userasset/css/aos.css">
 
     <link rel="stylesheet" href="/userasset/css/style.css">
     <link rel="stylesheet" href="/stylesheets/style-user.css" type="text/css">
     <link rel="stylesheet" href="/stylesheets/style-modal.css" type="text/css">
+    <style>
+        .input-group {    
+        position:relative;
+        width : 100%;  
+        margin-bottom: 25px;
+      }
+      
+      .input-group input,
+      .input-group textarea {
+        width: 100%;
+        padding: 10px;
+        font-size: 1rem;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        outline: none;
+      }
+      
+      .floating-label {
+        position: absolute;
+        left: 10px;
+        top: 10px;
+        pointer-events: none;
+        transition: 0.2s ease all;
+        color: #aaa;
+        font-size: 1rem;
+      }
+      
+      input:focus ~ .floating-label,
+      input:not(:placeholder-shown) ~ .floating-label,
+      textarea:focus ~ .floating-label,
+      textarea:not(:placeholder-shown) ~ .floating-label {
+        top: -20px;
+        left: 10px;
+        font-size: 0.8rem;
+        color: #474b50;
+      } 
+        .error{
+          position:absolute;
+          right:8px;
+          top:10px;
+         color:#ed1557;
+         font-size: 13px;
+         font-weight: bold;
+      }
+      
+      .error i {
+          color:seagreen;
+      }
+      </style>
     
   </head>
   <body>
@@ -29,7 +78,7 @@
 
         <% let addressid = ''%>
         <% cartDet.forEach((cart,index)=>{%>
-    <form  role="form" id="address-form" method="post">
+    <form  role="form" id="address-form" method="post" onsubmit="return validateForm()">
         <div class="check-header">
            <div class="site-logo">
             <a class="navbar-brand m-0" href="/home" target="_blank">
@@ -41,8 +90,16 @@
            <div><a href="/cart"><span class="icon icon-shopping_cart text-dark "></span></a></div>
         </div>
         <% if (errorMessage.length > 0) { %>                
-            <div class="alert alert-danger" role="alert"> <%- errorMessage %>  </div>                  
-          <% } %>
+            <div id="errorMessageDiv" class="alert alert-danger mt-3" role="alert"> <%- errorMessage %>  </div>                
+                               <script>                                
+                                 setTimeout(function() {
+                                    var errorMessageDiv = document.getElementById("errorMessageDiv");
+                                    if (errorMessageDiv) {
+                                        errorMessageDiv.style.display = "none";
+                                    }
+                                }, 4000); 
+                            </script>
+            <% } %>
           <% if (successMessage.length > 0) { %>                
             <div class="alert alert-success" role="alert"> <%- successMessage %>  </div>                  
           <% } %>
@@ -80,52 +137,68 @@
                             
                     </div>
                     <div class="d-flex justify-content-center m-3">
-                        <label id ="useAddress"  class="use-but mb-2 text-center text-dark font-weight-bold">Use this address</label>
+                        <label id ="useAddress"  class="use-but mb-2 btn text-capitalize  text-center text-white font-weight-bold">Use this address</label>
                     </div>
                 </div>
                 <div class="modal mod-ad" id="modal">
-                    <div class="closeModal">
-                        <p>Enter a new delivery address</p>
-                      <a id="closeModal"  data-close-button class="close-button">&times;<a>              
+                    <div class="closeModal d-flex justify-content-end"> 
+                      <a id="closeModal"  data-close-button class="close-button" >&times;<a>              
                     </div> 
                     <div>
-                        <p>Add a new address</p>
+                        <p class="text-center font-weight-bold" style="color: darkmagenta;font-size: 25px;margin-top:-55px;">Add a new address</p>
                     </div>          
                     <div class="modal-body">
-                     <div class="address-body">
-                        
-                        <div>
-                            <input type="text" name="name" id="" placeholder="Fullname">
+                     <div class="address-body">                        
+                        <div class="input-group form-group w-100">
+                            <input type="text" id="name" name="name" class="form-control"  placeholder="" onkeyup="validateName()">
+                            <label for="name" class="floating-label">Name</label>
+                            <span id="name-error" class="error"></span>
                         </div>
-                        <div>
-                            <input type="text" name="mobile" id="" placeholder="Mobile">
-                        </div>
-                        <div>
-                            <input type="text" name="pin" id="pin" placeholder="Pincode">
-                        </div>
-                        <div>
-                            <input type="text" name="house" id="" placeholder="Flat, House no., Building, Company, Apartment">
-                        </div>
-                        <div>
-                            <input type="text" name="street" id="" placeholder="Area, Street, Sector, Village">
-                        </div>               
-                        <div>
-                            <input type="text" name="landmark" id="" placeholder="Landmark">
+                        <div class="input-group form-group w-100">
+                            <input type="text" id="mobile" name="mobile" class="form-control"  placeholder="" onkeyup="validateMobile()">
+                            <label for="mobile" class="floating-label">Mobile</label>
+                            <span id="phone-error" class="error"></span>
+                                </div>    
+                        <div class="input-group form-group ">
+                            <input type="text" id="pin" name="pin" class="form-control"  placeholder="" onkeyup="validatePin()">
+                            <label for="pin" class="floating-label">Pincode</label>
+                            <span id="pin-error" class="error"></span>
+                        </div>                      
+                        <div class="input-group form-group ">
+                            <input type="text" id="house" name="house" class="form-control"  placeholder="" onkeyup="validateHouse()">
+                            <label for="house" class="floating-label">Flat, House no., Building, Company, Apartment</label>
+                            <span id="house-error" class="error"></span>
+                        </div> 
+                        <div class="input-group form-group ">
+                            <input type="text" id="street" name="street" class="form-control"  placeholder="" onkeyup="validateStreet()">
+                            <label for="street" class="floating-label">Area, Street, Sector, Village</label>
+                            <span id="street-error" class="error"></span>
+                        </div> 
+                        <div class="input-group form-group ">
+                            <input type="text" id="landmark" name="landmark" class="form-control"  placeholder="" onkeyup="validateLandmark()">
+                            <label for="landmark" class="floating-label">Landmark</label>
+                            <span id="landmark-error" class="error"></span>
                         </div>                
-                        <div>
-                            <input type="text" name="city" id="" placeholder="Town/City">
-                        </div>
-                        <div>
-                            <input type="text" name="state" id="" placeholder="State">
-                        </div>
-                        <div>
-                            <input type="text" name="country" id="" placeholder="Country">
-                        </div>
+                        <div class="input-group form-group ">
+                            <input type="text" id="city" name="city" class="form-control"  placeholder="" onkeyup="validateTown()">
+                            <label for="city" class="floating-label">Town/City</label>
+                            <span id="city-error" class="error"></span>
+                        </div>                
+                        <div class="input-group form-group ">
+                            <input type="text" id="state" name="state" class="form-control"  placeholder="" onkeyup="validateState()">
+                            <label for="state" class="floating-label">State</label>
+                            <span id="state-error" class="error"></span>
+                        </div>  
+                        <div class="input-group form-group ">
+                            <input type="text" id="country" name="country" class="form-control"  placeholder="" onkeyup="validateCountry()">
+                            <label for="country" class="floating-label">Country</label>
+                            <span id="country-error" class="error"></span>
+                        </div>                        
                      </div>
                     </div>
                     <div class="modal-footer">
                       <!-- <a id="cancel" data-close-button class="btnmodal btn btn-lg bg-light btn-lg w-25 mt-4 mb-0 me-2">No, cancel</a> -->
-                      <button type="submit" id="addAddress" formaction="/addAddress/<%=cart.user%>/<%=cart._id%>/<%=cart.total_amount%>" class="btnmodal btn btn-lg bg-warning btn-lg w-25 mt-4 mb-0 me-2">Use this address</button>
+                      <button type="submit" id="addAddress" formaction="/addAddress/<%=cart.user%>/<%=cart._id%>/<%=cart.total_amount%>" class="btnmodal btn w-75 ">Use this address</button>
                     </div>
                  </div> 
             </div>
@@ -140,7 +213,7 @@
                     </div>
                     <div class="d-flex justify-content-around pt-2 ">
                         <input type="text" name="couponCode" id="couponCode" class="rounded">
-                        <button class="but bg-light text-dark rounded" type="button" onclick="applyCoupon('<%=cart.total_amount %>','<%=cart.user%>','<%=cart._id%>')">Apply</button>
+                        <button class="use-but btn text-white w-25" style="margin-left: -55px;margin-top: 10px;" type="button" onclick="applyCoupon('<%=cart.total_amount %>','<%=cart.user%>','<%=cart._id%>')">Apply</button>
                     </div>
                
                
@@ -161,7 +234,7 @@
                     <div class="d-flex justify-content-start p-4">
 
 
-                        <label id="payMethod" class="use-but text-center font-weight-bold" >Use this payment method</label>
+                        <label id="payMethod" class="use-but btn text-capitalize text-white text-center font-weight-bold" >Use this payment method</label>
                     </div>
                 </div>
             </div>
@@ -169,7 +242,7 @@
                 <div class="checkout boredr-shadow">
                     <% ordr_tot = cart.total_amount %>
                     <div class="d-flex justify-content-center">                      
-                        <button id="payButton" type="button" onclick="validateDetails(event,'<%=amount%>','<%=cart._id%>','<%=cart.user%>')" class="use-but font-weight-bold">Use this payment method</button>
+                        <button id="payButton" type="button" onclick="validateDetails(event,'<%=amount%>','<%=cart._id%>','<%=cart.user%>')" class="use-but btn text-white font-weight-bold text-capitalize">Use this payment method</button>
                     </div>
                     <div class="bottom-line ">
                         <p class="text-center text-dark">Choose a payment method to continue checking out.
@@ -179,25 +252,25 @@
                         <p class="bottom-line p-head text-dark">Order Summary</p>
                         <div class="d-flex justify-content-between">
                             <p>Items:</p>                           
-                            <p><%=cart.total_amount%></p>
+                            <p>₹<%=cart.total_amount%>.00</p>
                         </div>
                         <div class="d-flex justify-content-between">
                             <p>Delivery Charge:</p>
-                            <p>₹<%=deliveryCharge%></p>
+                            <p>₹<%=deliveryCharge%>.00</p>
                         </div>                         
                         <% if(coupondiscount !== 0){%> 
                         <div class="d-flex justify-content-between">
                             <p>Coupon Amount:</p>
-                            <p>₹<%=coupondiscount%></p>
+                            <p>₹<%=coupondiscount%>.00</p>
                         </div>                          
                         <%}%>
                         <div class="d-flex justify-content-between bottom-line">
                             <p>Total:</p>
-                            <p> ₹<%=cart.total_amount%></p>
+                            <p> ₹<%=cart.total_amount%>.00</p>
                         </div>
                         <div class="d-flex justify-content-between">
                             <p class="p-head">Order Total:</p>
-                            <p class="p-head"> ₹<%=amount%></p>
+                            <p class="p-head"> ₹<%=amount%>.00</p>
                            
                         </div>
                     </div>
@@ -229,6 +302,7 @@
 
 <script src="/userasset/js/main.js"></script>
 <script src="/js/scripts.js"></script>
+<script src="/js/validate.js"></script>
 <script src="/js/script-modal.js"></script>
 <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
@@ -417,8 +491,6 @@ async function verifyPayment(payment, order) {
                         console.log(err.message);
                 }
             }
-
-
-  </script>
+   </script>
 </body>
 </html>

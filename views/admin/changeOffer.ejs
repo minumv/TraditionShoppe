@@ -58,8 +58,16 @@
                         </div>
 
                         <% if (errorMessage.length > 0) { %>                
-                          <div class="alert alert-danger text-white mt-6" role="alert"> <%- errorMessage %>  </div>                  
-                      <% } %>
+                          <div id="errorMessageDiv" class="alert alert-danger mt-3" role="alert"> <%- errorMessage %>  </div>                
+                                             <script>                                
+                                               setTimeout(function() {
+                                                  var errorMessageDiv = document.getElementById("errorMessageDiv");
+                                                  if (errorMessageDiv) {
+                                                      errorMessageDiv.style.display = "none";
+                                                  }
+                                              }, 4000); 
+                                          </script>
+                          <% } %>
                       
                       
                     </div>

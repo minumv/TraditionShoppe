@@ -28,11 +28,11 @@
                   Order by date
                 </button>
                 <div class="dropdown-menu" aria-labelledby="dropdownMenuOffset">
-                  <a class="dropdown-item" href="/orderlast30">Last 30 days</a>
-                  <a class="dropdown-item" href="/order2023">2023</a>
-                  <a class="dropdown-item" href="/order2022">2022</a>
-                  <a class="dropdown-item" href="/order2021">2021</a>
-                  <a class="dropdown-item" href="/oldorders">older</a>
+                  <a class="dropdown-item" href="/getOrder/?cond=30days">Last 30 days</a>
+                  <a class="dropdown-item" href="/getOrder/?cond=2023">2023</a>
+                  <a class="dropdown-item" href="/getOrder/?cond=2022">2022</a>
+                  <a class="dropdown-item" href="/getOrder/?cond=2021">2021</a>
+                  <a class="dropdown-item" href="/getOrder/?cond=older">older</a>
                 </div>
         </div>
 
@@ -111,7 +111,7 @@
                     <%} else  if (odr.product_list.orderstatus === 'pending'){%>
                         <div><a href="/cancelPage/<%= odr._id %>/<%= odr.productDetails._id %>"><button type="submit" class="use-but ord-but bg-light text-center text-dark">Cancel Order</button></a></div>
                     <%} else if(odr.product_list.orderstatus === 'delivered'){%> 
-                        <div><a href="/returnPage/<%= odr._id %>/<%= odr.productDetails._id %>"><button type="submit" class="use-but ord-but bg-white text-dark">Return Product</button></a></div>  
+                        <div><a href="/returnPage/<%= odr._id %>/<%= odr.productDetails._id %>"><button type="submit"  class="use-but ord-but bg-white text-dark">Return Product</button></a></div>  
                         <div><a href="/getReview/<%= odr.productDetails._id %>"><button type="submit" class="use-but ord-but bg-white text-dark">Write a Review</button></a></div> 
                         
                         <%}%>
@@ -162,11 +162,7 @@
         })
             .then(res => res.json())
             .then(res => {
-                // console.log('data:', data)
-                // const orderData = data.raz_order;
-                // console.log('orderData:', data.raz_order)
-                // const user = data.user
-                // razorPayment(orderData, event, user);
+                
                 if(res.success){
                 var options = {
                         
@@ -234,6 +230,7 @@
                         console.log(err.message);
                 }
             }
+   
 </script>
 
 

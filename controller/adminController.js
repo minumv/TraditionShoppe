@@ -2,16 +2,10 @@ const express = require("express")
 const User = require('../model/user')
 const Product = require('../model/product')
 const Category = require('../model/category')
-const Seller = require('../model/seller')
-const Discount = require('../model/discount')
 const Coupon = require('../model/coupon')
 const Offer = require('../model/offer')
 const Order = require('../model/order')
 const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
-
-// const userAuthent = require('../middleware/userAuthent')
-
-
 
 //login page
     //load login page
@@ -156,54 +150,44 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
                 },
               ]);
             
-            //   console.log("total pdts:",totalActiveProducts)
-            //   console.log("total users:",totalActiveUsers)
-            //   console.log("total orders:",totalOrders)
-            //   console.log("income:",totalOrders[0].income)
-
+            
             const bestSellingProduct = await Order.aggregate([
                 {
                   $match: {
                    " product_list.paymentstatus": { $ne: "cancelled" },
                   },
                 },
-                // Unwind the products array to get each product as a separate document
+                
                 { $unwind: "$product_list" },
             
-                // Group by product and sum the quantity
                 {
                   $group: {
                     _id: "$product_list.productId",
                     totalQuantity: { $sum: "$product_list.quantity" },
                   },
-                },
-            
-                // Sort by total quantity in descending order
+                },           
+               
                 { $sort: { totalQuantity: -1 } },
             
-                // Limit to the top 3 products
                 { $limit: 10 },
             
-                // Lookup to get the product details
                 {
                   $lookup: {
-                    from: "products", // Replace with your actual product collection name
+                    from: "products", 
                     localField: "_id",
                     foreignField: "_id",
                     as: "productDetails",
                   },
-                },
-            
-                // Unwind the productDetails array
+                },            
+               
                 { $unwind: "$productDetails" },
             
-                // Project to reshape the output
                 {
                   $project: {
                     _id: 0,
                     productName: "$productDetails.product_name",
-                    productImage: "$productDetails.images", // Replace with the actual field name for image
-                    productPrice: "$productDetails.price_unit", // Replace with the actual field name for price
+                    productImage: "$productDetails.images", 
+                    productPrice: "$productDetails.price_unit", 
                     totalQuantity: 1,
                   },
                 },
@@ -215,11 +199,8 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
                   $match: {
                     "product_list.paymentStatus": { $ne: "cancelled" },
                   },
-                },
-                // Unwind the products array to get each product as a separate document
-                { $unwind: "$product_list" },
-            
-                // Lookup to get the product details including category
+                },               
+                { $unwind: "$product_list" },            
                 {
                   $lookup: {
                     from: "products", 
@@ -227,9 +208,7 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
                     foreignField: "_id",
                     as: "productDetails",
                   },
-                },
-            
-                // Unwind the productDetails array
+                },            
                 { $unwind: "$productDetails" },
                 {
                     $lookup: {
@@ -239,19 +218,13 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
                         as: "sellerDetails",
                       },
                 },
-            
-                // Group by category and sum the quantity
                 {
                   $group: {
                     _id: "$sellerDetails.seller_name",
                     totalQuantity: { $sum: "$product_list.quantity" },
                   },
                 },
-            
-                // Sort by total quantity in descending order
                 { $sort: { totalQuantity: -1 } },
-            
-                // Limit to the top 3 categories
                 { $limit: 10 },
               ]);
               const bestSellingCategories = await Order.aggregate([
@@ -259,11 +232,8 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
                   $match: {
                     "product_list.paymentStatus": { $ne: "cancelled" },
                   },
-                },
-                // Unwind the products array to get each product as a separate document
+                },               
                 { $unwind: "$product_list" },
-            
-                // Lookup to get the product details including category
                 {
                   $lookup: {
                     from: "products", 
@@ -273,7 +243,6 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
                   },
                 },
             
-                // Unwind the productDetails array
                 { $unwind: "$productDetails" },
                 {
                     $lookup: {
@@ -284,7 +253,6 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
                       },
                 },
             
-                // Group by category and sum the quantity
                 {
                   $group: {
                     _id: "$categoryDetails.category_name",
@@ -292,10 +260,8 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
                   },
                 },
             
-                // Sort by total quantity in descending order
                 { $sort: { totalQuantity: -1 } },
             
-                // Limit to the top 3 categories
                 { $limit: 10 },
               ]);
               console.log('bestproducts :',bestSellingProduct)
@@ -323,6 +289,7 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
         }
         
     }
+
     //load customer page
     const loadCustomer = async (req,res)=>{
         try{
@@ -391,15 +358,12 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
         try{        
 
             let id = req.params.id
-            const user = await User.findById(id)
-            // await User.updateOne({_id:id},{$set:{
-            // status : 'Blocked'     
+            const user = await User.findById(id)             
             user.status = 'Blocked'
             await user.save()    
             req.session.blocked = true
-            req.session.user = false
-        
-           res.redirect('/admin/customers')
+            req.session.user = false        
+            res.redirect('/admin/customers')
          
         } catch (err){
             console.log(err.message);
@@ -407,36 +371,31 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
         
     }
    
-    //delete customer 
+    //unblock customer 
 
     const  unBlockCustomer = async (req,res)=>{
-    try{  
-
-        let id = req.params.id
-        await User.updateOne({_id:id},{$set:{
-        status : 'Verified'           
-        }})
-        req.session.blocked = false
-       res.redirect('/admin/customers')
-     
-    } catch (err){
-        console.log(err.message);
-    }
-    
-}
-
-
-    //delete customer 
-    const  deleteCustomer = async (req,res)=>{
-        try{        
+        try{  
 
             let id = req.params.id
             await User.updateOne({_id:id},{$set:{
-            status : 'deleted'           
-        }})
-            //req.flash("successMessage", "Address registration failed.. Try again!!");
-           res.redirect('/admin/customers')
-         
+            status : 'Verified'           
+            }})
+            req.session.blocked = false
+        res.redirect('/admin/customers')
+        
+        } catch (err){
+            console.log(err.message);
+        }    
+    }
+
+    //delete customer 
+    const  deleteCustomer = async (req,res)=>{
+        try{      
+            let id = req.params.id
+            await User.updateOne({_id:id},{$set:{
+                status : 'deleted'           
+            }})
+           res.redirect('/admin/customers')         
         } catch (err){
             console.log(err.message);
         }
@@ -444,30 +403,10 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
     }
 
   
-
-  
-
-
-    //load order page
-    // const loadOrders = async (req, res)=>{
-    //     try {
-    //         res.render('admin/orders',{
-    //             title : "Admin Panel - TraditionShoppe",
-    //             page:"Orders",
-    //             errorMessage : req.flash('errorMessage'),
-    //             successMessage : req.flash('successMessage')
-    //         })
-            
-    //     } catch (err) {
-    //         console.log(err.message);
-    //     }
-    // }
-
     /***********************coupon management******************************/
    
     const loadCouponPage = async (req, res)=>{
         try {
-
             let flag =0, id;
             const couponData = await Coupon.find().exec()
             couponData.forEach((cpn)=>{               
@@ -504,13 +443,11 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
 
     const addCoupon = async (req,res) =>{
         try{
-            // const id = req.params.id
-            // const coupon = await Coupon.find({_id:id}).exec()
+            
             res.render('admin/addCoupon',{
                 title : "Admin Panel - TraditionShoppe",
                 page:"New Coupon",
-                admin:req.session.admin,
-                //coupon:coupon,
+                admin:req.session.admin,               
                 errorMessage : req.flash('errorMessage'),
                 successMessage : req.flash('successMessage')
             })
@@ -836,22 +773,9 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
 
 
 
+ 
 
-
-    //  //load banner page
-    //  const loadBanner = async (req, res)=>{
-    //     try {
-    //         res.render('admin/banner',{
-    //             title : "Admin Panel - TraditionShoppe",
-    //             page:"Banner",
-    //             errorMessage : req.flash('errorMessage'),
-    //             successMessage : req.flash('successMessage')
-    //         })
-            
-    //     } catch (err) {
-    //         console.log(err.message);
-    //     }
-    // }
+     /**********************Handling salesreport******************************/
 
      //load Sales report page
      const storeFromdate = async(req,res)=>{
@@ -930,7 +854,7 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
                             { "product_list.orderstatus": "delivered" },
                             { "product_list.delivered_date":{ '$gte': startOfyesterday, '$lt': endOfyesterday }  } 
                         ]
-                        // { $gte: yesterday, $lt: currentDate }
+                       
                     };
 
                 } else if(filter === 'lastweek'){
@@ -952,10 +876,8 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
                         ]
                     };
                     
-                } else if(filter === 'lastmonth'){
-                    // Calculate the start date of last month
+                } else if(filter === 'lastmonth'){                  
                     const lastMonthStartDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
-                    // Calculate the end date of last month
                     const lastMonthEndDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0);                    
                     console.log("lastMonth",lastMonthStartDate ,lastMonthEndDate,)
                     matchCondition = {
@@ -974,8 +896,6 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
             const orders = await getOrders(req,res,matchCondition)
             delete req.session.fromdate  
             delete req.session.todate  
-           // console.log("order details :",orders)
-
                 
             res.render('admin/salesReport',{
                 title : "Sales Report - TraditionShoppe",
@@ -1057,13 +977,11 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
     }
 
    
-
+//logout from site
     const logout = async(req,res)=>{
         try{
             req.flash("successMessage", "You have been logged out.");
-            // Clear the user session
             req.session.destroy();         
-            // Redirect to the login page
             res.redirect("/admin");
         } catch (error){
             console.log(error.message);
@@ -1078,6 +996,7 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
         loadAdminLogin,
         verifyAdminLogin,
         loadAdminHome,
+        
         loadCustomer,
         loadCustomerEdit,
         verifyCustomer,
@@ -1085,7 +1004,6 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
         unBlockCustomer,
         deleteCustomer,
        
-        // loadOrders,
         loadCouponPage,
         addCoupon,
         addCouponDetails,
@@ -1094,17 +1012,14 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
         deleteCouponDetails,
 
         loadOfferPage,
-        addOffer,
-       // storeOfferType,
-        addOfferDetails,
-       // changeOfferType,
+        addOffer,       
+        addOfferDetails,      
         getUpdateOfferPage,
         updateOfferDetails,
         deleteOfferDetails,
         addNames,
 
 
-        // loadBanner,
         storeTodate,
         storeFromdate,
         loadSalesReport,

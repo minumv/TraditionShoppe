@@ -5,6 +5,7 @@ const Category = require('../model/category')
 const Seller = require('../model/seller')
 const Discount = require('../model/discount')
 const bcrypt = require('bcrypt')
+const Banner = require("../model/banner")
 
 
 
@@ -59,14 +60,14 @@ const getProducts = async(req,res)=>{
             {
                 $lookup : {
                     from : 'offers',
-                    let: { product_name: '$product_name' }, // Define variables for local and foreign fields
+                    let: { product_name: '$product_name' }, 
                     pipeline: [
                         {
                             $match: {
                                 $expr: {
                                     $and: [
-                                        { $eq: ["$offer_name", "$$product_name"] }, // Match documents where offer_name equals categoryName
-                                        { $eq: ["$status", true] } // Match documents where status is true
+                                        { $eq: ["$offer_name", "$$product_name"] }, 
+                                        { $eq: ["$status", true] } 
                                     ]
                                 }
                             }
@@ -95,14 +96,14 @@ const getProducts = async(req,res)=>{
             {
                 $lookup : {
                     from : 'offers',
-                    let: { categoryName: '$categoryName' }, // Define variables for local and foreign fields
+                    let: { categoryName: '$categoryName' }, 
                     pipeline: [
                         {
                             $match: {
                                 $expr: {
                                     $and: [
-                                        { $eq: ["$offer_name", "$$categoryName"] }, // Match documents where offer_name equals categoryName
-                                        { $eq: ["$status", true] } // Match documents where status is true
+                                        { $eq: ["$offer_name", "$$categoryName"] }, 
+                                        { $eq: ["$status", true] } 
                                     ]
                                 }
                             }
@@ -132,17 +133,17 @@ const getProducts = async(req,res)=>{
                 $addFields: {
                     discountInfo: {
                         $cond: {
-                            if: { $isArray: "$discountInfo" }, // Check if discountInfo is an array
-                            then: { $arrayElemAt: ["$discountInfo", 0] }, // If it's an array, extract the first element
-                            else: null // If it's not an array, set it to null
+                            if: { $isArray: "$discountInfo" }, 
+                            then: { $arrayElemAt: ["$discountInfo", 0] }, 
+                            else: null 
                         }
                     },
                     discountedsalePrice: {
                         $cond: {
                             if: {
                                 $and: [
-                                    { $ne: ["$discountInfo", null] }, // Check if discountInfo is not null
-                                    { $or: [ // Check if either pdtoffer or categoffer is not 0
+                                    { $ne: ["$discountInfo", null] }, 
+                                    { $or: [ 
                                         { $ne: ["$pdtoffer", 0] },
                                         { $ne: ["$categoffer", 0] }
                                     ]}
@@ -150,11 +151,11 @@ const getProducts = async(req,res)=>{
                             },
                             then: {
                                 $subtract: [
-                                    "$discountedPrice", // Subtract the offer price from the discountedPrice
-                                    { $max: ["$pdtoffer", "$categoffer"] } // Use $max to get the higher offer value
+                                    "$discountedPrice", 
+                                    { $max: ["$pdtoffer", "$categoffer"] } 
                                 ]
                             },
-                            else: "$discountedPrice" // If no offer is applicable or discountInfo is null, keep the original discountedPrice
+                            else: "$discountedPrice"
                         }
                     }
                 }
@@ -198,8 +199,6 @@ const loadNewProducts = async(req,res)=>{
         const discountQuery = Discount.find({status:true}).exec()
 
         const [categories, sellers, discounts] = await Promise.all([categoryQuery, sellerQuery, discountQuery]);
-        
-        // console.log(sellers)
         
         res.render('admin/addProducts',{
             title:'Add products - TraditionShoppe',
@@ -245,23 +244,15 @@ const submitProducts = async (req,res)=>{
         console.log(req.body);
         console.log("try for session in /submitProducts");
         console.log(req.session.dropdownValues);
-        const { category, seller, discount, material, color, product_type} = req.session.dropdownValues;
-        // const catName = req.body.category;
+        const { category, seller, discount, material, color, product_type} = req.session.dropdownValues;        
         const categ = await Category.findOne({ category_name: category }, { _id: 1 }).exec();
-        console.log('Category:', category, categ);
-
-        // const sellName = req.body.seller;
+        console.log('Category:', category, categ);        
         const sellr = await Seller.findOne({ seller_name: seller }, { _id: 1 }).exec();
-        console.log('Seller:', seller, sellr);
-
-        // const discName = req.body.discount;
+        console.log('Seller:', seller, sellr);        
         const disc = await Discount.findOne({ discount_name: discount }, { _id: 1 }).exec();
-        console.log('Discount:', discount, disc);
-
-        // Ensure that categ, sellr, and disc are not null before proceeding
+        console.log('Discount:', discount, disc);        
         if (!categ || !sellr || !disc) {
-            console.log('One or more documents not found in the database.');
-            // Handle the case where one or more documents are not found
+            console.log('One or more documents not found in the database.');          
         }
         let imgArray = req.uploadedFiles
         imgArray.pop()
@@ -290,16 +281,12 @@ const submitProducts = async (req,res)=>{
 
         const productData = await product.save()
         if(productData){
-            console.log('successful');
-           
-            //  res.redirect('/admin/products')
+            console.log('successful');          
             res.json({success:true})
         } else {
-            console.log('failed');
-            //  req.flash("errorMessage", "Product registration failed.. Try again!!");
-            // res.redirect("/newProducts");
+            console.log('failed');            
             res.json({success:false})
-        }  // 
+        }  
     }
     catch(err){
         console.log(err.message)
@@ -361,22 +348,12 @@ const updateProduct = async(req,res)=>{
         let id = req.params.id
       if(req.session.dropdownEdit){
         const { category, seller, discount, material, color, product_type, status, isListing } = req.session.dropdownEdit;
-        // const catName = req.body.category;
         const categ = await Category.findOne({ category_name: category }, { _id: 1 }).exec();
-       // console.log('Category:', category, categ);
-
-        // const sellName = req.body.seller;
         const sellr = await Seller.findOne({ seller_name: seller }, { _id: 1 }).exec();
-      //  console.log('Seller:', seller, sellr);
-
-        // const discName = req.body.discount;
         const disc = await Discount.findOne({ discount_name: discount }, { _id: 1 }).exec();
-      //  console.log('Discount:', discount, disc);
 
-        // Ensure that categ, sellr, and disc are not null before proceeding
         if (!categ || !sellr || !disc) {
             console.log('One or more documents not found in the database.');
-            // Handle the case where one or more documents are not found
         }
         await Products.updateOne({_id:id},{$set:{
             product_name: req.body.name,
@@ -397,7 +374,6 @@ const updateProduct = async(req,res)=>{
         res.redirect('/admin/products')
     } else{
         console.log('not updated');
-       // res.redirect(`/admin/products/update/${id}`)
 
     }
     }
@@ -492,6 +468,59 @@ const  deleteProduct = async (req,res)=>{
     
 }
 
+/**********************banner management******************************/
+
+     //load banner page
+     const loadBanner = async (req, res)=>{
+        try {
+            const banner = await Banner.findOne().sort({ _id: -1 }).exec(); 
+            console.log("banner",banner)
+            res.render('admin/banner',{
+                title : "Admin Panel - TraditionShoppe",
+                page:"Banner",
+                banner,
+                errorMessage : req.flash('errorMessage'),
+                successMessage : req.flash('successMessage')
+            })
+            
+        } catch (err) {
+            console.log(err.message);
+        }
+    }
+
+    //add banner image to database
+    const addimageBanner = async (req,res)=>{
+        try{
+            let imgArray=req.uploadedFiles
+            imgArray.pop()
+            console.log("array :",imgArray)
+            const banner = await Banner.findOne().exec()
+            console.log("banner",banner)
+            let bannerAdd ;
+            if (banner) {
+                if (banner.images && banner.images.length > 0) {
+                    bannerAdd = await Banner.updateOne({}, { $push: { images: imgArray[0] } });
+                } else {
+                    bannerAdd = await Banner.updateOne({}, { images: imgArray });
+                }
+            } else {
+                bannerAdd = await Banner.create({ images: imgArray });
+            }
+
+            if(bannerAdd){
+                res.json({success:true})
+            } 
+            else{
+                req.flash("errorMessage", "Image uploading failed!!");
+                res.json({success:false})   
+            }      
+        }
+        catch(err){
+            console.log(err);
+        }
+    }
+
+
 /*.................... Category details ................. */
 
     //load category page
@@ -544,7 +573,6 @@ const loadNewCategory = async(req,res)=>{
         res.render('admin/addCategory',{
             title:'Category - TraditionShoppe',
             page:"New Category",
-            // categories:categories,                
             errorMessage:req.flash('errorMessage'),
             successMessage:req.flash('successMessage')
         })           
@@ -599,8 +627,6 @@ const addNewCategory = async(req,res)=>{
 //update products
 const updateCategory = async(req,res)=>{
     try{
-        console.log('update');
-        //console.log(req.body.name,req.body.description);
         let id = req.params.id
         console.log(id);
         await Category.updateOne({_id:id},{$set:{
@@ -635,30 +661,6 @@ const  deleteCategory = async (req,res)=>{
 }
 
 
-/*.................... Seller details ................. */
-
-     //load sellers list
-
-     const loadSellers = async (req,res)=>{
-        try{
-                const sellerQuery = Seller.find({status:true})
-                await sellerQuery.exec()
-                .then((sellers)=>{
-                    res.render('admin/seller',{
-                    title: "Admin Panel - TraditionShoppe",
-                    page:"Seller",
-                    sellers:sellers,
-                    errorMessage : req.flash('errorMessage'),
-                    successMesssage : req.flash('successMessage')
-                })
-            })
-        } catch (err){
-            console.log(err.message);
-        }
-    }
-
-
-    
     module.exports = {
         loadProducts,
         
@@ -674,6 +676,9 @@ const  deleteCategory = async (req,res)=>{
         storeDropdownEdit,
         updateProduct,
         deleteProduct,
+
+        loadBanner,
+        addimageBanner,
         
         loadCategory,
         loadNewCategory,

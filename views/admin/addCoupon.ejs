@@ -53,7 +53,7 @@
  </style>
 <section>   
       <div class="container">
-        <form role="form"  action="/newCoupon" method="post" onsubmit="return validateForm()">    
+        <form role="form"  action="/newCoupon" method="post" onsubmit="return validateCoupon()">    
         <div class="row ">                    
             <div class="col-6">
                 <div class="card card-plain">
@@ -64,7 +64,7 @@
 
                     <div class="card-body">             
                       <div class="input-group input-group-outline mb-3">
-                         <input type="text" id="coupon" name="coupon" class="form-control" placeholder=""  onchange="validateCoupon()">
+                         <input type="text" id="coupon" name="coupon" class="form-control" placeholder=""  onchange="validateCode()">
                          <label for="coupon" class="floating-label">Enter Coupon Code eg: FESTIV2024</label>
                          <span id="coupon-error" class="error"></span>
                      </div>                     
@@ -91,14 +91,19 @@
                      </div>                      
                                            
                         <div class="text-center d-flex justify-content-end">                         
-                            <input type="submit"    class="btn btn-lg bg-gradient-primary btn-lg w-100 mt-4 mb-0 me-2">Add</button>
+                            <button type="submit"  class="btn btn-lg bg-gradient-primary btn-lg w-100 mt-4 mb-0 me-2">Submit</button>
                          </div>
                          <% if (errorMessage.length > 0) { %>                
-                            <div class="alert alert-danger" role="alert"> <%- errorMessage %>  </div>                  
-                        <% } %>
-                          <% if (successMessage.length > 0) { %>                
-                            <div class="alert alert-success" role="alert"> <%- successMessage %>  </div>                    
-                          <% } %>
+                          <div id="errorMessageDiv" class="alert alert-danger mt-3" role="alert"> <%- errorMessage %>  </div>                
+                                             <script>                                
+                                               setTimeout(function() {
+                                                  var errorMessageDiv = document.getElementById("errorMessageDiv");
+                                                  if (errorMessageDiv) {
+                                                      errorMessageDiv.style.display = "none";
+                                                  }
+                                              }, 4000); 
+                                          </script>
+                          <% } %>                  
 
                     </div>
                   
@@ -108,80 +113,5 @@
         </form>        
        </div>   
   </section>
-<script>
-    const couponError = document.getElementById('coupon-error')
-	const discountError = document.getElementById('discount-error')
-	const minpurchError = document.getElementById('minpurch-error')
-	const maxamtError = document.getElementById('maxamt-error')	
-
-  function validateCoupon(){
-		const coupon = document.getElementById('coupon').value
-	
-		if(coupon.length === 0){
-			couponError.innerHTML = 'Coupon is required'
-         couponError.style.display = 'block';
-			return false
-		}
-		if(!coupon.match(/^(?=.*[a-zA-Z])(?=.*[0-9])[a-zA-Z0-9]+$/)){
-			couponError.innerHTML = 'Coupon should be valid'
-         couponError.style.display = 'block';
-			return false
-		}
-		couponError.innerHTML = '<i class = "fas fa-check-circle"></i>'
-		return true
-	}
-  function validateDisPer(){
-		const percentage = document.getElementById('percentage').value
-	
-		if(percentage.length === 0){
-			discountError.innerHTML = 'Discount is required'
-			return false
-		}
-
-    if(!percentage.match(/^(?!0(?:\.0+)?$)(?:100(?:\.0+)?|\d{0,2}(?:\.\d+)?)$/)){
-      discountError.innerHTML = 'Discount should be valid'
-			return false
-		}
-		
-		discountError.innerHTML = '<i class = "fas fa-check-circle"></i>'
-		return true
-	}
-
-  function validateMinPurch(){
-		const min_purch= document.getElementById('min_purch').value
-	
-		if(min_purch.length === 0){
-			minpurchError.innerHTML = 'Amount is required'
-			return false
-		}
-		if(!min_purch.match(/^(?!0)\d{1,4}(?:\.\d+)?$/)){
-			minpurchError.innerHTML = 'Amount should be valid'
-			return false
-		}
-		minpurchError.innerHTML = '<i class = "fas fa-check-circle"></i>'
-		return true
-	}
-   function validateMaxDisc(){
-		const max_amt= document.getElementById('max_amt').value
-	
-		if(max_amt.length === 0){
-			maxamtError.innerHTML = 'Amount is required'
-			return false
-		}
-		if(!max_amt.match(/^(?!0)\d{1,4}(?:\.\d+)?$/)){
-			maxamtError.innerHTML = 'Amount should be valid'
-			return false
-		}
-		maxamtError.innerHTML = '<i class = "fas fa-check-circle"></i>'
-		return true
-	}
-
-   function validateForm() {
-    const isCouponValid = validateCoupon();
-    const isDiscountValid = validateDisPer();
-    const isMinValid = validateMinPurch();
-    const isMaxValid = validateMaxDisc();    
-    return isCouponValid && isDiscountValid && isMinValid && isMaxValid ;
-  }
-</script>
+<script src="/js/validate.js"></script>
   <%- include('../layout/adminFooter') %>

@@ -119,24 +119,48 @@
                 <%}%> 
               </div>
             <% if (errorMessage.length > 0) { %>                
-              <div class="alert alert-danger" role="alert"> <%- errorMessage %>  </div>                  
+              <div id="errorMessageDiv" class="alert alert-danger mt-3" role="alert"> <%- errorMessage %>  </div>                
+                               <script>                                
+                                 setTimeout(function() {
+                                    var errorMessageDiv = document.getElementById("errorMessageDiv");
+                                    if (errorMessageDiv) {
+                                        errorMessageDiv.style.display = "none";
+                                    }
+                                }, 4000); 
+                            </script>
             <% } %>
             <% if (successMessage.length > 0) { %>                
-              <div class="alert alert-success" role="alert"> <%- successMessage %>  </div>                    
-            <% } %>
-            <div class="feedback_view">
-              <p>Customer feedback</p>
+              <div id="successMessageDiv" class="alert alert-success" role="alert"> <%- successMessage %>  </div>                    
+              <script>                                
+                setTimeout(function() {
+                   var successMessageDiv = document.getElementById("successMessageDiv");
+                   if (successMessageDiv) {
+                    successMessageDiv.style.display = "none";
+                   }
+               }, 4000); 
+           </script>
+              <% } %>
+           
               <% 
-                  let processedUsers = new Set();
-                  pdt.feedback.forEach((usr) => { 
-                      if (processedUsers.has(usr.reviewby.toString())) {
-                          return;
-                      }
-                      processedUsers.add(usr.reviewby.toString());
-
-                  const userRating = pdt.ratings.find((ratn) => usr.reviewby.toString() === ratn.ratedby.toString());
-                  if (userRating) { 
-              %>
+                console.log("feedback :",pdt.feedback.length)%>
+                <%  let processedUsers = new Set(); %>           
+                 
+                  
+                    <div class="feedback_view">
+                      <p class="font-weight-bold" style="font-size: 18px;">Customer feedback :</p>
+                  <%  pdt.feedback.forEach((usr) => {  %>
+                    <% if (usr.reviewby) { %>
+                    <%   if ( processedUsers.has(usr.reviewby.toString())) { %>
+                      <%      return; %>
+                      <%  } %>
+                      
+                        <% processedUsers.add(usr.reviewby.toString()); %>
+                   
+                    
+                      <%  const userRating = pdt.ratings.find((ratn) => usr.reviewby.toString() === ratn.ratedby.toString()); %>
+                      <%   if (userRating) {  %>
+            
+           
                       <div class="d-flex">
                           <img src="/userasset/images/user.png" class="rounded-circle" width="25" height="25">
                           &ensp;<p class="text-dark font-weight-bold"><%= usr.reviewbyInfo.name %></p>
@@ -154,7 +178,12 @@
                       <p>Review on <%= reviewDate %></p>
                       <p><%= usr.reviews %></p>
                   <% } %>
+
+                  <% } else { %>
+                     <p class="font-weight-bold" style="color:rgb(221, 150, 99); margin-top:-15px;margin-left: 15px;">No feedbck yet</p>
+                  <% } %>
               <% }) %>
+             
           </div>
             <div class ="line-div"></div>
         </div>

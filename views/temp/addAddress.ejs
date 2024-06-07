@@ -1,5 +1,152 @@
 <%- include('../layout/authheader') %>
+//////////////////////////
+function handleFileInputChange(event) {
+    
+    // const files = event.target.files;
+    // if (files && files.length > 0) {
+    //     const file = files[0]; 
+    //     const reader = new FileReader(); 
+        
+    //     reader.onload = function(e) {
+    //         previewDiv.style.visibility = 'visible';
+    //         preview.src = e.target.result;
+    //     };        
+    //     reader.readAsDataURL(file);
+    // }}
 
+    const files = event.target.files; // Get the selected files
+    console.log("files :",files);
+    // Iterate through each file
+   
+    for (let i = 0; i <= files.length; i++) {
+        const reader = new FileReader(); // Create a new FileReader instance
+
+        // Define a callback function to handle the FileReader's onload event
+        reader.onload = function(event) {
+            const imgSrc = event.target.result; // Get the base64 data URL of the image
+            const imgIndex = i + 1; // Index of the image (e.g., img1, img2, etc.)
+            const inputImgId = `inputImg${imgIndex}`; // ID of the input image element
+            const imgElement = document.getElementById(inputImgId); // Get the input image element
+
+            // Set the src attribute of the input image element to display the preview
+            imgElement.src = imgSrc;
+            imageArray.push(imgSrc)
+
+            // Show the image container
+            const imgContainerId = `imgdiv${imgIndex}`;
+            document.getElementById(imgContainerId).style.visibility = 'visible';
+           console.log("CALLING", i)
+            initializeCropperForImage(i+1);
+        };
+       
+        reader.readAsDataURL(files[i]);
+        
+    }
+  }
+
+  const croppers = [];
+
+  function initializeCropperForImage(inputIndex) {
+    const imageId = `inputImg${inputIndex}`;
+    console.log(imageId);
+
+    const imageElement = document.getElementById(imageId);
+
+    // Ensure the image is loaded before getting dimensions
+    imageElement.onload = () => {
+    // Get original dimensions of the image
+    const originalWidth = imageElement.naturalWidth;
+    const originalHeight = imageElement.naturalHeight;
+
+    console.log(`Original Dimensions for ${imageElement}:`, originalWidth, originalHeight);
+
+    let cropper = new Cropper(imageElement, {
+        // Add Cropper.js options here
+        aspectRatio:1/1
+        
+    });
+    console.log(`cropper${imageId} :`,cropper);
+
+    // Save cropper instance
+    // croppers.push(cropper);
+    croppers[inputIndex - 1] = cropper;
+    console.log('croppers :',inputIndex ,":",croppers)
+  }
+  if (imageElement.complete) {
+      console.log("image",imageElement)
+        imageElement.onload();        
+    }
+  }
+
+  
+
+  let form = document.getElementById('profile_form')
+  let formData = new FormData(form);
+
+    // Display form data in console for testing
+   
+  form.addEventListener('submit',function(event){
+    event.preventDefault()
+   
+  //  for (let i = 0; i < croppers.length; i++) {
+    croppers.forEach((cropper, index) => {
+      console.log("getcanvas",cropper)
+      if (!cropper || !cropper.originalDimensions) {
+            console.error(`Original dimensions not set for cropper ${index}`);
+            return;
+        }
+      const { originalWidth, originalHeight } = cropper.originalDimensions;
+        
+        cropper.getCroppedCanvas({
+          width:  160,
+          height: 90,
+      }).toBlob(function(blob){
+          console.log(`Cropped image ${index + 1}:`, blob);
+          appendCroppedImageToForm(blob)
+      })
+    });
+  })
+
+
+  function  appendCroppedImageToForm(blob){  
+    
+    let form = document.getElementById('profile_form');
+    console.log("form: ",form)
+    let formData = new FormData(form)
+    for (var pair of formData.entries()) {
+        console.log(pair[0] + ': ' + pair[1]);
+        
+    }
+    console.log("blob :",blob)
+    formData.append('croppedImage',blob);
+    console.log("crr",formData.croppedImage)
+    console.log("formdata: ",formData)
+    console.log('Form data length:', formData.size); // Check the size property
+console.log('Form data keys:', formData.keys()); // Log the keys
+for (const key of formData.keys()) {
+    console.log(key + ':', formData.get(key));
+}
+console.log('Form data:', formData);
+    console.log('Blob:', blob);
+
+
+$.ajax('/uploadPdtImage', {
+  method: 'POST',
+  data: formData,
+  processData: false,
+  contentType: false,
+  success() {
+    console.log("uploaded")
+    location.href='/admin/products'
+  },
+  error() {
+    location.href='/newProducts'
+    console.log('Upload error');
+  },
+});
+  }
+  
+////////////////////////////
 <body>
 <div class="container">
 	<div class="d-flex justify-content-center h-100">

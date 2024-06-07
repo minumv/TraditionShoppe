@@ -54,7 +54,7 @@ textarea:not(:placeholder-shown) ~ .floating-label {
 <section>   
       <div class="container">
         <%coupon.forEach((cpn)=>{%>
-        <form role="form" id="coupon-form" action="/updateCoupon/<%= cpn._id %>" method="post" onsubmit="return validateForm()">    
+        <form role="form" id="coupon-form" action="/updateCoupon/<%= cpn._id %>" method="post" onsubmit="return validateCouponChange()">    
         <div class="row ">                    
             <div class="col-6">
                 <div class="card card-plain">
@@ -66,13 +66,13 @@ textarea:not(:placeholder-shown) ~ .floating-label {
                    
                     <div class="card-body">             
                       <div class="input-group input-group-outline mb-3">
-                         <input type="text" name="coupon" class="form-control" value="<%= cpn.coupon_code %>" onchange="validateCoupon()">
+                         <input type="text" name="coupon" class="form-control" value="<%= cpn.coupon_code %>" onchange="validateCode()">
                          <label for="coupon" class="floating-label">Enter Coupon Code eg: FESTIV2024</label>
                          <span id="coupon-error" class="error"></span>
                       </div>
                                         
                       <div class="input-group input-group-outline mb-3">                  
-                        <input type="text" id="discount_per" name="discount_per" class="form-control" value="<%= cpn.discount_per %>" onchange="validateDisPer()">
+                        <input type="text" id="discount_per" name="discount_per" class="form-control" value="<%= cpn.discount_per %>" onchange="validateDisPerCoupon()">
                         <label for="discount_per" class="floating-label">Enter Discount Percentage</label>
                         <span id="discount-error" class="error"></span>
                     </div>
@@ -134,88 +134,23 @@ textarea:not(:placeholder-shown) ~ .floating-label {
                   <button type="submit" formaction="/deleteCoupon/<%= cpn._id %>" class="btnmodal btn btn-lg bg-gradient-primary btn-lg w-25 mt-4 mb-0 me-2">Yes, I'm sure</button>
                 </div>
              </div> 
-           
+             <% if (errorMessage.length > 0) { %>                
+              <div id="errorMessageDiv" class="alert alert-danger mt-3" role="alert"> <%- errorMessage %>  </div>                
+                                 <script>                                
+                                   setTimeout(function() {
+                                      var errorMessageDiv = document.getElementById("errorMessageDiv");
+                                      if (errorMessageDiv) {
+                                          errorMessageDiv.style.display = "none";
+                                      }
+                                  }, 4000); 
+                              </script>
+              <% } %>
 
         </form>        
        </div>
        <div id="overlay"></div>
        <%})%>   
   </section>
+  <script src="/js/validate.js"></script>
 
-<script>
-  const couponError = document.getElementById('coupon-error')
-	const discountError = document.getElementById('discount-error')
-	const minpurchError = document.getElementById('minpurch-error')
-	const maxamtError = document.getElementById('maxamt-error')	
-
-  function validateCoupon(){
-		const coupon = document.getElementById('coupon').value
-	
-		if(coupon.length === 0){
-			couponError.innerHTML = 'Coupon is required'
-         couponError.style.display = 'block';
-			return false
-		}
-		if(!coupon.match(/^(?=.*[a-zA-Z])(?=.*[0-9])[a-zA-Z0-9]+$/)){
-			couponError.innerHTML = 'Coupon should be valid'
-         couponError.style.display = 'block';
-			return false
-		}
-		couponError.innerHTML = '<i class = "fas fa-check-circle"></i>'
-		return true
-	}
-  function validateDisPer(){
-		const discount_per = document.getElementById('discount_per').value
-	
-		if(discount_per.length === 0){
-			discountError.innerHTML = 'Discount is required'
-			return false
-		}
-
-    if(!discount_per.match(/^(?!0(?:\.0+)?$)(?:100(?:\.0+)?|\d{0,2}(?:\.\d+)?)$/)){
-      discountError.innerHTML = 'Discount should be valid'
-			return false
-		}
-		
-		discountError.innerHTML = '<i class = "fas fa-check-circle"></i>'
-		return true
-	}
-
-  function validateMinPurch(){
-		const min_purch= document.getElementById('min_purch').value
-	
-		if(min_purch.length === 0){
-			minpurchError.innerHTML = 'Amount is required'
-			return false
-		}
-		if(!min_purch.match(/^(?!0)\d{1,4}(?:\.\d+)?$/)){
-			minpurchError.innerHTML = 'Amount should be valid'
-			return false
-		}
-		minpurchError.innerHTML = '<i class = "fas fa-check-circle"></i>'
-		return true
-	}
-   function validateMaxDisc(){
-		const max_amt= document.getElementById('max_amt').value
-	
-		if(max_amt.length === 0){
-			maxamtError.innerHTML = 'Amount is required'
-			return false
-		}
-		if(!max_amt.match(/^(?!0)\d{1,4}(?:\.\d+)?$/)){
-			maxamtError.innerHTML = 'Amount should be valid'
-			return false
-		}
-		maxamtError.innerHTML = '<i class = "fas fa-check-circle"></i>'
-		return true
-	}
-
-   function validateForm() {
-    const isCouponValid = validateCoupon();
-    const isDiscountValid = validateDisPer();
-    const isMinValid = validateMinPurch();
-    const isMaxValid = validateMaxDisc();    
-    return isCouponValid && isDiscountValid && isMinValid && isMaxValid ;
-  }
-</script>
   <%- include('../layout/adminFooter') %>

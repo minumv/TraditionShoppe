@@ -19,6 +19,8 @@
     width: 500px;
     height:250px;
     max-width:80%;
+    overflow-y: auto; /* Add vertical scroll if content exceeds max-height */
+    overflow-x: hidden;
 }
 .modal.active{
     transform: translate(-50%, -50%) scale(1);
@@ -40,11 +42,11 @@
     border: none;
     outline: none;
     background: none;
-    font-size: 1.25rem;
+    font-size: 40px;
     font-weight: bold;
     color: dimgray;
     margin-top: 10px;
-    margin-right:20px;
+    margin-right:40px;
 }
 
 .modal-body{
@@ -70,15 +72,18 @@
 }
 .modal-footer{
     display:flex;
-    justify-content:right;
-    align-items: center; 
+    justify-content:center;
+    align-items: start; 
 }
 .btnmodal{
     height:40px;
     width:45px;
-    padding: 10px;
-    font-size: 13px;
+  
+    font-size: 18px;
     text-transform: capitalize;
+    background-color:  #a45b97;    
+    color: white;
+   border-radius: 25px;
 }
 
 /***********extra for address modal*****************/
@@ -93,6 +98,7 @@
     display:block;
     justify-content: center;
     align-items: center;
+    width: 350px;
 }
 .mod-crop{
     width:900px;

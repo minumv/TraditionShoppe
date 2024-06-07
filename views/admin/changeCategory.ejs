@@ -2,7 +2,7 @@
 <section>   
       <div class="container">
        
-        <form role="form" action='/admin/categoryChange/<%= categories._id %>' method="post">    
+        <form role="form" action='/admin/categoryChange/<%= categories._id %>' method="post" onsubmit="return validateCategory()">    
         <div class="row ">                    
             <div class="col-6">
                 <div class="card card-plain">
@@ -13,11 +13,11 @@
 
                     <div class="card-body">             
                       <div class="input-group input-group-outline mb-3">
-                         <input type="text" name="name" class="form-control" value="<%= categories.category_name %>" required pattern="^[a-zA-Z]+[\-'\s]?[a-zA-Z ]+$">
+                         <input type="text" id="name" name="name" class="form-control" value="<%= categories.category_name %>" onchange="validateName()">
                       </div>
                      
                       <div class="input-group input-group-outline mb-3">                  
-                        <textarea type="text" name="description" class="form-control" required ><%= categories.description %></textarea>
+                        <textarea type="text" id="description" name="description" class="form-control" onkeyup="validateDescription()"><%= categories.description %></textarea>
                       </div>                    
                                            
                         <div class="text-center d-flex justify-content-end">                         
@@ -44,13 +44,26 @@
               <a id="cancel" data-close-button class="btnmodal btn btn-lg bg-light btn-lg w-25 mt-4 mb-0 me-2">No, cancel</a>
               <button type="submit" formaction="/deleteCat/<%= categories._id %>" class="btnmodal btn btn-lg bg-gradient-primary btn-lg w-25 mt-4 mb-0 me-2">Yes, I'm sure</button>
             </div>
+            <% if (errorMessage.length > 0) { %>                
+              <div id="errorMessageDiv" class="alert alert-danger mt-3" role="alert"> <%- errorMessage %>  </div>                
+                                 <script>                                
+                                   setTimeout(function() {
+                                      var errorMessageDiv = document.getElementById("errorMessageDiv");
+                                      if (errorMessageDiv) {
+                                          errorMessageDiv.style.display = "none";
+                                      }
+                                  }, 4000); 
+                              </script>
+              <% } %>
          </div> 
         </form>   
           
        </div>   
       
        <div id="overlay"></div>
-  </section>
+</section>
+<script src="/js/validate.js"></script>
+
 
 
   <%- include('../layout/adminFooter') %>

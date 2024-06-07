@@ -64,10 +64,7 @@
 						
 						<span id="refferal-error" class="error"></span>
 					</div>
-					<div><span style="font-size:13px;">*Add refferal code here if any, otherwise type 'No'</span></div>
-					<!-- <div class="row align-items-center remember">
-						<input type="checkbox">Remember Me
-					</div> -->
+					<div><span style="font-size:13px;">*Add refferal code here if any, otherwise type 'No'</span></div>					
 					<div class="form-group">
 						<button type="button" onclick="customerSignup()"  class="btn float-right login_btn">Signup</button>
 					</div>
@@ -86,11 +83,27 @@
 			</div>
 		</div>
 		<% if (errorMessage.length > 0) { %>                
-			<div class="alert alert-danger" role="alert"> <%- errorMessage %>  </div>                  
+			<div id="errorMessageDiv" class="alert alert-danger mt-3" role="alert"> <%- errorMessage %>  </div>                
+							 <script>                                
+							   setTimeout(function() {
+								  var errorMessageDiv = document.getElementById("errorMessageDiv");
+								  if (errorMessageDiv) {
+									  errorMessageDiv.style.display = "none";
+								  }
+							  }, 4000); 
+						  </script>
 		  <% } %>
 		  <% if (successMessage.length > 0) { %>                
-			<div class="alert alert-success" role="alert"> <%- successMessage %>  </div>                    
-		  <% } %>
+			<div id="successMessageDiv" class="alert alert-success" role="alert"> <%- successMessage %>  </div>                    
+			<script>                                
+			  setTimeout(function() {
+				 var successMessageDiv = document.getElementById("successMessageDiv");
+				 if (successMessageDiv) {
+				  successMessageDiv.style.display = "none";
+				 }
+			 }, 4000); 
+		 </script>
+			<% } %>
 	</div>
 </div>
 <script>

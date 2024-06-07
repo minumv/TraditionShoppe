@@ -13,6 +13,7 @@ const Coupon = require('../model/coupon')
 const Wallet = require('../model/wallet')
 const Offer = require('../model/offer')
 const bcrypt = require('bcrypt')
+const Swal = require('sweetalert2')
 const mongoose = require('mongoose');
 
 const RazorpayObj = require('razorpay');
@@ -28,24 +29,6 @@ const razorpayInstance = new RazorpayObj({
 
 /***************All products handling****************** */
 
-//store search value
-const storeSerachValue = async(req,res)=>{
-    try{
-        
-        const search = req.body.search;
-        req.session.search = search;
-        console.log(search)
-        // Query the database to find products matching the search term
-        const products = await Products.find({ "product_name":{$regex:".*"+search+".*",$options:'i'}  });
-        
-        const discounts = await Discount.find({status:true}).exec()
-        
-        res.json({products:products});
-    }
-    catch(err){
-        console.log(err.message);
-    }
-}
 
 
 //get all products from database
@@ -260,523 +243,9 @@ const getProducts = async(req,res,condition)=>{
     }
 }
 
-//serach products
-const listSearchProduct = async(req,res)=>{
-    try{
-        const {name} = req.session.search;
-        console.log(name)
-
-    }
-    catch(err){
-        console.log(err.message);
-    }
-}
-
-const getPaginatedProducts = async(req,res,perPage,pageNum,matchCondition)=>{
-    try{
-        const products = await Products.aggregate([
-            {
-                $match : matchCondition 
-            },
-            {
-                $lookup : {
-                    from : 'discounts',
-                    localField : 'discount',
-                    foreignField : '_id',
-                    as : 'discountInfo'
-                }
-            },
-            {
-                $addFields: {
-                    discountInfo: { $arrayElemAt: ['$discountInfo', 0] },
-                    discountedPrice: {
-                        $cond: {
-                            if: { $gt: [{ $size: "$discountInfo" }, 0] },
-                            then: {
-                                $multiply: [
-                                    "$price_unit",
-                                    { $subtract: [1, { $divide: [{ $toDouble: { $arrayElemAt: ["$discountInfo.percentage", 0] } }, 100] }]}
-                                ]
-                            },
-                            else: "$price_unit"
-                        }
-                    }
-                }
-                
-            },
-            {
-                $lookup : {
-                    from : 'categories',
-                    localField : 'category',
-                    foreignField : '_id',
-                    as : 'categoryInfo'
-                }
-            },
-            {
-                $addFields: {
-                    categoryInfo: { $arrayElemAt: ['$categoryInfo', 0]},
-                    categoryName: "$categoryInfo.category_name"
-                }
-            },
-            {
-                $lookup : {
-                    from : 'offers',
-                    let: { product_name: '$product_name' }, // Define variables for local and foreign fields
-                    pipeline: [
-                        {
-                            $match: {
-                                $expr: {
-                                    $and: [
-                                        { $eq: ["$offer_name", "$$product_name"] }, // Match documents where offer_name equals categoryName
-                                        { $eq: ["$status", true] } // Match documents where status is true
-                                    ]
-                                }
-                            }
-                        }
-                    ], 
-                    as : 'productoffer'
-                }
-            },
-            {
-                $addFields: {
-                    productoffer: { $arrayElemAt: ['$productoffer', 0]},
-                    pdtoffer: {
-                        $cond: {
-                            if: { $gt: [{ $size: "$productoffer" }, 0] },
-                            then: {
-                                $multiply: [
-                                    "$price_unit",
-                                    { $divide: [{ $toDouble: { $arrayElemAt: ["$productoffer.discount_per", 0] } }, 100] }
-                                ]
-                            },
-                            else: 0
-                        }
-                    }
-                }
-            },
-            {
-                $lookup : {
-                    from : 'offers',
-                    let: { categoryName: '$categoryName' }, // Define variables for local and foreign fields
-                    pipeline: [
-                        {
-                            $match: {
-                                $expr: {
-                                    $and: [
-                                        { $eq: ["$offer_name", "$$categoryName"] }, // Match documents where offer_name equals categoryName
-                                        { $eq: ["$status", true] } // Match documents where status is true
-                                    ]
-                                }
-                            }
-                        }
-                    ],
-                    as : 'categoryoffer'
-                }
-            },
-            {
-                $addFields: {
-                    categoryoffer: { $arrayElemAt: ['$categoryoffer', 0]},
-                    categoffer: {
-                        $cond: {
-                            if: { $gt: [{ $size: "$categoryoffer" }, 0] },
-                            then: {
-                                $multiply: [
-                                    "$price_unit",
-                                    { $divide: [{ $toDouble: { $arrayElemAt: ["$categoryoffer.discount_per", 0] } }, 100] }
-                                ]
-                            },
-                            else: 0
-                        }
-                    }
-                }
-            },
-            {
-                $addFields: {
-                    discountInfo: {
-                        $cond: {
-                            if: { $isArray: "$discountInfo" }, // Check if discountInfo is an array
-                            then: { $arrayElemAt: ["$discountInfo", 0] }, // If it's an array, extract the first element
-                            else: null // If it's not an array, set it to null
-                        }
-                    },
-                    discountedsalePrice: {
-                        $cond: {
-                            if: {
-                                $and: [
-                                    { $ne: ["$discountInfo", null] }, // Check if discountInfo is not null
-                                    { $or: [ // Check if either pdtoffer or categoffer is not 0
-                                        { $ne: ["$pdtoffer", 0] },
-                                        { $ne: ["$categoffer", 0] }
-                                    ]}
-                                ]
-                            },
-                            then: {
-                                $subtract: [
-                                    "$discountedPrice", // Subtract the offer price from the discountedPrice
-                                    { $max: ["$pdtoffer", "$categoffer"] } // Use $max to get the higher offer value
-                                ]
-                            },
-                            else: "$discountedPrice" // If no offer is applicable or discountInfo is null, keep the original discountedPrice
-                        }
-                    }
-                }
-            },
 
 
-            {
-                $skip: ( pageNum - 1 ) * perPage
-            },
-            {
-                $limit: perPage
-            }
 
-            
-        ])        
-       
-        return products
-    }
-    catch(err){
-        console.log(err.message);
-    }
-}
-const getSortedProducts = async(req,res,perPage,pageNum,matchCondition,sortCondition)=>{
-    try{
-        const products = await Products.aggregate([
-            {
-                $match : matchCondition 
-            },
-            {
-                $lookup : {
-                    from : 'discounts',
-                    localField : 'discount',
-                    foreignField : '_id',
-                    as : 'discountInfo'
-                }
-            },
-            {
-                $addFields: {
-                    discountInfo: { $arrayElemAt: ['$discountInfo', 0] },
-                    discountedPrice: {
-                        $cond: {
-                            if: { $gt: [{ $size: "$discountInfo" }, 0] },
-                            then: {
-                                $multiply: [
-                                    "$price_unit",
-                                    { $subtract: [1, { $divide: [{ $toDouble: { $arrayElemAt: ["$discountInfo.percentage", 0] } }, 100] }]}
-                                ]
-                            },
-                            else: "$price_unit"
-                        }
-                    }
-                }
-                
-            },
-            {
-                $lookup : {
-                    from : 'categories',
-                    localField : 'category',
-                    foreignField : '_id',
-                    as : 'categoryInfo'
-                }
-            },
-            {
-                $addFields: {
-                    categoryInfo: { $arrayElemAt: ['$categoryInfo', 0]},
-                    categoryName: "$categoryInfo.category_name"
-                }
-            },
-            {
-                $lookup : {
-                    from : 'offers',
-                    let: { product_name: '$product_name' }, // Define variables for local and foreign fields
-                    pipeline: [
-                        {
-                            $match: {
-                                $expr: {
-                                    $and: [
-                                        { $eq: ["$offer_name", "$$product_name"] }, // Match documents where offer_name equals categoryName
-                                        { $eq: ["$status", true] } // Match documents where status is true
-                                    ]
-                                }
-                            }
-                        }
-                    ], 
-                    as : 'productoffer'
-                }
-            },
-            {
-                $addFields: {
-                    productoffer: { $arrayElemAt: ['$productoffer', 0]},
-                    pdtoffer: {
-                        $cond: {
-                            if: { $gt: [{ $size: "$productoffer" }, 0] },
-                            then: {
-                                $multiply: [
-                                    "$price_unit",
-                                    { $divide: [{ $toDouble: { $arrayElemAt: ["$productoffer.discount_per", 0] } }, 100] }
-                                ]
-                            },
-                            else: 0
-                        }
-                    }
-                }
-            },
-            {
-                $lookup : {
-                    from : 'offers',
-                    let: { categoryName: '$categoryName' }, // Define variables for local and foreign fields
-                    pipeline: [
-                        {
-                            $match: {
-                                $expr: {
-                                    $and: [
-                                        { $eq: ["$offer_name", "$$categoryName"] }, // Match documents where offer_name equals categoryName
-                                        { $eq: ["$status", true] } // Match documents where status is true
-                                    ]
-                                }
-                            }
-                        }
-                    ],
-                    as : 'categoryoffer'
-                }
-            },
-            {
-                $addFields: {
-                    categoryoffer: { $arrayElemAt: ['$categoryoffer', 0]},
-                    categoffer: {
-                        $cond: {
-                            if: { $gt: [{ $size: "$categoryoffer" }, 0] },
-                            then: {
-                                $multiply: [
-                                    "$price_unit",
-                                    { $divide: [{ $toDouble: { $arrayElemAt: ["$categoryoffer.discount_per", 0] } }, 100] }
-                                ]
-                            },
-                            else: 0
-                        }
-                    }
-                }
-            },
-            {
-                $addFields: {
-                    discountInfo: {
-                        $cond: {
-                            if: { $isArray: "$discountInfo" }, // Check if discountInfo is an array
-                            then: { $arrayElemAt: ["$discountInfo", 0] }, // If it's an array, extract the first element
-                            else: null // If it's not an array, set it to null
-                        }
-                    },
-                    discountedsalePrice: {
-                        $cond: {
-                            if: {
-                                $and: [
-                                    { $ne: ["$discountInfo", null] }, // Check if discountInfo is not null
-                                    { $or: [ // Check if either pdtoffer or categoffer is not 0
-                                        { $ne: ["$pdtoffer", 0] },
-                                        { $ne: ["$categoffer", 0] }
-                                    ]}
-                                ]
-                            },
-                            then: {
-                                $subtract: [
-                                    "$discountedPrice", // Subtract the offer price from the discountedPrice
-                                    { $max: ["$pdtoffer", "$categoffer"] } // Use $max to get the higher offer value
-                                ]
-                            },
-                            else: "$discountedPrice" // If no offer is applicable or discountInfo is null, keep the original discountedPrice
-                        }
-                    }
-                }
-            },
-            {
-                $sort : sortCondition
-            },
-            {
-                $skip: ( pageNum - 1 ) * perPage
-            },
-            {
-                $limit: perPage
-            }
-
-            
-        ])
-       
-        return products
-    }
-    catch(err){
-        console.log(err.message);
-    }
-}
-const getnameSortedProducts = async(req,res,perPage,pageNum,matchCondition,sortCondition)=>{
-    try{
-        const products = await Products.aggregate([
-            {
-                $match : matchCondition 
-            },
-            {
-                $lookup : {
-                    from : 'discounts',
-                    localField : 'discount',
-                    foreignField : '_id',
-                    as : 'discountInfo'
-                }
-            },
-            {
-                $addFields: {
-                    discountInfo: { $arrayElemAt: ['$discountInfo', 0] },
-                    discountedPrice: {
-                        $cond: {
-                            if: { $gt: [{ $size: "$discountInfo" }, 0] },
-                            then: {
-                                $multiply: [
-                                    "$price_unit",
-                                    { $subtract: [1, { $divide: [{ $toDouble: { $arrayElemAt: ["$discountInfo.percentage", 0] } }, 100] }]}
-                                ]
-                            },
-                            else: "$price_unit"
-                        }
-                    }
-                }
-                
-            },
-            {
-                $lookup : {
-                    from : 'categories',
-                    localField : 'category',
-                    foreignField : '_id',
-                    as : 'categoryInfo'
-                }
-            },
-            {
-                $addFields: {
-                    categoryInfo: { $arrayElemAt: ['$categoryInfo', 0]},
-                    categoryName: "$categoryInfo.category_name"
-                }
-            },
-            {
-                $lookup : {
-                    from : 'offers',
-                    let: { product_name: '$product_name' }, // Define variables for local and foreign fields
-                    pipeline: [
-                        {
-                            $match: {
-                                $expr: {
-                                    $and: [
-                                        { $eq: ["$offer_name", "$$product_name"] }, // Match documents where offer_name equals categoryName
-                                        { $eq: ["$status", true] } // Match documents where status is true
-                                    ]
-                                }
-                            }
-                        }
-                    ], 
-                    as : 'productoffer'
-                }
-            },
-            {
-                $addFields: {
-                    productoffer: { $arrayElemAt: ['$productoffer', 0]},
-                    pdtoffer: {
-                        $cond: {
-                            if: { $gt: [{ $size: "$productoffer" }, 0] },
-                            then: {
-                                $multiply: [
-                                    "$price_unit",
-                                    { $divide: [{ $toDouble: { $arrayElemAt: ["$productoffer.discount_per", 0] } }, 100] }
-                                ]
-                            },
-                            else: 0
-                        }
-                    }
-                }
-            },
-            {
-                $lookup : {
-                    from : 'offers',
-                    let: { categoryName: '$categoryName' }, // Define variables for local and foreign fields
-                    pipeline: [
-                        {
-                            $match: {
-                                $expr: {
-                                    $and: [
-                                        { $eq: ["$offer_name", "$$categoryName"] }, // Match documents where offer_name equals categoryName
-                                        { $eq: ["$status", true] } // Match documents where status is true
-                                    ]
-                                }
-                            }
-                        }
-                    ],
-                    as : 'categoryoffer'
-                }
-            },
-            {
-                $addFields: {
-                    categoryoffer: { $arrayElemAt: ['$categoryoffer', 0]},
-                    categoffer: {
-                        $cond: {
-                            if: { $gt: [{ $size: "$categoryoffer" }, 0] },
-                            then: {
-                                $multiply: [
-                                    "$price_unit",
-                                    { $divide: [{ $toDouble: { $arrayElemAt: ["$categoryoffer.discount_per", 0] } }, 100] }
-                                ]
-                            },
-                            else: 0
-                        }
-                    }
-                }
-            },
-            {
-                $addFields: {
-                    discountInfo: {
-                        $cond: {
-                            if: { $isArray: "$discountInfo" }, // Check if discountInfo is an array
-                            then: { $arrayElemAt: ["$discountInfo", 0] }, // If it's an array, extract the first element
-                            else: null // If it's not an array, set it to null
-                        }
-                    },
-                    discountedsalePrice: {
-                        $cond: {
-                            if: {
-                                $and: [
-                                    { $ne: ["$discountInfo", null] }, // Check if discountInfo is not null
-                                    { $or: [ // Check if either pdtoffer or categoffer is not 0
-                                        { $ne: ["$pdtoffer", 0] },
-                                        { $ne: ["$categoffer", 0] }
-                                    ]}
-                                ]
-                            },
-                            then: {
-                                $subtract: [
-                                    "$discountedPrice", // Subtract the offer price from the discountedPrice
-                                    { $max: ["$pdtoffer", "$categoffer"] } // Use $max to get the higher offer value
-                                ]
-                            },
-                            else: "$discountedPrice" // If no offer is applicable or discountInfo is null, keep the original discountedPrice
-                        }
-                    }
-                }
-            },
-            {
-                $sort : sortCondition
-            },
-            {
-                $collation: { locale: 'en'}
-            },
-            {
-                $skip: ( pageNum - 1 ) * perPage
-            },
-            {
-                $limit: perPage
-            }
-
-            
-        ])
-        return products
-    }
-    catch(err){
-        console.log(err.message);
-    }
-}
 //load all products
 const loadAllProducts = async(req,res)=>{
     try{
@@ -789,7 +258,7 @@ const loadAllProducts = async(req,res)=>{
             { status: { $ne: 'inactive' } },
             { isListing: true }
         ];
-        let sortCondition = { created:1 };
+        let sortCondition = { created : -1 };
         // Search and filter conditions
         if (search !== "") {
           query.push(
@@ -803,7 +272,7 @@ const loadAllProducts = async(req,res)=>{
           }
         
           if (req.query.color) {
-            const colors = req.query.color.split(",");
+            const colors = req.query.color.split("%2C");
             query.push({ color: { $in: colors } });
           }
 
@@ -833,13 +302,14 @@ const loadAllProducts = async(req,res)=>{
                 case 'descending':
                   sortCondition = { product_name: -1 };
                   break;
+                case 'mostrated':
+                  sortCondition = { totalrating: -1 };
+                  break;
                 default:
-                  sortCondition = { created:1 }; // No sorting
+                  sortCondition = { created: -1 }; // No sorting
                   break;
               }
-            
-         // console.log("sort:",sortCondition)
-          // Continue to add more filter conditions as needed
+         
         }
         console.log("sort:",sortCondition)
         console.log("query:",query)
@@ -1038,439 +508,7 @@ const loadAllProducts = async(req,res)=>{
     }
 }
 
-//load all new handicrafts products (make these  code common)
-const  getnewHandicrafts = async (req,res)=>{
-    try{
-            const categoryQuery = await Category.find({category_name:'Handicrafts', status : true},{_id:1}).exec()
-            const categoryIds = categoryQuery.map(category => category._id);
-            const products = await Products.find({ category: { $in: categoryIds }, status: 'new', isListing: true }).exec();       
-            const discounts = await Discount.find({status:true}).exec()                    
 
-            
-            // let qtyCount = await getQtyCount(req,res)
-            // let listCount = await getListCount(req,res)
-            
-            res.render('content/allproducts',{
-            title : "All Products| TraditionShoppe",
-            user : req.session.user,
-            page : 'All products',
-            qtyCount:req.session.qtyCount,
-            listCount:req.session.listCount,         
-            products : products,
-             discounts : discounts,
-            errorMessage:req.flash('errorMessage'),
-            successMessage:req.flash('successMessage')
-
-            
-        })
-
-    }
-    catch(err){
-        console.log(err.message);
-    }
-}
-//load all new handicrafts products
-const  getnewAntique = async (req,res)=>{
-    try{
-            const categoryQuery = await Category.find({category_name:'Antique', status : true},{_id:1}).exec()
-            const categoryIds = categoryQuery.map(category => category._id);
-            const products = await Products.find({ category: { $in: categoryIds }, status: 'new', isListing: true }).exec();       
-            const discounts = await Discount.find({status:true}).exec()
-
-            // let qtyCount = await getQtyCount(req,res)
-            // let listCount = await getListCount(req,res)
-            
-            res.render('content/allproducts',{
-            title : "All Products| TraditionShoppe",
-            user : req.session.user,
-            page : 'All products', 
-            qtyCount:req.session.qtyCount,
-            listCount:req.session.listCount,        
-            products : products,
-             discounts : discounts,
-            errorMessage:req.flash('errorMessage'),
-            successMessage:req.flash('successMessage')
-
-            
-        })
-
-    }
-    catch(err){
-        console.log(err.message);
-    }
-}
-//load all new handicrafts products
-const  getnewSpices = async (req,res)=>{
-    try{
-            const categoryQuery = await Category.find({category_name:'Spice', status : true},{_id:1}).exec()
-            const categoryIds = categoryQuery.map(category => category._id);
-            const products = await Products.find({ category: { $in: categoryIds }, status: 'new', isListing: true }).exec();       
-            const discounts = await Discount.find({status:true}).exec()
-            
-            // let qtyCount = await getQtyCount(req,res)
-            // let listCount = await getListCount(req,res)
-            
-            res.render('content/allproducts',{
-            title : "All Products| TraditionShoppe",
-            user : req.session.user,
-            page : 'All products',
-            qtyCount:req.session.qtyCount,
-            listCount:req.session.listCount,      
-            products : products,
-             discounts : discounts,
-            errorMessage:req.flash('errorMessage'),
-            successMessage:req.flash('successMessage')
-
-            
-        })
-
-    }
-    catch(err){
-        console.log(err.message);
-    }
-}
-
-//load all new handicrafts products
-const  getnewApparels = async (req,res)=>{
-    try{
-            const categoryQuery = await Category.find({category_name:'Apparels', status : true},{_id:1}).exec()
-            const categoryIds = categoryQuery.map(category => category._id);
-            const products = await Products.find({ category: { $in: categoryIds }, status: 'new', isListing: true }).exec();       
-            const discounts = await Discount.find({status:true}).exec()
-            
-            // let qtyCount = await getQtyCount(req,res)
-            // let listCount = await getListCount(req,res)
-            
-            res.render('content/allproducts',{
-            title : "All Products| TraditionShoppe",
-            user : req.session.user,
-            page : 'All products',  
-            qtyCount:req.session.qtyCount,
-            listCount:req.session.listCount,      
-            products : products,
-             discounts : discounts,
-            errorMessage:req.flash('errorMessage'),
-            successMessage:req.flash('successMessage')
-
-            
-        })
-
-    }
-    catch(err){
-        console.log(err.message);
-    }
-}
-
-const  loadNew = async (req,res)=>{
-    try{
-            // const categoryQuery = await Category.find({category_name:'Apparels', status : true},{_id:1}).exec()
-            // const categoryIds = categoryQuery.map(category => category._id);
-            const products = await Products.find({ status: 'new', isListing: true }).exec();       
-            const discounts = await Discount.find({status:true}).exec()
-            
-            // let qtyCount = await getQtyCount(req,res)
-            // let listCount = await getListCount(req,res)
-            
-            res.render('content/allproducts',{
-            title : "All Products| TraditionShoppe",
-            user : req.session.user,
-            page : 'All products',  
-            qtyCount:req.session.qtyCount,
-            listCount:req.session.listCount,     
-            products : products,
-             discounts : discounts,
-            errorMessage:req.flash('errorMessage'),
-            successMessage:req.flash('successMessage')
-
-            
-        })
-
-    }
-    catch(err){
-        console.log(err.message);
-    }
-}
-
-//load all new handicrafts products
-const  getmostSold = async (req,res)=>{
-    try{
-            const SellerQuery = await Seller.find({ status : 'popular'},{_id:1}).exec()
-            const SellerIds = SellerQuery.map(category => category._id);
-            const products = await Products.find({ seller: { $in: SellerIds }, status: {$ne:'inactive'}, isListing: true }).exec();       
-            const discounts = await Discount.find({status:true}).exec()
-            
-            let qtyCount = await getQtyCount(req,res)
-            let listCount = await getListCount(req,res)
-            
-            res.render('content/allproducts',{
-            title : "All Products| TraditionShoppe",
-            user : req.session.user,
-            page : 'All products',            
-            products : products,
-             discounts : discounts,
-             qtyCount:qtyCount,
-             listCount:listCount,
-            errorMessage:req.flash('errorMessage'),
-            successMessage:req.flash('successMessage')
-
-            
-        })
-
-    }
-    catch(err){
-        console.log(err.message);
-    }
-}
-
-//load all new handicrafts products
-const  getLowtoHigh = async (req,res)=>{
-    try{
-            const products = await Products.find({isListing: true }).sort({'price_unit':1}).exec();       
-            const discounts = await Discount.find({status:true}).exec()
-           
-            let qtyCount = await getQtyCount(req,res)
-            let listCount = await getListCount(req,res)
-            
-            res.render('content/allproducts',{
-            title : "All Products| TraditionShoppe",
-            user : req.session.user,
-            page : 'All products',
-            listCount:listCount,
-            qtyCount:qtyCount,           
-            products : products,
-             discounts : discounts,
-            errorMessage:req.flash('errorMessage'),
-            successMessage:req.flash('successMessage')
-
-            
-        })
-
-    }
-    catch(err){
-        console.log(err.message);
-    }
-}
-
-//load all new handicrafts products
-const  getHightoLow = async (req,res)=>{
-    try{
-            const products = await Products.find({isListing: true }).sort({'price_unit':-1}).exec();      
-            const discounts = await Discount.find({status:true}).exec()
-           
-            let qtyCount = await getQtyCount(req,res)
-            let listCount = await getListCount(req,res)
-            
-            res.render('content/allproducts',{
-            title : "All Products| TraditionShoppe",
-            user : req.session.user,
-            page : 'All products',
-            listCount:listCount,
-            qtyCount:qtyCount,            
-            products : products,
-             discounts : discounts,
-            errorMessage:req.flash('errorMessage'),
-            successMessage:req.flash('successMessage')
-
-            
-        })
-
-    }
-    catch(err){
-        console.log(err.message);
-    }
-}
-
-
-const  getascending = async (req,res)=>{
-    try{
-            const products = await Products.find({isListing: true }).collation({ locale: 'en' }).sort({'product_name':1}).exec();      
-            const discounts = await Discount.find({status:true}).exec()
-           
-            let qtyCount = await getQtyCount(req,res)
-            let listCount = await getListCount(req,res)
-            
-            res.render('content/allproducts',{
-            title : "All Products| TraditionShoppe",
-            user : req.session.user,
-            page : 'All products',
-            listCount:listCount,
-            qtyCount:qtyCount,            
-            products : products,
-             discounts : discounts,
-            errorMessage:req.flash('errorMessage'),
-            successMessage:req.flash('successMessage')
-
-            
-        })
-
-    }
-    catch(err){
-        console.log(err.message);
-    }
-}
-
-
-
-const  getdescending = async (req,res)=>{
-    try{
-            const products = await Products.find({isListing: true }).collation({ locale: 'en' }).sort({'product_name':-1}).exec();      
-            const discounts = await Discount.find({status:true}).exec()
-           
-            let qtyCount = await getQtyCount(req,res)
-            let listCount = await getListCount(req,res)
-            
-            res.render('content/allproducts',{
-            title : "All Products| TraditionShoppe",
-            user : req.session.user,
-            page : 'All products',
-            listCount:listCount,
-            qtyCount:qtyCount,            
-            products : products,
-             discounts : discounts,
-            errorMessage:req.flash('errorMessage'),
-            successMessage:req.flash('successMessage')
-
-            
-        })
-
-    }
-    catch(err){
-        console.log(err.message);
-    }
-}
-
-//load all new handicrafts products
-const  getbrassMaterial= async (req,res)=>{
-    try{
-            const products = await Products.find({ material: 'Brass' , status:{ $ne:'inactive'} , isListing: true }).exec();       
-            const discounts = await Discount.find({status:true}).exec()
-            
-            let qtyCount = await getQtyCount(req,res)
-            let listCount = await getListCount(req,res)
-            
-            res.render('content/allproducts',{
-            title : "All Products| TraditionShoppe",
-            user : req.session.user,
-            page : 'All products',
-            qtyCount:qtyCount,
-            listCount:listCount,            
-            products : products,
-             discounts : discounts,
-            errorMessage:req.flash('errorMessage'),
-            successMessage:req.flash('successMessage')
-
-            
-        })
-
-    }
-    catch(err){
-        console.log(err.message);
-    }
-}
-
-const  getmetalMaterial = async (req,res)=>{
-    try{
-            const products = await Products.find({ material: 'Metal' , status:{ $ne:'inactive'} , isListing: true }).exec();         
-            const discounts = await Discount.find({status:true}).exec()
-           
-            let qtyCount = await getQtyCount(req,res)
-            let listCount = await getListCount(req,res)
-
-            res.render('content/allproducts',{
-            title : "All Products| TraditionShoppe",
-            user : req.session.user,
-            page : 'All products',
-            listCount:listCount,
-            qtyCount:qtyCount,            
-            products : products,
-             discounts : discounts,
-            errorMessage:req.flash('errorMessage'),
-            successMessage:req.flash('successMessage')
-
-            
-        })
-
-    }
-    catch(err){
-        console.log(err.message);
-    }
-}
-
-const  getwoodMaterial = async (req,res)=>{
-    try{
-            const products = await Products.find({ material: 'Wood' , status:{ $ne:'inactive'} , isListing: true }).exec();            
-            const discounts = await Discount.find({status:true}).exec()
-            
-            let qtyCount = await getQtyCount(req,res)
-            let listCount = await getListCount(req,res)
-            
-            res.render('content/allproducts',{
-            title : "All Products| TraditionShoppe",
-            user : req.session.user,
-            page : 'All products', 
-            listCount:listCount,
-            qtyCount:qtyCount,           
-            products : products,
-             discounts : discounts,
-            errorMessage:req.flash('errorMessage'),
-            successMessage:req.flash('successMessage')
-
-            
-        })
-
-    }
-    catch(err){
-        console.log(err.message);
-    }
-}
-
-
-//load all new handicrafts products
-const  getpriceRange = async (req,res)=>{
-    try{
-        // console.log(req.body);
-        const { minPrice, maxPrice } = req.body;
-       
-        // Store dropdown values in session
-        req.session.priceValues = { minPrice, maxPrice };
-         res.sendStatus(200);  
-       
-    }
-    catch(err){
-        console.log(err.message);
-    }
-}
-const  setpriceRange = async (req,res)=>{
-            try{     
-                
-                const { minPrice, maxPrice } = req.session.priceValues;     
-            const products = await Products.find({price_unit:{$gt:minPrice,$lt:maxPrice} , status:{ $ne:'inactive'} , isListing: true }).exec();       
-            const discounts = await Discount.find({status:true}).exec()
-           
-            let qtyCount = await getQtyCount(req,res)
-            let listCount = await getListCount(req,res)
-
-            res.render('content/allproducts',{
-            title : "All Products| TraditionShoppe",
-            user : req.session.user,
-            page : 'All products',            
-            products : products,
-             discounts : discounts,
-             qtyCount:qtyCount, 
-             listCount:listCount,           
-             products : products,
-            errorMessage:req.flash('errorMessage'),
-            successMessage:req.flash('successMessage')
-
-            
-        })
-        res.sendStatus(200); 
-
-    }
-    catch(err){
-        console.log(err.message);
-    }
-}
 
 const getQtyCount = async(req,res)=>{
     try{
@@ -1507,7 +545,7 @@ const getListCount = async(req,res)=>{
         console.log(err.message);
     }
 }
-//load all new handicrafts products
+
 
 /*******************product view details************************* */
 const loadProductDetail = async (req,res)=>{
@@ -1528,8 +566,6 @@ const loadProductDetail = async (req,res)=>{
         
         const allproducts = await getProducts(req,res, condition)
 
-        //console.log("productdetails :",products)
-        
         await getQtyCount (req,res)
         await getListCount (req,res)
         
@@ -1627,7 +663,7 @@ const addToCartTable = async(req,res)=>{
         let pdt_id = req.params.id;
         let price = req.params.mrp;
         const user_id = req.session.user
-       // const product = await Products.findOne({_id:pdt_id}).exec();
+      
         const stock = await Products.findOne({_id:pdt_id},{stock:1}).exec()
         const user_cart = await Cart.findOne({user:user_id,status:"listed"}).exec()
         
@@ -1716,8 +752,7 @@ const addToCartTable = async(req,res)=>{
 /*********add qty to cart table*********/
 const addQtyToCart = async(req,res)=>{
     try{
-        console.log("increasing qntity")
-       // console.log("ids :",cartid,userid,pdtid,price);
+        
         const cartid = req.params.cartid;
         const userid = req.params.userid;
         const pdtid = req.params.pdtid;
@@ -1732,11 +767,9 @@ const addQtyToCart = async(req,res)=>{
             let amount = 0;
 
             user_cart.product_list.forEach(product => {
-                if( product.productId == pdtid ){
-                    //pdt_check = true;
+                if( product.productId == pdtid ){                   
                     qty = product.quantity;        
-                    console.log("quantity :",qty)                   
-
+                    console.log("quantity :",qty)                 
                 }})
 
                 if(qty >=stock.stock){
@@ -1758,17 +791,17 @@ const addQtyToCart = async(req,res)=>{
                         }
                     )
                     const newQty = qty+1
+                    const pdtPrice = (qty+1)*price
                     const totalAmount = amount + parseFloat(price)
                     await getQtyCount(req,res);
                     const qtyCount =  req.session.qtyCount
-                    console.log('qty added successful');
-                    //req.flash("successMessage", "Product is successfully updated to cart...");
-                    res.json({ success: true,newQty,qtyCount,totalAmount});
+                    console.log('qty added successful');                    
+                    res.json({ success: true,newQty,qtyCount,totalAmount,pdtPrice});
                 }
                 
         } else {
-            //req.flash("errorMessage", "Out of the stock!!");
-            res.json({ success: false},{message:'Out of stock' });
+            req.flash("errorMessage", "Out of the stock!!");
+            res.json({ success: false});
         }
 
     }
@@ -1783,24 +816,19 @@ const addQtyToCart = async(req,res)=>{
 const subQtyFromCart = async(req,res)=>{
     try{
         const cartid = req.params.cartid;
-        const userid = req.params.userid;
         const pdtid = req.params.pdtid;
         const price = req.params.price;
 
         const stock = await Products.findOne({_id:pdtid},{stock:1,_id:0}).exec()
         const user_cart = await Cart.findOne({_id:cartid}).exec()
-        // console.log("stock: "+stock.stock)
+      
         let qty = 0;
         let amount = 0;
         user_cart.product_list.forEach(product => {
-            if( product.productId == pdtid ){
-                //pdt_check = true;
-                qty = product.quantity;                           
-
+            if( product.productId == pdtid ){               
+                qty = product.quantity;                          
             }}) 
-            let newPrice = qty * price;
-            // console.log("qty: "+qty);
-            // console.log("total amount : "+ user_cart.total_amount);
+            let newPrice = qty * price;           
             amount = parseFloat(user_cart.total_amount);  
 
         if( stock.stock>0 && qty>1){
@@ -1820,11 +848,11 @@ const subQtyFromCart = async(req,res)=>{
             )
             const newQty = qty - 1
             const totalAmount = amount - parseFloat(price)
+            const pdtPrice = (qty-1)*price
             await getQtyCount(req,res);
             const qtyCount =  req.session.qtyCount
-            console.log('successful');
-            //req.flash("successMessage", "Product is successfully updated to cart...");
-            res.json({ success: true , newQty,qtyCount,totalAmount});
+            console.log('successful');            
+            res.json({ success: true , newQty,qtyCount,totalAmount,pdtPrice});
 
         } else if (qty<=1){
             if( user_cart.product_list.length === 1 ){
@@ -1832,7 +860,7 @@ const subQtyFromCart = async(req,res)=>{
                 { _id:cartid })
                 console.log('successful');
                 await getQtyCount(req,res);
-                //req.flash("successMessage", "User is deleted from cart...");
+                
                 res.json({ success: false });
         } else{
             await Cart.updateOne(
@@ -1843,8 +871,7 @@ const subQtyFromCart = async(req,res)=>{
                 }  
             })
             console.log('successful');
-            await getQtyCount(req,res);
-           // req.flash("successMessage", "Product is deleted from cart...");
+            await getQtyCount(req,res);         
             res.json({ success: false });
         }
     }
@@ -1870,8 +897,7 @@ const deleteFromCart = async(req,res)=>{
             await Cart.deleteOne(
                 { _id:cartid })
                 console.log('successful');
-                await getQtyCount(req,res);
-               // req.flash("successMessage", "User is deleted from cart...");
+                await getQtyCount(req,res);               
                 res.json({ success: true });
             } else {
         user_cart.product_list.forEach(product => {
@@ -1890,8 +916,7 @@ const deleteFromCart = async(req,res)=>{
             }) 
                       
             await getQtyCount(req,res);
-            console.log('successful');
-           // req.flash("successMessage", "Product is deleted from cart...");
+            console.log('successful');          
             res.json({success:true})
         }
     }
@@ -1906,7 +931,7 @@ const deleteFromCart = async(req,res)=>{
 /*********add to wishlist table*********/
 const addToWishlist = async(req,res)=>{
     try{
-        //add user, productlist; user exist- update, otherwise insert
+       
         let pdt_id = req.params.id;
         const user_id = req.session.user
         const user_list = await List.findOne({user:user_id}).exec()
@@ -1959,8 +984,7 @@ const loadCheckout = async(req,res)=>{
     try{
         
        
-        const userid = req.session.user
-       // if(req.query){}
+        const userid = req.session.user      
         let coupondisc = req.query.coupondisc
         console.log("checkout query:",req.query)
         console.log("coupondis :",coupondisc)
@@ -2028,7 +1052,7 @@ const addNewAddress =async(req,res)=>{
             city:req.body.city,
             pincode:req.body.pin,
             state:req.body.state,
-            country:req.body.city,
+            country:req.body.country,
             isDefault:setDefault
         })
 
@@ -2088,14 +1112,16 @@ const loadEditAddress =async(req,res)=>{
 /************edit address**************/
 const changeAddress =async(req,res)=>{
     try{
-        const addressid = req.params.addressid;
+        const addressid = req.params.addrid;
         const cartid = req.params.cartid;
         const amount = req.params.amount
-      
+        console.log(req.params,req.body)
         const address = await Address.find({_id:addressid}).exec()
 
-        await Address.updateOne({_id:addressid},
-            {$set:{
+        const changed = await Address.updateOne(
+            {_id:addressid},
+            {
+                $set:{
                 name: req.body.name,
                 mobile:req.body.mobile,
                 house:req.body.house,
@@ -2107,7 +1133,7 @@ const changeAddress =async(req,res)=>{
                 country:req.body.country,
             }})
         
-        console.log('successful');
+        console.log('successful:',changed);
            
         res.redirect(`/checkout/${cartid}/${amount}`)
     }
@@ -2235,9 +1261,8 @@ const couponApply = async (req,res)=>{
                 req.flash("errorMessage", "Selected coupon is not applicable to this purchase..Try another one!!");
                 res.status(400).send({ success: false });
                 return;
-            } else {                
-                // user.coupons.push(cpn._id)
-                // await user.save()
+            } else {               
+               
                 for (let usr of user) {
                     console.log("couponid :",couponid);
                     usr.coupons.push(couponid);
@@ -2276,7 +1301,7 @@ const selectedMethod = async(req,res)=>{
         req.session.paymethod = paymethod
 
         console.log(req.session.paymethod);
-           
+           makeco
         res.sendStatus(200)
 
 }
@@ -2292,23 +1317,28 @@ const makeCODPayment = async(req,res)=>{
     try{
         //const userid = req.params.userid
         const jsonData = JSON.parse(Object.keys(req.body)[0]);
-
         const { paymentMethod,address,total,cartid,userid } = jsonData;
         console.log("checkout data :",jsonData)
-        let charge = 0
-        if (total < 1500){
-            charge = 80
-        }
-
         const user = await User.findOne({_id:userid}).exec()
         const cartDet = await Cart.findOne({_id:cartid}).exec()
-
+        let charge = 0
+        let pdtCount = 0
         let paymntamnt = total
+        cartDet.product_list.forEach((lst)=>{
+            pdtCount++
+         })
+        if (total < 1500){
+            charge = 80
+            let pdtCharge = parseFloat((charge / pdtCount).toFixed(2)) 
+
+            cartDet.product_list.forEach((lst)=>{               
+                lst.total -= pdtCharge
+             })
+        }
         console.log('total before coupon:',paymntamnt)
         if(req.session.couponDiscountTotal){
             paymntamnt = req.session.couponDiscountTotal 
-            cartDet.product_list.forEach((lst)=>{
-                //set product total by reducing coupon amt
+            cartDet.product_list.forEach((lst)=>{                
                 lst.total -= req.session.productCoupon
              })
         }
@@ -2327,10 +1357,6 @@ const makeCODPayment = async(req,res)=>{
             } else {
               
       
-        //change each cart product total with coupon value
-
-       
-
         const currentDate = moment().format('ddd MMM DD YYYY');
         const deliveryDate = moment().add(7,'days').format('ddd MMM DD YYYY') //expected
         console.log("dates:",new Date(currentDate),new Date(deliveryDate)) 
@@ -2339,7 +1365,7 @@ const makeCODPayment = async(req,res)=>{
                 orderstatus:'pending',
                 paymentstatus:"pending",
                 delivery_date:new Date(deliveryDate),
-            }; // Add the status field to each item
+            }; 
         });
         
         const productDet = await Products.findOne({_id:cartDet.product_list[0].productId}).exec()
@@ -2400,7 +1426,6 @@ const makeCODPayment = async(req,res)=>{
             res.json({cod_success : true})
 
         }  else if(orderData.payment === 'Razorpay') {
-
            
             const amt = total * 100
             const options = {
@@ -2410,7 +1435,7 @@ const makeCODPayment = async(req,res)=>{
             }
             razorpayInstance.orders.create(options,(err,razorder)=>{
                 if(!err){                   
-                   // console.log("razorpay order :",razorder)
+                   
                     res.json({
                         success : true,
                         msg : "Order Placed",
@@ -2437,9 +1462,7 @@ const makeCODPayment = async(req,res)=>{
              req.flash("errorMessage", "Payment failed.. Try again!!");
              res.json({success:false})
        }
-    }
-
-       
+    }      
        
     }
     catch(err){
@@ -2463,9 +1486,9 @@ const loadPaymentSuccess = async(req,res)=>{
                
                 {
                     $lookup: {
-                        from: "products", // Assuming 'addresses' is the name of your Address collection
-                        localField: "product_list.productId", // Field in the 'orders' collection
-                        foreignField: "_id", // Field in the 'addresses' collection
+                        from: "products", 
+                        localField: "product_list.productId", 
+                        foreignField: "_id", 
                         as: "productDetails"
                     }
                 },
@@ -2496,7 +1519,7 @@ const loadPaymentSuccess = async(req,res)=>{
 }
 
 const verifyPayment = async (req, res) => {
-    //const email = req.session.user;
+    
    try{
             console.log("inside verifypayment")
             const { payment, razorOrder } = req.body;
@@ -2540,11 +1563,7 @@ const verifyPayment = async (req, res) => {
  const verifyFailedPayment = async (req,res)=>{
     try{
         console.log("order :", req.session.orderid,"cartid :", req.session.cartid)
-        // const failedOrder = await Order.updateOne({_id:req.session.orderid},{$set:{
-        //     "product_list.$[].paymentstatus":"pending"
-        // }}).exec()
-        //  if(failedOrder){
-            await Cart.updateOne({_id:req.session.cartid},
+        await Cart.updateOne({_id:req.session.cartid},
                 { $set: {
                     status:"pending"
                     } }
@@ -2554,8 +1573,7 @@ const verifyPayment = async (req, res) => {
                 success: true,
                 orderid: req.session.orderid,
                 cartid: req.session.cartid
-              });
-        //  }
+              });       
     } catch(err){
         console.log(err.message);
     }
@@ -2563,8 +1581,7 @@ const verifyPayment = async (req, res) => {
 
  //payment again 
  const continuePaymentFailed = async (req, res) => {
-    // const orderid  = req.body.orderid;
-    // const prdtid = req.body.prdtid;
+    
     const orderid = new mongoose.Types.ObjectId(req.body.orderid);
     const prdtid = new mongoose.Types.ObjectId( req.body.prdtid);
     const order = await Order.aggregate([
@@ -2608,9 +1625,9 @@ const verifyPayment = async (req, res) => {
                 
         {
             $lookup: {
-                from: "users", // Assuming 'addresses' is the name of your Address collection
-                localField: "user", // Field in the 'orders' collection
-                foreignField: "_id", // Field in the 'addresses' collection
+                from: "users", 
+                localField: "user", 
+                foreignField: "_id",
                 as: "userDetails"
             }
         },
@@ -2621,11 +1638,9 @@ const verifyPayment = async (req, res) => {
             }
         }  
     ]).exec();
-   // console.log("payorder :",order)
-  // console.log("Detail :",order[0].userDetails.name)
+   
     req.session.failedPaymentOrderId = orderid;
     req.session.failedPaymentPrdtid = prdtid;
-   // console.log("session :", req.session.failedPaymentOrderId,req.session.failedPaymentPrdtid )
     var options = {
       amount: order[0].product.total * 100,
       currency: "INR",
@@ -2658,7 +1673,6 @@ const verifyPayment = async (req, res) => {
   };
   //verify payment after failed payment
   const verifyPaymentFailed = async (req, res) => {
-    //const email = req.session.user;
    try{
             console.log("inside verifypayment")
             const { payment, razorOrder} = req.body;
@@ -2701,34 +1715,12 @@ const verifyPayment = async (req, res) => {
 
 module.exports = {
 
-    getPaginatedProducts,  
+    
     getProducts,
-    getSortedProducts,
-    getnameSortedProducts,
     
     loadAllProducts,
   
     loadProductDetail,
-
-    loadNew,
-
-    getnewHandicrafts,
-    getnewAntique,
-    getnewApparels,
-    getnewSpices,
-
-    getmostSold,
-    getLowtoHigh,
-    getHightoLow,
-    getascending,
-    getdescending,
-
-    getbrassMaterial,
-    getmetalMaterial,
-    getwoodMaterial,
-
-    storeSerachValue,
-    listSearchProduct,
 
     loadCart,
     loadCheckout,
@@ -2737,7 +1729,6 @@ module.exports = {
     addQtyToCart,
     subQtyFromCart,
     deleteFromCart,
-
   
     addNewAddress,
     loadEditAddress,   
@@ -2747,7 +1738,6 @@ module.exports = {
 
     couponApply,
 
-   
     makeCODPayment,
     verifyPayment,
     verifyFailedPayment,    
@@ -2756,8 +1746,7 @@ module.exports = {
     continuePaymentFailed,
     verifyPaymentFailed,
 
-    addToWishlist,
-    
+    addToWishlist,    
 
     getQtyCount,
     getListCount

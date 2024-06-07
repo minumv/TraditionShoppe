@@ -1,0 +1,94 @@
+<%- include('../layout/adminHeader') %>
+<section>   
+      <div class="container">
+        <div class="d-block p-1">
+            <form id="img_form" action="" method="post" enctype="multipart/form-data">
+                <p class="text-info font-weight-bold">Add Banner</p>
+                <div id="imgdiv" style="visibility:hidden;">
+                    <img id="inputImg" src="" alt="" style="display:block;max-width: 100%;">
+                </div>
+                <div class="d-flex">
+                    <input type="file" class="form-control" 
+                        value="Images" id="file-input" name="croppedImage" accept="image/png,image/jpeg" 
+                        onchange="addnewImage(event)" multiple> 
+                   <button class="btn btn-secondary btn-sm " style="margin-right: 30px;" type="submit">crop&upload</button>
+                </div> 
+            </form>                          
+          </div>
+            <%if(banner && banner.images && banner.images.length > 0){%>
+                <p class="text-primary font-weight-bold text-center" style="font-size: 25px;">Your Banners</p>
+               <%for(let i = banner.images.length -1 ; i >= 0  ; i-- ){%>
+                    <div class="d-flex justify-content-center align-items-center mb-4">
+                        <div class="d-block">                            
+                             <div style="width:750px; border-radius: 20px;">
+                                <img id="inputImg" src="<%= `/upload/${banner.images[i]}` %>" alt="" style="display:block;max-width: 100%;border-radius: 20px;">
+                            </div>
+                        </div>
+                    </div>
+                <%}%>
+            <%}%>
+
+          
+      </div>
+</section>
+
+<script>
+   
+    let cropper ;
+    let previewDiv = document.getElementById('imgdiv')
+    let preview = document.getElementById('inputImg')
+    function addnewImage(event){
+        const files = event.target.files;
+        if (files && files.length > 0) {
+            const file = files[0]; 
+            const reader = new FileReader(); 
+            
+            reader.onload = function(e) {
+                previewDiv.style.visibility = 'visible';
+                preview.src = e.target.result;
+            };        
+            reader.readAsDataURL(file);
+        }
+    }
+
+    preview.addEventListener('load',function(events){
+        cropper = new Cropper(preview,{
+        aspectRatio:16/9
+        })
+    })
+    console.log("cropper :",cropper)
+    let form = document.getElementById('img_form')
+    form.addEventListener('submit',function(event){
+        event.preventDefault()    
+        cropper.getCroppedCanvas({
+        maxHeight:1000,
+        maxWidth:1000
+        }).toBlob(function(blob){
+        addImageToCollection(blob)
+        }) 
+    })
+
+function addImageToCollection(blob){
+   console.log('changing image')
+    let formData = new FormData(form)  
+
+    formData.append('croppedImage', blob);  
+
+    $.ajax('/uploadBanner', {
+    method: 'POST',
+    data: formData,
+    processData: false,
+    contentType: false,
+    success() {
+       location.href=`/admin/banner`
+    },
+    error() {
+        location.href=`/admin/banner`        
+    },
+    });
+}
+
+</script>
+
+
+<%- include('../layout/adminFooter') %>

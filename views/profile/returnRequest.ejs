@@ -36,39 +36,49 @@
 </form>
 </div>
 <%- include('../layout/userFooter') %>
+<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
 <script>
 function handleReturn(orderid,pdtid) {
-    alert("button clicked");
-    
-    // Get selected values from dropdowns
-    const reason = $('#returnreason').val();
-    console.log("reason:" + reason);
-
-    // Your fetch code or any other code to handle the button click
-    fetch('/getReturnReason', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            return_reason: reason
-        })
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return response.json();
-    })
-    .then(data => {
-        // Handle success response
-        console.log('Server response:', data);
-        requestReturn(orderid,pdtid);
-    })
-    .catch(error => {
-        console.error('Fetch Error:', error);
-    });
-}
+    swal({
+                title: "Are you sure?",
+                text: "Do you want to cancel this product!",
+                icon: "warning",
+                buttons: true,
+                dangerMode: true,
+            }).then((willDelete) => {               
+                               
+                if (willDelete) {
+                    const reason = $('#returnreason').val();
+                    console.log("reason:" + reason);    
+                    fetch('/getReturnReason', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            return_reason: reason
+                        })
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        // Handle success response
+                        console.log('Server response:', data);
+                        requestReturn(orderid,pdtid);
+                    })
+                    .catch(error => {
+                        console.error('Fetch Error:', error);
+                    });   
+                } else {
+                    //swal("Your request is cancelled!");
+                    location.href = '/getOrder'
+                }                  
+            }); 
+    }
     
     function requestReturn(ordrid,pdtid){
       fetch(`/returnRequest/${ordrid}/${pdtid}`,{

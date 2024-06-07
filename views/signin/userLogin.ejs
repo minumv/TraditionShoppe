@@ -3,7 +3,7 @@
 <body style="background-color: rgb(245, 226, 237);">
 <div class="container">
 	<div class="d-flex justify-content-center h-100">
-		<div class="card" style="padding:10px;background-color: white;border-radius: 25px; height:420px;width:450px;">
+		<div class="card" style="padding:10px;background-color: white;border-radius: 25px; height:420px;width:450px;margin-left: -40px;">
 			<div class="card-header mt-4">
 				<h3 style="color:#4F0341">Log In</h3>
 				<div class="d-flex justify-content-end social_icon">
@@ -46,11 +46,27 @@
 		</div>
 		<div style="position:absolute;top:75%;left:42%;">
 			<% if (errorMessage.length > 0) { %>                
-				<div class="alert alert-danger" role="alert"> <%- errorMessage %>  </div>                  
+				<div id="errorMessageDiv" class="alert alert-danger mt-3" role="alert"> <%- errorMessage %>  </div>                
+								 <script>                                
+								   setTimeout(function() {
+									  var errorMessageDiv = document.getElementById("errorMessageDiv");
+									  if (errorMessageDiv) {
+										  errorMessageDiv.style.display = "none";
+									  }
+								  }, 4000); 
+							  </script>
 			  <% } %>
 			  <% if (successMessage.length > 0) { %>                
-				<div class="alert alert-success" role="alert"> <%- successMessage %>  </div>                    
-			  <% } %>
+				<div id="successMessageDiv" class="alert alert-success" role="alert"> <%- successMessage %>  </div>                    
+				<script>                                
+				  setTimeout(function() {
+					 var successMessageDiv = document.getElementById("successMessageDiv");
+					 if (successMessageDiv) {
+					  successMessageDiv.style.display = "none";
+					 }
+				 }, 4000); 
+			 </script>
+				<% } %>
 		</div>
 	</div>
 	

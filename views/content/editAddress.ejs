@@ -13,90 +13,128 @@
     <link rel="stylesheet" href="/userasset/css/jquery-ui.css">
     <link rel="stylesheet" href="/userasset/css/owl.carousel.min.css">
     <link rel="stylesheet" href="/userasset/css/owl.theme.default.min.css">
-
+    <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
 
     <link rel="stylesheet" href="/userasset/css/aos.css">
 
     <link rel="stylesheet" href="/userasset/css/style.css">
     <link rel="stylesheet" href="/stylesheets/style-user.css" type="text/css">
     <link rel="stylesheet" href="/stylesheets/style-modal.css" type="text/css">
+    <style>
+        .input-group {    
+        position:relative;
+        width : 100%;  
+        margin-bottom: 25px;
+      }
+      
+      .input-group input,
+      .input-group textarea {
+        width: 100%;
+        padding: 10px;
+        font-size: 1rem;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        outline: none;
+      }
+      
+      .floating-label {
+        position: absolute;
+        left: 10px;
+        top: 10px;
+        pointer-events: none;
+        transition: 0.2s ease all;
+        color: #aaa;
+        font-size: 1rem;
+      }
+      
+      input:focus ~ .floating-label,
+      input:not(:placeholder-shown) ~ .floating-label,
+      textarea:focus ~ .floating-label,
+      textarea:not(:placeholder-shown) ~ .floating-label {
+        top: -20px;
+        left: 10px;
+        font-size: 0.8rem;
+        color: #474b50;
+      } 
+        .error{
+          position:absolute;
+          right:8px;
+          top:10px;
+         color:#ed1557;
+         font-size: 13px;
+         font-weight: bold;
+      }
+      
+      .error i {
+          color:seagreen;
+      }
+      </style>
 </head>
 <body>
-   <div class="container">
+   <div class="container d-flex justify-content-center">
     <%if(address){%>
         <%address.forEach((addr,index)=>{%>
-    <form action="/editAddress/<%=addr._id%>/<%=cartid%>/<%=amount%>" method="post">
-        <div class="address-body">
-            
-                    <div>
-                                    <select name="country" id="country">Country
-                                        <option value="<%= addr.country%>"><%= addr.country%></option>
-                                        <option value="Afghanisthan">Afghanisthan</option>
-                                        <option value="Australia">Australia</option>
-                                        <option value="Belgium">Belgium</option>
-                                        <option value="Bhutan">Bhutan</option>
-                                        <option value="Chili">Chili</option>
-                                        <option value="China">China</option>
-                                        <option value="Denmark">Denmark</option>                        
-                                        <option value="India">India</option>
-                                        <option value="Japan">Japan</option>
-                                        <option value="Kuwait">Kuwait</option>
-                                        <option value="Malaysia">Malaysia</option>
-                                        <option value="Nepal">Nepal</option>
-                                        <option value="New Zealand">New Zealand</option>
-                                        <option value="Oman">Oman</option>
-                                        <option value="Sri Lanka">Sri Lanka</option>
-                                        <option value="UAE">UAE</option>
-                                        <option value="USA">USA</option>
-                                        <option value="UK">UK</option>
-                                    </select>
-
-                    </div>
-                    <div>
-                        <input type="text" name="name"  placeholder="Fullname" value="<%= addr.name %>">
-                    </div>
-                    <div>
-                        <input type="text" name="mobile" placeholder="Mobile" value="<%= addr.mobile %>">
-                    </div>
-                    <div>
-                        <input type="text" name="pin"  placeholder="Pincode" value="<%= addr.pincode %>">
-                    </div>
-                    <div>
-                        <input type="text" name="house" placeholder="Flat, House no., Building, Company, Apartment" value="<%= addr.house %>">
-                    </div>
-                    <div>
-                        <input type="text" name="street" placeholder="Area, Street, Sector, Village" value="<%= addr.street %>">
-                    </div>               
-                    <div>
-                        <input type="text" name="landmark" placeholder="Landmark" value="<%= addr.landmark %>">
-                    </div>                
-                    <div>
-                        <input type="text" name="city" placeholder="Town/City" value="<%= addr.city %>">
-                    </div>
-                    <div>
-                    <select name="state" id="state">
-                        <option value="<%= addr.state%>"><%= addr.state%></option>
-                        <option value="Arunachal Pradesh">Arunachal Pradesh</option>
-                        <option value="Assam">Assam</option>
-                        <option value="Delhi">Delhi</option>
-                        <option value="Gujarath">Gujarath</option>
-                        <option value="Karnataka">Karnataka</option>
-                        <option value="Kerala">Kerala</option>
-                        <option value="Maharashtra">Maharashtra</option>
-                        <option value="Telangana">Telangana</option>
-                        <option value="Tamilnadu">Tamilnadu</option>                   
-                        <option value="Uthar Pradesh">Uthar Pradesh</option>
-                        <option value="West Bengal">West Bengal</option>
-                        
-                    </select>
-                    </div>
-                    
-                
-                <div>
-                    <button type="submit" id="editAddress" formaction="/editAddress/<%=addr._id%>/<%=cartid%>/<%=amount%>" class="btnmodal btn btn-lg bg-warning btn-lg w-25 mt-4 mb-0 me-2">Use this address</button>
+    <form action="/editAddress/<%=addr._id%>/<%=cartid%>/<%=amount%>" method="post" onsubmit="return validateForm()">
+        <div class="d-block" style="width:500px;height:720px; padding:80px;border-radius: 25px; box-shadow: 0 0 30px -10px rgba(71, 31, 68, 0.3);">
+            <p class="text-center font-weight-bold" style="color: darkmagenta;font-size: 25px;margin-top:-55px;">Change Address</p>
+            <div class="">  
+                <hr>          
+               
+                <div class="input-group form-group w-100">
+                    <input type="text" id="name" name="name" class="form-control"   onkeyup="validateName()" value="<%= addr.name %>">
+                    <label for="name" class="floating-label">Name</label>
+                    <span id="name-error" class="error"></span>
                 </div>
+                <div class="input-group form-group w-100">
+                    <input type="text" id="mobile" name="mobile" class="form-control"   onkeyup="validateMobile()" value="<%= addr.mobile %>">
+                    <label for="mobile" class="floating-label">Mobile</label>
+                    <span id="phone-error" class="error"></span>
+                </div>    
+                <div class="input-group form-group ">
+                    <input type="text" id="pin" name="pin" class="form-control"  onkeyup="validatePin()" value="<%= addr.pincode %>">
+                    <label for="pin" class="floating-label">Pincode</label>
+                    <span id="pin-error" class="error"></span>
+                </div>                      
+                <div class="input-group form-group ">
+                    <input type="text" id="house" name="house" class="form-control"  onkeyup="validateHouse()" value="<%= addr.house %>">
+                    <label for="house" class="floating-label">Flat, House no., Building, Company, Apartment</label>
+                    <span id="house-error" class="error"></span>
+                </div> 
+                <div class="input-group form-group ">
+                    <input type="text" id="street" name="street" class="form-control"   onkeyup="validateStreet()" value="<%= addr.street %>">
+                    <label for="street" class="floating-label">Area, Street, Sector, Village</label>
+                    <span id="street-error" class="error"></span>
+                </div> 
+                <div class="input-group form-group ">
+                    <input type="text" id="landmark" name="landmark" class="form-control" onkeyup="validateLandmark()" value="<%= addr.landmark %>">
+                    <label for="landmark" class="floating-label">Landmark</label>
+                    <span id="landmark-error" class="error"></span>
+                </div>                
+                <div class="input-group form-group ">
+                    <input type="text" id="city" name="city" class="form-control"  placeholder="Town/City" onkeyup="validateTown()" value="<%= addr.city %>">
+                    <label for="city" class="floating-label">Town/City</label>
+                    <span id="city-error" class="error"></span>
+                </div> 
+                <div class="input-group form-group ">
+                    <input type="text" id="state" name="state" class="form-control"  placeholder="State" onkeyup="validateState()" value="<%= addr.state %>">
+                    <label for="state" class="floating-label">State</label>
+                    <span id="state-error" class="error"></span>
+                </div>                
+                <div class="input-group form-group ">
+                    <input type="text" id="country" name="country" class="form-control"  placeholder="Country" onkeyup="validateCountry()" value="<%= addr.country %>">
+                    <label for="country" class="floating-label">Country</label>
+                    <span id="country-error" class="error"></span>
+                </div>               
+
                 
+            <hr>
+            <div>
+                <button type="submit" id="editAddress" formaction="/editAddress/<%=addr._id%>/<%=cartid%>/<%=amount%>" class="btnmodal btn w-100 ">Use this address</button>
+            </div>
+            
+    </div>
         </div>
+        
     </form>
     <%})%>
     <%}%>
@@ -112,7 +150,7 @@
      <script src="/userasset/js/main.js"></script>
      <script src="/js/scripts.js"></script>
      <script src="/js/script-modal.js"></script>
-     <!-- <script src="/js/script.js"></script> -->
+     <script src="/js/validate.js"></script>    
        
      </body>
      </html>

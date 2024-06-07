@@ -11,11 +11,10 @@ const bodyParser = require('body-parser')
 orderRoute.use(bodyParser.json())
 orderRoute.use(bodyParser.urlencoded({extended:true}))
 
-
 /*********admin order********** */
 
-orderRoute.get("/orderManage",orderController.loadOrder)
-orderRoute.get("/orderDetails/:orderid/:pdtid",orderController.viewOrderMore)
+orderRoute.get("/orderManage",userAuthent.isAdminAuthenticated,orderController.loadOrder)
+orderRoute.get("/orderDetails/:orderid/:pdtid",userAuthent.isAdminAuthenticated,orderController.viewOrderMore)
 
 //admin action handling
 
@@ -28,8 +27,6 @@ orderRoute.post("/returnapprove/:odrid/:pdtid",orderController.OrderReturned)
 orderRoute.get("/categorySale",orderController.pieChart)
 orderRoute.get("/barChart",orderController.barChart)
 
-
-
 /*****************user side order*********************/
 
 orderRoute.get('/cancelPage/:odrid/:pdtid',userAuthent.isAuthenticated,orderController.loadCancelPage)
@@ -40,7 +37,5 @@ orderRoute.post("/getReturnReason",orderController.selectReturnReason)
 
 orderRoute.post("/cancelRequest/:odrid/:pdtid",orderController.cancelOrder)
 orderRoute.post("/returnRequest/:odrid/:pdtid",orderController.returnOrder)
-
-
 
 module.exports = orderRoute;

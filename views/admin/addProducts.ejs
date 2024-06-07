@@ -1,11 +1,8 @@
 <%- include('../layout/adminHeader') %>
 <style>
-  .input-group {
-    /* display  : flex;
-    flex-direction: column; */
+  .input-group {    
   position:relative;
-  width : 100%;
-  /* //background-color: aqua; */
+  width : 100%;  
   margin-bottom: 25px;
 }
 
@@ -53,7 +50,7 @@ textarea:not(:placeholder-shown) ~ .floating-label {
 </style>
 <section>   
       <div class="container">
-        <form role="form" id="profile_form" action="" method="post" enctype="multipart/form-data" onsubmit="return validateForm()">    
+        <form role="form" id="profile_form" action="" method="post" enctype="multipart/form-data" onsubmit="return validateProduct()">    
           <!-- /upload -->
           <div class="row ">                    
             <div class="col-6">
@@ -63,11 +60,17 @@ textarea:not(:placeholder-shown) ~ .floating-label {
                       <!-- <p class="mb-0">Enter your email and password to register</p> -->
                     </div>
                     <% if (errorMessage.length > 0) { %>                
-                      <div class="alert alert-danger" role="alert"> <%- errorMessage %>  </div>                  
-                  <% } %>
-                    <% if (successMessage.length > 0) { %>                
-                      <div class="alert alert-success" role="alert"> <%- successMessage %>  </div>                    
-                    <% } %>
+                      <div id="errorMessageDiv" class="alert alert-danger mt-3" role="alert"> <%- errorMessage %>  </div>                
+                                         <script>                                
+                                           setTimeout(function() {
+                                              var errorMessageDiv = document.getElementById("errorMessageDiv");
+                                              if (errorMessageDiv) {
+                                                  errorMessageDiv.style.display = "none";
+                                              }
+                                          }, 4000); 
+                                      </script>
+                      <% } %>
+                   
                     <div class="card-body">             
                       <div class="input-group input-group-outline mb-3">
                          <input type="text" id="name" class="form-control" name="name" placeholder=""  onchange="validateName()" >
@@ -129,7 +132,8 @@ textarea:not(:placeholder-shown) ~ .floating-label {
                                 <option value="fibre">Fibre</option>
                                 <option value="brass">Brass</option>
                                 <option value="metal">Metal</option>
-                                <option value="stone">Stone</option>
+                                <option value="stone">Stone</option>                               
+                                <option value="paper">Paper</option>
                                 <option value="bamboo">Bamboo</option>
                                 <option value="copper">Copper-alloy</option>
                                 <option value="handloom">Handloom</option>
@@ -164,7 +168,7 @@ textarea:not(:placeholder-shown) ~ .floating-label {
                           <select id="type" class="form-control" required>
                             <option value="">Select Type</option>
                             <option value="decor">decor</option>
-                            <option value="gifts">gifts</option>
+                            <option value="gift">gifts</option>
                             <option value="toys">toys</option>
                               <option value="figurine">figurine</option>
                               <option value="accessories">accessories</option>
@@ -234,118 +238,12 @@ textarea:not(:placeholder-shown) ~ .floating-label {
        </div>   
        <!-- <div id="overlay"></div> -->
   </section>
+<script src="/js/validate.js"></script>
+
 <script>
-  const nameError = document.getElementById('name-error')
-	const stockError = document.getElementById('stock-error')
-	const descriptionError = document.getElementById('description-error')
-	const sizeError = document.getElementById('size-error')
-	const weightError = document.getElementById('weight-error')
-	const priceError = document.getElementById('price-error')
-
-  function validateName(){
-		const name = document.getElementById('name').value
-	
-		if(name.length === 0){
-			nameError.innerHTML = 'Name is required'
-      nameError.style.display = 'block';
-			return false
-		}
-		if(!name.match(/^[a-zA-Z]+[\-'\s]?[a-zA-Z ]+$/)){
-			nameError.innerHTML = 'Name should be valid'
-      nameError.style.display = 'block';
-			return false
-		}
-		nameError.innerHTML = '<i class = "fas fa-check-circle"></i>'
-		return true
-	}
-  function validateDescription(){
-		const description = document.getElementById('description').value
-	
-		if(description.length === 0){
-			descriptionError.innerHTML = 'Description is required'
-			return false
-		}
-
-    if(!description.match(/^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?][a-zA-Z0-9\s!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]*$/)){
-			descriptionError.innerHTML = 'Description should be valid'
-			return false
-		}
-		
-		descriptionError.innerHTML = '<i class = "fas fa-check-circle"></i>'
-		return true
-	}
-
-  function validateStock(){
-		const stock = document.getElementById('stock').value
-	
-		if(stock.length === 0){
-			stockError.innerHTML = 'Stock is required'
-			return false
-		}
-		if(!stock.match(/^(?!0)\d{1,5}$/)){
-			stockError.innerHTML = 'Stock should be valid'
-			return false
-		}
-		stockError.innerHTML = '<i class = "fas fa-check-circle"></i>'
-		return true
-	}
-  function validatePrice(){
-		const price = document.getElementById('price').value
-	
-		if(price.length === 0){
-			priceError.innerHTML = 'Price is required'
-			return false
-		}
-		if(!price.match(/^(?!0)\d{1,4}(?:\.\d+)?$/)){
-			priceError.innerHTML = 'Price should be valid'
-			return false
-		}
-		priceError.innerHTML = '<i class = "fas fa-check-circle"></i>'
-		return true
-	}
-
-  function validateSize(){
-		const size = document.getElementById('size').value
-	
-		if(size.length === 0){
-			sizeError.innerHTML = 'Size is required'
-			return false
-		}
-		if(!size.match(/^(?!0)\d{1,4}(?:\.\d+)?$/)){
-			sizeError.innerHTML = 'Size should be valid'
-			return false
-		}
-		sizeError.innerHTML = '<i class = "fas fa-check-circle"></i>'
-		return true
-	}
-
-  function validateWeight(){
-		const weight = document.getElementById('weight').value
-	
-		if(weight.length === 0){
-			weightError.innerHTML = 'Weight is required'
-			return false
-		}
-		if(!weight.match(/^(?!0)\d{1,4}(?:\.\d+)?$/)){
-			weightError.innerHTML = 'Weight should be valid'
-			return false
-		}
-		weightError.innerHTML = '<i class = "fas fa-check-circle"></i>'
-		return true
-	}
-
-  function validateForm() {
-    const isNameValid = validateName();
-    const isDescriptionValid = validateDescription();
-    const isPriceValid = validatePrice();
-    const isStockValid = validateStock();
-    const isSizeValid = validateSize();
-    const isWeightValid = validateWeight();
-    return isNameValid && isDescriptionValid && isPriceValid && isStockValid && isSizeValid && isWeightValid;
-  }
+ 
   
-  
-  let cropper ;
+  //let cropper ;
   let imageArray = []
   let previewDiv = document.getElementById('imgdiv1')
   let preview = document.getElementById('inputImg1')
@@ -368,7 +266,7 @@ textarea:not(:placeholder-shown) ~ .floating-label {
     console.log("files :",files);
     // Iterate through each file
    
-    for (let i = 0; i < files.length; i++) {
+    for (let i = 0; i <= files.length; i++) {
         const reader = new FileReader(); // Create a new FileReader instance
 
         // Define a callback function to handle the FileReader's onload event
@@ -385,12 +283,10 @@ textarea:not(:placeholder-shown) ~ .floating-label {
             // Show the image container
             const imgContainerId = `imgdiv${imgIndex}`;
             document.getElementById(imgContainerId).style.visibility = 'visible';
-           
+           console.log("CALLING", i)
             initializeCropperForImage(i+1);
         };
-
-        // Read the selected file as a data URL (base64)
-      //  console.log("reader value :",readAsDataURL(files[i]))
+       
         reader.readAsDataURL(files[i]);
         
     }
@@ -398,26 +294,44 @@ textarea:not(:placeholder-shown) ~ .floating-label {
 
   const croppers = [];
 
-function initializeCropperForImage(inputIndex) {
+  function initializeCropperForImage(inputIndex) {
     const imageId = `inputImg${inputIndex}`;
     console.log(imageId);
-    cropper = new Cropper(document.getElementById(imageId), {
+
+    const imageElement = document.getElementById(imageId);
+
+    // Ensure the image is loaded before getting dimensions
+    imageElement.onload = () => {
+    // Get original dimensions of the image
+    const originalWidth = imageElement.naturalWidth;
+    const originalHeight = imageElement.naturalHeight;
+
+    console.log(`Original Dimensions for ${imageElement}:`, originalWidth, originalHeight);
+
+    let cropper = new Cropper(imageElement, {
         // Add Cropper.js options here
-        aspectRatio:1/1
-       
+        aspectRatio:1/1,
+        ready: function () {
+                // Save original dimensions in cropper instance
+                cropper.originalDimensions = { originalWidth, originalHeight };
+                console.log("dimensiion:",cropper.originalDimensions)
+                console.log(`Cropper ready for ${imageId}:`, cropper);
+            }
     });
     console.log(`cropper${imageId} :`,cropper);
 
     // Save cropper instance
-    croppers.push(cropper);
+    // croppers.push(cropper);
+    croppers[inputIndex - 1] = cropper;
     console.log('croppers :',inputIndex ,":",croppers)
-}
+  }
+  if (imageElement.complete) {
+      console.log("image",imageElement)
+        imageElement.onload();        
+    }
+  }
 
-  // preview.addEventListener('load',function(events){
-  //   cropper = new Cropper(preview,{
-  //     aspectRatio:1/1
-  //   })
-  // })
+  
 
   let form = document.getElementById('profile_form')
   let formData = new FormData(form);
@@ -428,22 +342,27 @@ function initializeCropperForImage(inputIndex) {
     event.preventDefault()
    
   //  for (let i = 0; i < croppers.length; i++) {
-    croppers[2].getCroppedCanvas({
-      maxHeight:1000,
-      maxWidth:1000
-    }).toBlob(function(blob){
-      ajaxWithAxios(blob)
-    })
-   
-  // }
-  
- 
+    croppers.forEach((cropper, index) => {
+      console.log("getcanvas",cropper)
+      if (!cropper || !cropper.originalDimensions) {
+            console.error(`Original dimensions not set for cropper ${index}`);
+            return;
+        }
+      const { originalWidth, originalHeight } = cropper.originalDimensions;
+        
+        cropper.getCroppedCanvas({
+          width:  160,
+          height: 90,
+      }).toBlob(function(blob){
+          console.log(`Cropped image`, blob);
+          if( index === 2)
+          appendCroppedImageToForm(blob)
+      })
+    });
   })
 
 
-  function ajaxWithAxios(blob){
-
-  
+  function  appendCroppedImageToForm(blob){  
     
     let form = document.getElementById('profile_form');
     console.log("form: ",form)
@@ -453,7 +372,7 @@ function initializeCropperForImage(inputIndex) {
         
     }
     console.log("blob :",blob)
-    formData.append('croppedImage',blob);
+    formData.append('croppedImage',blob,`cropped_image_${Date.now()}.png`);
     console.log("crr",formData.croppedImage)
     console.log("formdata: ",formData)
     console.log('Form data length:', formData.size); // Check the size property
@@ -461,7 +380,9 @@ console.log('Form data keys:', formData.keys()); // Log the keys
 for (const key of formData.keys()) {
     console.log(key + ':', formData.get(key));
 }
-   
+console.log('Form data:', formData);
+    console.log('Blob:', blob);
+
 
 $.ajax('/uploadPdtImage', {
   method: 'POST',
@@ -477,9 +398,7 @@ $.ajax('/uploadPdtImage', {
     console.log('Upload error');
   },
 });
- }
-  
-
+  }
 </script>
 
   <%- include('../layout/adminFooter') %>

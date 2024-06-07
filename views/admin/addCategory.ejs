@@ -23,7 +23,7 @@
 </style>
 <section>   
       <div class="container">
-        <form role="form"  action="/addCategory" method="post" onsubmit="return validateForm()">    
+        <form role="form"  action="/addCategory" method="post" onsubmit="return validateCategory()">    
         <div class="row ">                    
             <div class="col-6">
                 <div class="card card-plain">
@@ -44,60 +44,26 @@
                        </div>                    
                                            
                         <div class="text-center d-flex justify-content-end">                         
-                            <input type="submit"    class="btn btn-lg bg-gradient-primary btn-lg w-100 mt-4 mb-0 me-2">Add</button>
+                            <button type="submit" class="btn btn-lg bg-gradient-primary btn-lg w-100 mt-4 mb-0 me-2">Submit</button>
                          </div>
                          <% if (errorMessage.length > 0) { %>                
-                          <div id="errorAlert" class="alert alert-danger text-white mt-4" role="alert"> <%- errorMessage %>  </div>                  
-                      <% } %>
-                      
-
-                    </div>
-                  
+                          <div id="errorMessageDiv" class="alert alert-danger mt-3" role="alert"> <%- errorMessage %>  </div>                
+                                             <script>                                
+                                               setTimeout(function() {
+                                                  var errorMessageDiv = document.getElementById("errorMessageDiv");
+                                                  if (errorMessageDiv) {
+                                                      errorMessageDiv.style.display = "none";
+                                                  }
+                                              }, 4000); 
+                                          </script>
+                          <% } %>                     
+                    </div>                 
                 </div> 
             </div>             
           </div> 
         </form>        
        </div>   
   </section>
-<script>
-	const nameError = document.getElementById('name-error')
-	const descriptionError = document.getElementById('description-error')
-
-  function validateName(){
-		const name = document.getElementById('name').value.trim()
-	
-		if(name.length === 0){
-			nameError.innerHTML = 'Name is required'
-			return false
-		}
-		// if(!name.match(/^[a-zA-Z][a-zA-Z\s]*$/)){
-		// 	nameError.innerHTML = 'Name should be valid'
-		// 	return false
-		// }
-		nameError.innerHTML = '<i class = "fas fa-check-circle"></i>'
-		return true
-	}
-
-  function validateDescription(){
-		const description = document.getElementById('description').value.trim()
-	
-		if(description.length === 0){
-			descriptionError.innerHTML = 'Description is required'
-			return false
-		}
-    if(!description.match(/^[a-zA-Z0-9!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?][a-zA-Z0-9\s!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]*$/)){
-			descriptionError.innerHTML = 'Description should be valid'
-			return false
-		}
-		
-		descriptionError.innerHTML = '<i class = "fas fa-check-circle"></i>'
-		return true
-	}
-  function validateForm() {
-    const isNameValid = validateName();
-    const isDescriptionValid = validateDescription();
-    return isNameValid && isDescriptionValid;
-  }
-</script>
+  <script src="/js/validate.js"></script>
 
   <%- include('../layout/adminFooter') %>

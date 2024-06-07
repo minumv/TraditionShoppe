@@ -1,4 +1,10 @@
 <%- include('../layout/userHeader') %>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<style>
+    .but_no:focus{
+        outline: none;
+    }
+</style>
 <main>
     <div class="bg-light py-3 mt-3">      
         
@@ -30,17 +36,17 @@
                                     </div>
                                     <div class="cart-details">                                       
                                         <div class="cart-opert but">
-                                            <button onclick="subtractingFromCart('<%=user_cart._id%>','<%=user_cart.user%>','<%=cart.productId%>','<%=pdt.discountedsalePrice%>','<%=pdt.price_unit%>','<%=index%>')" class="p-1 m-0 side border-0" style="background: transparent;">-</button>
+                                            <button onclick="subtractingFromCart('<%=user_cart._id%>','<%=user_cart.user%>','<%=cart.productId%>','<%=pdt.discountedsalePrice%>','<%=pdt.price_unit%>','<%=index%>')" class="p-1 m-0 side border-0 but_no" style="background: transparent;">-</button>
                                             <div class="p-1 m-0"><button id="cart_quantity<%=index%>"><%=cart.quantity %></button></div>
-                                          <button onclick="addingToCart('<%=user_cart._id%>','<%=user_cart.user%>','<%=cart.productId%>','<%=pdt.discountedsalePrice%>','<%=pdt.price_unit%>','<%=index%>')" class="p-1 m-0 side border-0" style="background: transparent;">+</button>
+                                          <button onclick="addingToCart('<%=user_cart._id%>','<%=user_cart.user%>','<%=cart.productId%>','<%=pdt.discountedsalePrice%>','<%=pdt.price_unit%>','<%=index%>')" class="p-1 m-0 side border-0 but_no" style="background: transparent;">+</button>
                                           
                                         </div>
-                                        <button onclick="deletingFromCart('<%=user_cart._id%>','<%=user_cart.user%>','<%=cart.productId%>')" class="border-0" style="background: transparent;"><span class="icon icon-trash cart-trash-icon"></span></button>
+                                        <button onclick="deletingFromCart('<%=user_cart._id%>','<%=user_cart.user%>','<%=cart.productId%>')" class="border-0 but_no" style="background: transparent;"><span class="icon icon-trash cart-trash-icon"></span></button>
 
                                     </div>
                                     <div class="cart-price">
-                                        <p class="disc">₹<%=pdt.discountedsalePrice.toFixed(2) %></p>
-                                        <p class="mrp">₹<%=pdt.price_unit.toFixed(2) %></p>
+                                        <p class="disc"><span>₹</span><span id="pdt_price<%=index%>"><%=pdt.discountedsalePrice%></span><span>.00</span></p>
+                                        <p class="mrp"><span>₹</span><span id="pdt_mrp<%=index%>"><%=pdt.price_unit%></span><span>.00</span></p>
                                     </div>
                                 </div>
                             </li>
@@ -54,9 +60,17 @@
                             
                             
                             <% if (errorMessage.length > 0) { %>   
-                                <%console.log(errorMessage)%>             
-                               <div class="alert alert-danger" role="alert"> <%- errorMessage %>  </div>                
-                            <% } %>
+                                    
+                               <div id="errorMessageDiv" class="alert alert-danger mt-3" role="alert"> <%- errorMessage %>  </div>                
+                               <script>                                
+                                 setTimeout(function() {
+                                    var errorMessageDiv = document.getElementById("errorMessageDiv");
+                                    if (errorMessageDiv) {
+                                        errorMessageDiv.style.display = "none";
+                                    }
+                                }, 4000); 
+                            </script>
+                        <% } %>
                            
                         <li>
                             <div class="cart-footer">
@@ -72,7 +86,7 @@
                     <div class="cart-proceed">
                         <p class="head">TraditionShoppe Subtotal(<span id="totalcount"><%=qtyCount%></span><br> items):<span>₹</span><span id="amttotal"><%=amount%></span><span>.00</span></p>
                         <p class="sub">Total Savings : <span>₹</span><span id="savings"><%=savings%></span><span>.00</span></p>
-                        <a href="/checkout/<%=user_cart._id%>/<%=amount%>"><button>Proceed to Buy Item</button></a>
+                        <a href="/checkout/<%=user_cart._id%>/<%=amount%>"><button class="use-but btn text-capitalize">Proceed to Buy Item</button></a>
                         <div class="d-flex">
                             <div class="line"></div>
                             &nbsp;or&nbsp;
@@ -114,8 +128,17 @@
 
 </main>
 <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
-
 <script>
+    //   setTimeout(function() {
+    //         var errorMessageDiv = document.getElementById("errorMessageDiv");
+    //         if (errorMessageDiv) {
+    //             errorMessageDiv.style.display = "none";
+    //         }
+    //     }, 30000);
+     function displayMessage(message) {
+        swal("Alert!", message, "error");
+    }                    
+
     function addingToCart(cartid,userid,pdtid,discountprice,price,index){
         const savings = document.getElementById('savings').innerHTML
         const newSavings = parseFloat(savings) + ( price - discountprice )
@@ -136,6 +159,7 @@
                 document.getElementById('totalcount').innerHTML = data.qtyCount
                 document.getElementById('subtotal').innerHTML = data.totalAmount
                 document.getElementById('amttotal').innerHTML = data.totalAmount
+                document.getElementById(`pdt_price${index}`).innerHTML = data.pdtPrice
                 document.getElementById('savings').innerHTML = newSavings
                 // location.href='/cart'
             } 
@@ -166,6 +190,7 @@
                 document.getElementById('totalcount').innerHTML = data.qtyCount
                 document.getElementById('subtotal').innerHTML = data.totalAmount
                 document.getElementById('amttotal').innerHTML = data.totalAmount
+                document.getElementById(`pdt_price${index}`).innerHTML = data.pdtPrice
                 document.getElementById('savings').innerHTML = newSavings
 
                 // location.href='/cart'
@@ -177,21 +202,29 @@
     }
 
     function deletingFromCart(cartid,userid,pdtid){
-
-        fetch(`/deleteCart/${cartid}/${userid}/${pdtid}`,{
-            method:"post",
-            headers:{
-                'Content-Type':'application/json'
-            }
-        })
-        .then((res)=>res.json())
-        .then((data)=>{
-            if(data.success){
-                location.href='/cart'
-            } else {
-                location.href='/cart'
-            }
-        })
+        swal({
+                title: "Are you sure?",
+                text: "Do you want to move this item from cart!",
+                icon: "warning",
+                buttons: true,
+                dangerMode: true,
+            }).then((willDelete) => {               
+                    fetch(`/deleteCart/${cartid}/${userid}/${pdtid}`,{
+                        method:"post",
+                        headers:{
+                            'Content-Type':'application/json'
+                        }
+                    })
+                    .then((res)=>res.json())
+                    .then((data)=>{
+                        if(data.success){
+                            location.href='/cart'
+                        } else {
+                            location.href='/cart'
+                        }
+                    })               
+            });       
     }
+   
 </script>
 <%- include('../layout/userFooter') %>
