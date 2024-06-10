@@ -44,34 +44,22 @@
                     
        <div> 
         <div class="row ord-box">
-                
                 <div>
                     <img src="<%= `/upload/${odr.productDetails.images[0]}` %>" class="pdt-img rounded border" >
                 </div>
-
-                
                 <%let formattedDate = new Date(odr.order_date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })%>
-                    
                 <div class="pdt-det">
                     <div class="d-flex">
                         <p class="text-silver font-weight-bold text-uppercase mb-2">ORDR_<%=odr._id%></p>
-                       
                     </div>
                     <div class="d-flex">
                         <p class="text-secondary font-weight-bold text-uppercase mb-0"><%=odr.productDetails.product_name%></p>
-                       
                     </div>
-
                     <div class="d-flex">
                         <p class="text-dark text-uppercase mb-0">Order placed:</p>
                         <p><%= formattedDate%></p>
                     </div>
-                    
-                    
-                        
-                        <% formattedDate = new Date(odr.product_list.delivery_date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })%>
-                        
-              
+                      <% formattedDate = new Date(odr.product_list.delivery_date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })%>
                     <div class="d-flex">
                         <p class="text-dark fs-3  mb-0">Expected Delivery:</p>
                         <p><%= formattedDate %></p>
@@ -83,16 +71,14 @@
                 </div>
                 <div class="pdt-det box-wid">
                     <p class="text-dark text-uppercase mb-0">Total:</p>
-                    <p class="font-weight-bold"><%=odr.product_list.total%></p>
+                    <p class="font-weight-bold"><%=odr.product_list.total.toFixed(2)%></p>
                 </div>
-                
                 <div class="pdt-det d-block box-wid">
                     <p class="text-dark text-uppercase mb-0">Ship To:</p>
                     <div><span class=""><%=odr.addressDetails.name%></span></div>
                     <div><span><%=odr.addressDetails.house%></span></div>
                     <div><span><%=odr.addressDetails.city%></span></div>
                 </div>
-               
                 <div class="pdt-det box-wid">
                     <p class="text-dark text-uppercase mb-0">Status:</p>
                     <% if(odr.product_list.paymentstatus === 'pending' && odr.payment === 'Razorpay'){%>
@@ -105,7 +91,6 @@
                 <div class="d-block">
                     <div><a href="/getInvoice/<%= odr._id %>/<%= odr.productDetails._id %>"><button class="use-but ord-but bg-light text-center text-dark">Invoice</button></a></div>
                     <div><a href="/getOrderView/<%= odr._id %>/<%= odr.productDetails._id %>"><button class="use-but ord-but bg-light text-center text-dark">View Details</button></a></div>
-                    <!-- <div><a href="/review"><button type="submit" class="use-but ord-but bg-light text-center text-dark">Write a review</button></a></div> -->
                     <% if(odr.product_list.paymentstatus === 'pending' && odr.payment === 'Razorpay'){%>
                         <div><button type="button" class="use-but ord-but bg-warning text-dark" onclick="continueFailedPayment('<%= odr._id %>','<%= odr.productDetails._id %>')">Pay again</button></a></div> 
                     <%} else  if (odr.product_list.orderstatus === 'pending'){%>
@@ -113,41 +98,31 @@
                     <%} else if(odr.product_list.orderstatus === 'delivered'){%> 
                         <div><a href="/returnPage/<%= odr._id %>/<%= odr.productDetails._id %>"><button type="submit"  class="use-but ord-but bg-white text-dark">Return Product</button></a></div>  
                         <div><a href="/getReview/<%= odr.productDetails._id %>"><button type="submit" class="use-but ord-but bg-white text-dark">Write a Review</button></a></div> 
-                        
                         <%}%>
-                    
                 </div>   
             </div>
-            
-      
             <%})%>
-            
-        
 <!--  orders -->
-
-<div class="row" data-aos="fade-up">
-    <div class="col-md-12 text-center">
-      <div class="site-block-27">
-        <ul>         
-          <% for(let i = 1 ; i <= pages ; i++){%>
-            <% if( i== pageNum ) {%>
-             <li class="active"><a href="/getOrder/?page=<%= i %>"><span><%= i %></span></a></li>
-            <% } else { %>
-            <li><a href="/getOrder/?page=<%= i %>"><span><%= i %></span></a></li>
-            <% } %>
-          <% } %>         
-        </ul>
-      </div>
-    </div>
-  </div>
-</div>
-
- </div>
+            <div class="row" data-aos="fade-up">
+                <div class="col-md-12 text-center">
+                <div class="site-block-27">
+                    <ul>         
+                    <% for(let i = 1 ; i <= pages ; i++){%>
+                        <% if( i== pageNum ) {%>
+                        <li class="active"><a href="/getOrder/?page=<%= i %>"><span><%= i %></span></a></li>
+                        <% } else { %>
+                        <li><a href="/getOrder/?page=<%= i %>"><span><%= i %></span></a></li>
+                        <% } %>
+                    <% } %>         
+                    </ul>
+                </div>
+                </div>
+            </div>
+            </div>
+        </div>
  <!-- pagination -->
-<%}%>
-
-
-</div>
+    <%}%>
+    </div>
 </div>
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
@@ -166,13 +141,13 @@
                 if(res.success){
                 var options = {
                         
-                        "key": "" +res.key_id+ "", // Enter the Key ID generated from the Dashboard
-                        "amount": "" +res.amount+ "", // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
+                        "key": "" +res.key_id+ "", 
+                        "amount": "" +res.amount+ "", 
                         "currency": "INR",
                         "name": "TraditioShoppe",
                         "description": "Test Transaction",
                         "image": "/userasset/images/logo.png",
-                        "order_id": "" +res.order_id+ "", //This is a sample Order ID. Pass the `id` obtained in the response of Step 1
+                        "order_id": "" +res.order_id+ "", 
                         "handler": function(response){
                            verifyPayment(response,res.razorder,odrid,pdtid)
                         },
@@ -200,7 +175,6 @@
                         console.log('error:', resp.error.metadata.payment_id);
                         paymentFailed(resp)
                         location.href = `/getOrder`
-                        //location.href = `/checkout/${cartid}/${total}`
                     });             
                     
                     rzp1.open();

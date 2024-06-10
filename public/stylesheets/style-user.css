@@ -3,7 +3,8 @@
 body {
     background: rgba(1, 1, 1, 0);
     height: 100%;
-    box-sizing:border-box
+    box-sizing:border-box;
+    overflow-x: hidden;
   }
 
 .base_container{

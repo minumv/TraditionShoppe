@@ -11,10 +11,13 @@
             <div class="div-box div-height text-center border">
             
               <figure class="div-image">
-                <button id="wish-but" class="icon icon-heart" type="button" onclick="clickWishButton(event)">
-                  <!-- &#10084; -->
-                </button>
+                <span id="wish-but" class="icon icon-heart"></span>                 
                 <a href="/viewProduct/<%= pdt._id %>"><img src="../upload/<%= pdt.images[0]%>" alt="Image placeholder" class="img-fluid"></a>
+                <%if(pdt.totalrating > 0){%>
+                  <span class="review_box" style="top:60%"><p class="text-black"><%=pdt.totalrating%>&nbsp;<i class="fas fa-star" style="color:#00bfa5;"></i>&nbsp;|&nbsp;<%=pdt.numRatings%></p></span>
+                <%} else {%>
+                  <span class="review_box" style="top:60%"><p class="text-dark">0&nbsp;<i class="fas fa-star" style="color:#00bfa5;"></i>&nbsp;|&nbsp;0</p></span>
+                <%}%>
               </figure>
               <div class="div-text p-4">
                 <h3><a href="/viewProduct/<%= pdt._id %>"><%= pdt.product_name %></a></h3>

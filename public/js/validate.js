@@ -34,6 +34,22 @@
 		return true
 	}
 
+	function validatePdtName(){
+		const name = document.getElementById('name').value
+	
+		if(name.length === 0){
+			nameError.innerHTML = 'Name is required'
+			return false
+		}
+		if(!name.match(/^[a-zA-Z0-9][a-zA-Z0-9\s]*$/)){
+			nameError.innerHTML = 'Name should be valid'
+			return false
+		}
+		nameError.innerHTML = '<i class = "fas fa-check-circle"></i>'
+		return true
+	}
+
+
 	function validateHouse(){	
 		const house = document.getElementById('house').value
 	
@@ -201,7 +217,7 @@
 			priceError.innerHTML = 'Price is required'
 			return false
 		}
-		if(!price.match(/^(?!0)\d{1,4}(?:\.\d+)?$/)){
+		if(!price.match(/^(?!0)\d{1,5}(?:\.\d+)?$/)){
 			priceError.innerHTML = 'Price should be valid'
 			return false
 		}
@@ -317,7 +333,7 @@
 	
 
 	function validateProduct() {
-		const isNameValid = validateName();
+		const isNameValid = validatePdtName();
 		const isDescriptionValid = validateDescription();
 		const isPriceValid = validatePrice();
 		const isStockValid = validateStock();

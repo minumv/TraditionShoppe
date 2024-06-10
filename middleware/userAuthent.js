@@ -5,12 +5,12 @@ const isAuthenticated = async (req, res, next)=>{
         // User is logged in, proceed to the next middleware
         next();
       } else {
-        // User is not logged in, redirect to the login page with an error message
-      //  req.flash("errorMessage", "You are not authenticated to access this site!!");
-       // console.log("is authenticated?")
-       res.redirect("/signin/userLogin")
-        // res.redirect("/index");
-        
+        if (req.session.blocked) {
+          res.redirect('/signin/userLogin?error=You are blocked by the admin!');
+        } else {
+            res.redirect('/signin/userLogin');
+        }
+       
       }
       
      

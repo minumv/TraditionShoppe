@@ -4,6 +4,7 @@ const Product = require('../model/product')
 const Category = require('../model/category')
 const Coupon = require('../model/coupon')
 const Offer = require('../model/offer')
+const Address = require('../model/address')
 const Order = require('../model/order')
 const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
 
@@ -293,7 +294,7 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
     //load customer page
     const loadCustomer = async (req,res)=>{
         try{
-            const userQuery =  User.find({role:'user',status:{$ne:'deleted'}})
+            const userQuery =  User.find({role:'user',status:{$ne:'deleted'}}).sort({'created':-1})
             await userQuery.exec()
             .then(users=>{
                 res.render('admin/customers',{
@@ -316,18 +317,25 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
         try{        
 
             let id = req.params.id
-            User.findById(id)
-            .then(users=>{
+            const users = await User.findById(id)
+            let address = 'Not Availabe!'
+            console.log(users)
+            if(users.address.length>0){
+                address = await Address.findById(users.address[0])
+                console.log(address)
+            }
+            console.log(address)
                 res.render('admin/customerUpdate',{
                     title:"Admin Panel | TraditionShoppe",
                     page:"Customer Update",
-                    users:users,
+                    users,
+                    address,
                     page:'View Customer',
                     admin : req.session.admin,
                     errorMessage: req.flash("errorMessage"), 
                     successMessage: req.flash("successMessage") 
                 })
-            }) 
+             
         } catch (err){
             console.log(err.message);
         }
@@ -1023,8 +1031,7 @@ const { EventEmitterAsyncResource } = require("nodemailer/lib/xoauth2")
         storeTodate,
         storeFromdate,
         loadSalesReport,
-        getOrders,
-        // loadSettings,
+        getOrders,      
         logout
         
     }

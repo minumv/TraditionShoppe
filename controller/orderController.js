@@ -154,13 +154,13 @@ const mongoose = require('mongoose');
                 },
                 {
                     $unwind: {
-                        path: "$addressDetails",
+                        path: "$UserDetails",
                         preserveNullAndEmptyArrays: true
                     }
                 }                 
             ])
              
-                // console.log("orders",orders)
+            console.log("orders",orders)
            
            
             res.render('admin/orderDetails',{

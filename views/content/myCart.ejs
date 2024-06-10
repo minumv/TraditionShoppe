@@ -45,8 +45,8 @@
 
                                     </div>
                                     <div class="cart-price">
-                                        <p class="disc"><span>₹</span><span id="pdt_price<%=index%>"><%=pdt.discountedsalePrice%></span><span>.00</span></p>
-                                        <p class="mrp"><span>₹</span><span id="pdt_mrp<%=index%>"><%=pdt.price_unit%></span><span>.00</span></p>
+                                        <p class="disc"><span>₹</span><span id="pdt_price<%=index%>"><%=pdt.discountedsalePrice.toFixed(2)%></span></p>
+                                        <p class="mrp"><span>₹</span><span id="pdt_mrp<%=index%>"><%=pdt.price_unit.toFixed(2)%></span></p>
                                     </div>
                                 </div>
                             </li>
@@ -71,10 +71,9 @@
                                 }, 4000); 
                             </script>
                         <% } %>
-                           
                         <li>
                             <div class="cart-footer">
-                                <p>Subtotal (<span id="subcount"><%=qtyCount%></span> items):<span>₹</span><span id="subtotal"><%=amount%></span><span>.00</span></p>
+                                <p>Subtotal (<span id="subcount"><%=qtyCount%></span> items):<span>₹</span><span id="subtotal"><%=amount.toFixed(2)%></span></p>
                             </div>
                             
                         </li>
@@ -84,8 +83,8 @@
             <div class="">
                 <div class="col-md-12 mb-0 ">
                     <div class="cart-proceed">
-                        <p class="head">TraditionShoppe Subtotal(<span id="totalcount"><%=qtyCount%></span><br> items):<span>₹</span><span id="amttotal"><%=amount%></span><span>.00</span></p>
-                        <p class="sub">Total Savings : <span>₹</span><span id="savings"><%=savings%></span><span>.00</span></p>
+                        <p class="head">TraditionShoppe Subtotal(<span id="totalcount"><%=qtyCount%></span><br> items):<span>₹</span><span id="amttotal"><%=amount.toFixed(2)%></span></p>
+                        <p class="sub">Total Savings : <span>₹</span><span id="savings"><%=savings.toFixed(2)%></span></p>
                         <a href="/checkout/<%=user_cart._id%>/<%=amount%>"><button class="use-but btn text-capitalize">Proceed to Buy Item</button></a>
                         <div class="d-flex">
                             <div class="line"></div>
@@ -157,10 +156,11 @@
                 document.getElementById('qCount').innerHTML = data.qtyCount
                 document.getElementById('subcount').innerHTML = data.qtyCount
                 document.getElementById('totalcount').innerHTML = data.qtyCount
-                document.getElementById('subtotal').innerHTML = data.totalAmount
-                document.getElementById('amttotal').innerHTML = data.totalAmount
-                document.getElementById(`pdt_price${index}`).innerHTML = data.pdtPrice
-                document.getElementById('savings').innerHTML = newSavings
+                document.getElementById('subtotal').innerHTML = data.totalAmount.toFixed(2)
+                document.getElementById('amttotal').innerHTML = data.totalAmount.toFixed(2)
+                document.getElementById(`pdt_price${index}`).innerHTML = data.pdtPrice.toFixed(2)
+                document.getElementById('savings').innerHTML = newSavings.toFixed(2)
+                amount = data.totalAmount.toFixed(2)
                 // location.href='/cart'
             } 
             else {
@@ -188,10 +188,11 @@
                 document.getElementById('qCount').innerHTML = data.qtyCount
                 document.getElementById('subcount').innerHTML = data.qtyCount
                 document.getElementById('totalcount').innerHTML = data.qtyCount
-                document.getElementById('subtotal').innerHTML = data.totalAmount
-                document.getElementById('amttotal').innerHTML = data.totalAmount
-                document.getElementById(`pdt_price${index}`).innerHTML = data.pdtPrice
-                document.getElementById('savings').innerHTML = newSavings
+                document.getElementById('subtotal').innerHTML = data.totalAmount.toFixed(2)
+                document.getElementById('amttotal').innerHTML = data.totalAmount.toFixed(2)
+                document.getElementById(`pdt_price${index}`).innerHTML = data.pdtPrice.toFixed(2)
+                document.getElementById('savings').innerHTML = newSavings.toFixed(2)
+                amount = data.totalAmount.toFixed(2)
 
                 // location.href='/cart'
             } 

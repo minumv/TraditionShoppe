@@ -18,14 +18,14 @@
 						<div class="input-group-prepend">
 							<span class="input-group-text"><i class="fas fa-user"></i></span>
 						</div>
-						<input id="email" type="text" name="email" value="afreen@gmail.com" class="form-control" placeholder="username" required>
+						<input id="email" type="text" name="email"  class="form-control" placeholder="username" required>
 						
 					</div>
 					<div class="input-group form-group">
 						<div class="input-group-prepend">
 							<span class="input-group-text"><i class="fas fa-key"></i></span>
 						</div>
-						<input type="password" id="password" name="password" value="afreen123" class="form-control" placeholder="password" required >
+						<input type="password" id="password" name="password"  class="form-control" placeholder="password" required >
 					</div>
 					<div class="row align-items-center remember">
 						<input  id="rememberMe" type="checkbox">Remember Me
@@ -71,7 +71,25 @@
 	</div>
 	
 </div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
+
+document.addEventListener("DOMContentLoaded", function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const errorMessage = urlParams.get('error');
+        if (errorMessage) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: errorMessage,
+                onClose: () => {
+                    window.location.href = '/signin/userLogin';
+                }
+            });
+        }
+    });
+
+
 	 function saveCredentials() {
             if (document.getElementById('rememberMe').checked) {
                 localStorage.setItem('email', document.getElementById('email').value);

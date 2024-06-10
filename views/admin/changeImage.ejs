@@ -5,7 +5,7 @@
             <form id="img_form" action="" method="post" enctype="multipart/form-data">
             <input type="text" name="pdtid" id="" value="<%=pdtid%>" hidden>
             <input type="text" name="image" id="" value="<%=images?images:'null'%>" hidden>
-
+                <%console.log("img",images)%>
                 <div id="imgdiv" style="visibility:hidden;">
                     <img id="inputImg" src="" alt="" style="display:block;max-width: 100%;">
                 </div>
@@ -60,7 +60,7 @@ function addImageToCollection(blob){
    console.log('changing image')
     let formData = new FormData(form)  
 
-    formData.append('croppedImage', blob);  
+    formData.append('croppedImage', blob,`cropped_image_${Date.now()}.png`);  
 
     $.ajax('/uploadnewImage', {
     method: 'POST',

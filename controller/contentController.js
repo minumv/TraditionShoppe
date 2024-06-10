@@ -991,13 +991,13 @@ const loadCheckout = async(req,res)=>{
         
         const cartDet = await Cart.find({_id:req.params.cartid}).exec()
         const userAddress = await Address.find({user_id:userid}).exec()
+        console.log(("cart total",cartDet[0].total_amount))
         let amount = req.params.amount
         let deliveryCharge = 0
         if (amount < 1500){
             deliveryCharge = 80
             amount = amount - 80
         }
-
         await getQtyCount(req,res)
         await getListCount(req,res)
 
@@ -1273,7 +1273,7 @@ const couponApply = async (req,res)=>{
                 req.session.couponDiscountTotal = discountedTotal 
                 req.session.coupondiscount = couponDiscount 
                 req.session.couponid = couponid 
-                req.session.productCoupon = productCoupon
+                req.session.productCoupon = productCoupon.toFixed(2)
 
                 console.log("coupon applied amount : " + discountedTotal);      
                 console.log("coupon applied successfull..");
@@ -1475,10 +1475,10 @@ const loadPaymentSuccess = async(req,res)=>{
     try{
             console.log("session :",req.session.orderData)    
             const orderData = req.session.orderData
-            console.log("orderdata :",orderData)
+            console.log("orderdata :",orderData._id)
             const order = await Order.aggregate([
                 {
-                    $match: { _id:orderData._id }
+                    $match: { _id : new mongoose.Types.ObjectId(orderData._id) }
                 }, 
                 {
                     $unwind: "$product_list"   

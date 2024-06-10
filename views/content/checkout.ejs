@@ -252,26 +252,29 @@
                         <p class="bottom-line p-head text-dark">Order Summary</p>
                         <div class="d-flex justify-content-between">
                             <p>Items:</p>                           
-                            <p>₹<%=cart.total_amount%>.00</p>
+                            <p>₹<%=cart.total_amount.toFixed(2)%></p>
                         </div>
                         <div class="d-flex justify-content-between">
                             <p>Delivery Charge:</p>
-                            <p>₹<%=deliveryCharge%>.00</p>
+                            <p>₹<%=deliveryCharge.toFixed(2)%></p>
                         </div>                         
                         <% if(coupondiscount !== 0){%> 
                         <div class="d-flex justify-content-between">
                             <p>Coupon Amount:</p>
-                            <p>₹<%=coupondiscount%>.00</p>
+                            <p>₹<%=parseFloat(coupondiscount).toFixed(2)%></p>
                         </div>                          
                         <%}%>
                         <div class="d-flex justify-content-between bottom-line">
                             <p>Total:</p>
-                            <p> ₹<%=cart.total_amount%>.00</p>
+                            <p> ₹<%=cart.total_amount.toFixed(2)%></p>
                         </div>
                         <div class="d-flex justify-content-between">
                             <p class="p-head">Order Total:</p>
-                            <p class="p-head"> ₹<%=amount%>.00</p>
-                           
+                            <% if(coupondiscount !== 0){%> 
+                            <p class="p-head"> ₹<%=parseFloat(amount).toFixed(2)%></p>
+                            <%} else {%>
+                                <p class="p-head"> ₹<%=cart.total_amount.toFixed(2)%></p>
+                            <%}%>
                         </div>
                     </div>
                       

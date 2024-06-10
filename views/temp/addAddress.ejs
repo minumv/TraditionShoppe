@@ -1,5 +1,28 @@
 <%- include('../layout/authheader') %>
 //////////////////////////
+<% if (errorMessage.length > 0) { %>                
+    <div id="errorMessageDiv" class="alert alert-danger mt-3" role="alert"> <%- errorMessage %>  </div>                
+                     <script>                                
+                       setTimeout(function() {
+                          var errorMessageDiv = document.getElementById("errorMessageDiv");
+                          if (errorMessageDiv) {
+                              errorMessageDiv.style.display = "none";
+                          }
+                      }, 4000); 
+                  </script>
+  <% } %>
+  <% if (successMessage.length > 0) { %>                
+    <div id="successMessageDiv" class="alert alert-success" role="alert"> <%- successMessage %>  </div>                    
+    <script>                                
+      setTimeout(function() {
+         var successMessageDiv = document.getElementById("successMessageDiv");
+         if (successMessageDiv) {
+          successMessageDiv.style.display = "none";
+         }
+     }, 4000); 
+ </script>
+    <% } %>
+/////////////////
 function handleFileInputChange(event) {
     
     // const files = event.target.files;

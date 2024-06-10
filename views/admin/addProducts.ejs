@@ -73,7 +73,7 @@ textarea:not(:placeholder-shown) ~ .floating-label {
                    
                     <div class="card-body">             
                       <div class="input-group input-group-outline mb-3">
-                         <input type="text" id="name" class="form-control" name="name" placeholder=""  onchange="validateName()" >
+                         <input type="text" id="name" class="form-control" name="name" placeholder=""  onchange="validatePdtName()" >
                          <label for="name" class="floating-label">Name</label>
                          <span id="name-error" class="error"></span>
                         </div>
@@ -267,7 +267,7 @@ textarea:not(:placeholder-shown) ~ .floating-label {
     // Iterate through each file
    
     for (let i = 0; i <= files.length; i++) {
-        const reader = new FileReader(); // Create a new FileReader instance
+        const reader = new FileReader(); 
 
         // Define a callback function to handle the FileReader's onload event
         reader.onload = function(event) {
@@ -301,21 +301,20 @@ textarea:not(:placeholder-shown) ~ .floating-label {
     const imageElement = document.getElementById(imageId);
 
     // Ensure the image is loaded before getting dimensions
-    imageElement.onload = () => {
+  //  imageElement.onload = () => {
     // Get original dimensions of the image
-    const originalWidth = imageElement.naturalWidth;
-    const originalHeight = imageElement.naturalHeight;
+    // const originalWidth = imageElement.naturalWidth;
+    // const originalHeight = imageElement.naturalHeight;
 
-    console.log(`Original Dimensions for ${imageElement}:`, originalWidth, originalHeight);
+    // console.log(`Original Dimensions for ${imageElement}:`, originalWidth, originalHeight);
 
-    let cropper = new Cropper(imageElement, {
-        // Add Cropper.js options here
+    let cropper = new Cropper(imageElement, {        
         aspectRatio:1/1,
         ready: function () {
                 // Save original dimensions in cropper instance
-                cropper.originalDimensions = { originalWidth, originalHeight };
-                console.log("dimensiion:",cropper.originalDimensions)
-                console.log(`Cropper ready for ${imageId}:`, cropper);
+                // cropper.originalDimensions = { originalWidth, originalHeight };
+                // console.log("dimensiion:",cropper.originalDimensions)
+                // console.log(`Cropper ready for ${imageId}:`, cropper);
             }
     });
     console.log(`cropper${imageId} :`,cropper);
@@ -325,63 +324,67 @@ textarea:not(:placeholder-shown) ~ .floating-label {
     croppers[inputIndex - 1] = cropper;
     console.log('croppers :',inputIndex ,":",croppers)
   }
-  if (imageElement.complete) {
-      console.log("image",imageElement)
-        imageElement.onload();        
-    }
-  }
+  // if (imageElement.complete) {
+  //     console.log("image",imageElement)
+  //       imageElement.onload();        
+  //   }
+  // }
 
   
 
   let form = document.getElementById('profile_form')
-  let formData = new FormData(form);
-
-    // Display form data in console for testing
+  let bloabArray = []
    
   form.addEventListener('submit',function(event){
-    event.preventDefault()
-   
-  //  for (let i = 0; i < croppers.length; i++) {
+    event.preventDefault() 
+    let formData = new FormData(form); 
+    //get canvas of each images, croppers[] has the cropper instance for each images
     croppers.forEach((cropper, index) => {
       console.log("getcanvas",cropper)
-      if (!cropper || !cropper.originalDimensions) {
-            console.error(`Original dimensions not set for cropper ${index}`);
-            return;
-        }
-      const { originalWidth, originalHeight } = cropper.originalDimensions;
+      // if (!cropper || !cropper.originalDimensions) {
+      //       console.error(`Original dimensions not set for cropper ${index}`);
+      //       return;
+      //   }
+      // const { originalWidth, originalHeight } = cropper.originalDimensions;
         
         cropper.getCroppedCanvas({
-          width:  160,
-          height: 90,
+          minWidth: 256,
+          minHeight: 256,
+          maxWidth: 4096,
+          maxHeight: 4096,
       }).toBlob(function(blob){
-          console.log(`Cropped image`, blob);
-          if( index === 2)
-          appendCroppedImageToForm(blob)
+        //  console.log(`Cropped image`, blob);
+          formData.append('croppedImage',blob,`cropped_image_${Date.now()}.png`); 
+       //   bloabArray.push(blob)
+        if( index === 2)
+          appendCroppedImageToForm(formData)
       })
     });
   })
 
 
-  function  appendCroppedImageToForm(blob){  
+  function  appendCroppedImageToForm(formData){  
     
-    let form = document.getElementById('profile_form');
+   // let form = document.getElementById('profile_form');
     console.log("form: ",form)
-    let formData = new FormData(form)
+   // let formData = new FormData(form)
     for (var pair of formData.entries()) {
         console.log(pair[0] + ': ' + pair[1]);
         
     }
-    console.log("blob :",blob)
-    formData.append('croppedImage',blob,`cropped_image_${Date.now()}.png`);
+    //console.log("blob :",bloabArray)
+  //  formData.append('croppedImage',bloabArray,`cropped_image_${Date.now()}.png`); /*`cropped_image_${Date.now()}.png`*/
     console.log("crr",formData.croppedImage)
+    
     console.log("formdata: ",formData)
-    console.log('Form data length:', formData.size); // Check the size property
-console.log('Form data keys:', formData.keys()); // Log the keys
-for (const key of formData.keys()) {
-    console.log(key + ':', formData.get(key));
-}
-console.log('Form data:', formData);
-    console.log('Blob:', blob);
+    console.log('Form data length:', formData.size); 
+    console.log('Form data keys:', formData.keys()); 
+    
+    for (const key of formData.keys()) {
+      console.log(key + ':', formData.get(key));
+    }
+    console.log('Form data:', formData);
+    //console.log('Blob:', blob);
 
 
 $.ajax('/uploadPdtImage', {

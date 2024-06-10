@@ -12,9 +12,6 @@
                 <div>
                     <img width="450" height="300" src="/userasset/images/wallet-empty.png" />
                 </div>
-                <!-- <div class="d-flex justify-content-center align-items-center">
-                    <a href="/allproducts" class="use-but ord-but text-center text-white" style="background-color:#4F0341 ;">Go to Shopping</a>
-                </div> -->
             </div>
         </div>
 
@@ -22,55 +19,44 @@
     
             <%wallet.forEach((wlt)=>{%>   
             <div class="row ord-box">
-                
                     <div class="wallet-align wal-name" style="width:400px;">
-                   
                         <%if(wlt.order){%>
-                            <p class="text-uppercase mb-0">ORDR_<%=wlt.order%></p>
+                            <p class="text-uppercase font-weight-light mb-0">ORDR_<%=wlt.order%></p>
                         <%} else {%>
-                            <p class="text-uppercase mb-0">REFERAL_CODE_USED</p>
+                            <p class="text-uppercase font-weight-light mb-0">REFERAL_CODE_USED</p>
                         <%}%>
-                   
                     </div>&nbsp;&nbsp;
-
                     <div class="wallet-align  wal-name" style="width:150px;">
-                        <p class="text-uppercase mb-0">₹<%=wlt.amount%></p>
+                        <p class="text-uppercase font-weight-light mb-0">₹<%=wlt.amount%></p>
                     </div>&nbsp;&nbsp;
                     <div class="wallet-align wal-name" style="width:200px;">
-                        <p class="text-dark text-uppercase mb-0"><%= wlt.transactiontype%></p>
+                        <p class="text-dark font-weight-light text-uppercase mb-0"><%= wlt.transactiontype%></p>
                     </div>
-
                 <%let formattedDate = new Date(wlt.created).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })%>
-                    
                     <div class="wallet-align wal-name">              
-                        <p class="text-dark text-uppercase mb-0"><%= formattedDate%></p>
+                        <p class="text-dark font-weight-light text-uppercase mb-0"><%= formattedDate%></p>
                     </div>
-                   
-                
             </div>    
            <%})%>    
-
-    <div class="row" data-aos="fade-up">
-        <div class="col-md-12 text-center">
-            <div class="site-block-27">
-                <ul>         
-                    <% for(let i = 1 ; i <= pages ; i++){%>
-                    <% if( i== pageNum ) {%>
-                        <li class="active"><a href="/getOrder/?page=<%= i %>"><span><%= i %></span></a></li>
-                    <% } else { %>
-                    <li><a href="/getOrder/?page=<%= i %>"><span><%= i %></span></a></li>
-                    <% } %>
-                    <% } %>         
-                </ul>
+            <!-- pagination -->
+            <div class="row" data-aos="fade-up">
+                <div class="col-md-12 text-center">
+                    <div class="site-block-27">
+                        <ul>         
+                            <% for(let i = 1 ; i <= pages ; i++){%>
+                            <% if( i== pageNum ) {%>
+                                <li class="active"><a href="/getOrder/?page=<%= i %>"><span><%= i %></span></a></li>
+                            <% } else { %>
+                            <li><a href="/getOrder/?page=<%= i %>"><span><%= i %></span></a></li>
+                            <% } %>
+                            <% } %>         
+                        </ul>
+                    </div>
+                </div>
             </div>
+    <%}%>
         </div>
     </div>
-
-    <%}%>
-</div>
-</div>
-
-
   </div>
 
   <%- include('../layout/userFooter') %>

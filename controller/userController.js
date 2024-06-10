@@ -325,21 +325,18 @@ const loadOtp = async (req,res)=>{
           
         let {name,email,phone,password,confirmpassword,refferal} = req.body
         console.log(name,email,phone,password,confirmpassword,refferal);
-        
-       
-        User.find({email})
-        .then((result)=>{
-            if(result.length){                
-                console.log("user exist error!")
+        const userExist = await User.find({email})
+        // .then((result)=>{
+            if(userExist.lenght > 0){                
+               console.log("user exist error!",userExist)
+               console.log("hggfc");
                 req.flash("errorMessage", "User with the provided email already exists!!");    
-                res.json({success:false})
-               
-            } else {               
-                if(password !== confirmpassword){
-                    console.log("Password mismatch error!!")
-                    req.flash("errorMessage", "Confirm password should match with password  !!");    
-                    res.json({success:false})
-                } else {                
+                res.json({success:false}) 
+
+                // console.log("User exists error!");
+                // return res.json({ success: false, message: "User with the provided email already exists!!" });              
+            } else {             
+                             
                 bcrypt.hash(password,10)
                 .then((hashedPassword)=>{
                     console.log("set values to add into database..")
@@ -397,15 +394,15 @@ const loadOtp = async (req,res)=>{
                     req.flash("errorMessage", "An error occured while hasing password !!");    
                     res.json({success:false })                    
                 })
-            }
+            
         }
 
-        })
-        .catch((err)=>{
-            console.log(err);
-            req.flash("errorMessage", "An error occured while checking for existing user !!");    
-            res.json({success:false })               
-        })
+        // })
+        // .catch((err)=>{
+        //     console.log(err);
+        //     req.flash("errorMessage", "An error occured while checking for existing user !!");    
+        //     res.json({success:false })               
+        // })
         
     } catch(err){
         console.log(err);
@@ -475,7 +472,7 @@ const sendOtpEmail = async({_id,email},res)=>{
         await newOTP.save();
         console.log("otp generation :",newOTP);
         await transporter.sendMail(mailOptions)
-        res.render()
+       // res.render()
              
     }
     catch(err){
@@ -917,7 +914,7 @@ const loadOrder = async (req,res)=>{
                 }
             },
             {
-                $sort: { order_date : -1 }
+                $sort : { 'created' : -1 }
             },
             {
                 $skip: ( pageNum - 1 ) * perPage
@@ -1535,7 +1532,7 @@ const loadWallet = async (req,res)=>{
                
             },
             {
-                $sort: { created : -1 }
+                $sort: { 'created' : -1 }
             },            
             {
                 $skip: ( pageNum - 1 ) * perPage

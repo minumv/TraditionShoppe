@@ -35,21 +35,16 @@
                             <h6 class="mb-0 text-sm"><%= index+1 %></h6>                          
                           </div>
                         </div>
-                      </td>
-                      
-                                    
-                            <td>
+                    </td>
+                        <td>
                             <p class="text-xs font-weight-bold mb-0" style="width:100px"> <%= row.userDetails?.name || 'N/A' %> </p>
-                            
-                            </td>  
-                            <td>
-                                <p class="text-xs font-weight-bold mb-0" style="width:200px; overflow:hidden ;"> <%= row.productDetails?.product_name || 'N/A' %> </p>
-                            </td>                        
+                        </td>  
+                        <td>
+                            <p class="text-xs font-weight-bold mb-0" style="width:200px; overflow:hidden ;"> <%= row.productDetails?.product_name || 'N/A' %> </p>
+                        </td>                        
                             <td>
                                 <p class="text-xs font-weight-bold mb-0" style="width:60px"> <%= row.product_list.quantity %> </p>
-                            </td>                        
-                                                      
-                    
+                            </td>                    
                             <td class="align-middle  text-sm">                
                                 <p class="text-xs font-weight-bold mb-0" style="width:150px; overflow:hidden ;"><%= row.addressDetails.house %>,<%= row.addressDetails.city %>,<%= row.addressDetails.state %></p>
                             </td>

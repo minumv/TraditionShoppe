@@ -114,13 +114,45 @@
   <!-- <script src=""></script> -->
 
   <script>
-    new DataTable('#example', {
-    layout: {
+//     new DataTable('#example', {
+//     layout: {
+//         topStart: {
+//             buttons: ['copy', 'csv', 'excel', 'pdf', 'print']
+//         }
+//     }
+// });
+
+$(document).ready(function() {
+      $('#example').DataTable({
+        layout: {
         topStart: {
             buttons: ['copy', 'csv', 'excel', 'pdf', 'print']
         }
-    }
-});
+    },
+        drawCallback: function(settings) {
+          var api = this.api();
+          var totalQuantity = 0;
+          var totalStock = 0;
+          var totalPriceUnit = 0;
+          var totalAmount = 0;
+          var totalDiscount = 0;
+
+          api.rows({ page: 'current' }).nodes().each(function(row, index) {
+            totalQuantity += parseFloat($(row).find('td').eq(4).text()) || 0;
+            totalStock += parseFloat($(row).find('td').eq(5).text()) || 0;
+            totalPriceUnit += parseFloat($(row).find('td').eq(6).text()) || 0;
+            totalAmount += parseFloat($(row).find('td').eq(7).text()) || 0;
+            totalDiscount += parseFloat($(row).find('td').eq(8).text()) || 0;
+          });
+
+          $('#totalQuantity').html(totalQuantity);
+          $('#totalStock').html(totalStock);
+          $('#totalPriceUnit').html(totalPriceUnit.toFixed(2));
+          $('#totalAmount').html(totalAmount.toFixed(2));
+          $('#totalDiscount').html(totalDiscount.toFixed(2));
+        }
+      });
+    });
 </script>
 
 <script>

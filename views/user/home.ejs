@@ -64,7 +64,13 @@
               <a href="/viewProduct/<%= row._id %>">
                 <div class="block-4 text-center">
                   <figure class="block-4-image ">
-                    <img src="../upload/<%= row.images[0]%>" alt="Image placeholder" class="img-fluid" style="height:346px">
+                    <span id="wish-but" class="icon icon-heart" ></span>
+                    <img src="../upload/<%= row.images[0]%>" alt="Image placeholder" class="img-fluid" style="height:346px">                    
+                    <%if(row.totalrating > 0){%>
+                      <span class="review_box" style="top:60%"><p class="text-black"><%=row.totalrating%>&nbsp;<i class="fas fa-star" style="color:#00bfa5;"></i>&nbsp;|&nbsp;<%=row.numRatings%></p></span>
+                    <%} else {%>
+                      <span class="review_box" style="top:60%"><p class="text-dark">0&nbsp;<i class="fas fa-star" style="color:#00bfa5;"></i>&nbsp;|&nbsp;0</p></span>
+                    <%}%>
                   </figure>
                   <div class="block-4-text-1 p-4">
                     <h3><a class="text-dark font-weight-light text-capitalize justify-content-around" href="#"><%= row.product_name %></a></h3>
@@ -126,7 +132,7 @@
       </div>
     </div>
     <div class="container">
-      <div class="row">
+      <div class="row mb-4">
         <div class="col-sm-6 col-md-6 col-lg-4 mb-4 mb-lg-0" data-aos="fade" data-aos-delay="">
           <a class="block-2-item" href="#">
             <figure class="image">
@@ -141,7 +147,7 @@
         <div class="col-sm-6 col-md-6 col-lg-4 mb-5 mb-lg-0" data-aos="fade" data-aos-delay="100">
           <a class="block-2-item" href="#">
             <figure class="image">
-              <img src="../upload/miniature_keychain_1.png" alt="" class="img-fluid">
+              <img src="/upload/<%=loadPdt.pdtGifts .images[0]%>" alt="" class="img-fluid">
             </figure>
             <div class="text">
               <span class="text-uppercase">View</span>
@@ -152,7 +158,7 @@
         <div class="col-sm-6 col-md-6 col-lg-4 mb-5 mb-lg-0" data-aos="fade" data-aos-delay="200">
           <a class="block-2-item" href="#">
             <figure class="image">
-              <img src="../upload/handbag4_1.png" alt="" class="img-fluid">
+              <img src="/upload/<%=loadPdt.pdtApparel .images[0]%>" alt="" class="img-fluid">
             </figure>
             <div class="text">
               <span class="text-uppercase">View</span>
@@ -167,18 +173,18 @@
         <div class="col-sm-6 col-md-6 col-lg-4 mb-4 mb-lg-0" data-aos="fade" data-aos-delay="">
           <a class="block-2-item" href="#">
             <figure class="image">
-              <img src="../upload/slippers.png" alt="" class="img-fluid">
+              <img src="/upload/<%=loadPdt.pdtWest .images[0]%>" alt="" class="img-fluid">
             </figure>
             <div class="text">
               <span class="text-uppercase">View</span>
-              <h3>Eco-Friendly Collection</h3>
+              <h3>Western Collection</h3>
             </div>
           </a>
         </div>
         <div class="col-sm-6 col-md-6 col-lg-4 mb-5 mb-lg-0" data-aos="fade" data-aos-delay="100">
           <a class="block-2-item" href="#">
             <figure class="image">
-              <img src="../upload/necklace-1.png" alt="" class="img-fluid">
+              <img src="/upload/<%=loadPdt.pdtJewllry .images[0]%>" alt="" class="img-fluid">
             </figure>
             <div class="text">
               <span class="text-uppercase">View</span>
@@ -189,7 +195,7 @@
         <div class="col-sm-6 col-md-6 col-lg-4 mb-5 mb-lg-0" data-aos="fade" data-aos-delay="200">
           <a class="block-2-item" href="#">
             <figure class="image">
-              <img src="../upload/kathakali_bheema_1.png" alt="" class="img-fluid">
+              <img src="/upload/<%=loadPdt.pdtFig .images[0]%>" alt="" class="img-fluid">
             </figure>
             <div class="text">
               <span class="text-uppercase">View</span>

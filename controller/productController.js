@@ -161,8 +161,8 @@ const getProducts = async(req,res)=>{
                 }
             },
             {
-                $sort : {'created': -1}
-            }            
+                $sort : { 'created' : -1 }
+            }           
         ])
         return products
     }
@@ -255,8 +255,9 @@ const submitProducts = async (req,res)=>{
             console.log('One or more documents not found in the database.');          
         }
         let imgArray = req.uploadedFiles
-        imgArray.pop()
-        console.log(imgArray)
+       // imgArray.pop()
+       imgArray.splice(0,3)
+        //console.log(imgArray)
 
         const product = new Products({
 
@@ -405,13 +406,18 @@ const addimageTopdt = async(req,res)=>{
         const pdtid = req.body.pdtid
         const image = req.body.image
         let imgArray=req.uploadedFiles
-        imgArray.pop()
+        console.log('img req:',image)
+        console.log("imgarray :",imgArray)
+        imgArray.splice(0,1)
         console.log("array :",imgArray)
-        if(image!==null){
+        if(req.body.image !== null){
+            console.log("images loaded")
             await Products.updateOne({_id:pdtid },
                 { $pull: { images: image }}) 
                 console.log('deleted previous')
-        }
+            }          
+        const pdtDisp = await Products.findById(pdtid)
+        console.log("imge display:",pdtDisp)
         const product = await Products.updateOne({_id:pdtid },
             { $push: { images: imgArray[0]}}) 
 
@@ -492,7 +498,8 @@ const  deleteProduct = async (req,res)=>{
     const addimageBanner = async (req,res)=>{
         try{
             let imgArray=req.uploadedFiles
-            imgArray.pop()
+            console.log("array :",imgArray)
+            imgArray.splice(0,1)
             console.log("array :",imgArray)
             const banner = await Banner.findOne().exec()
             console.log("banner",banner)
@@ -501,10 +508,10 @@ const  deleteProduct = async (req,res)=>{
                 if (banner.images && banner.images.length > 0) {
                     bannerAdd = await Banner.updateOne({}, { $push: { images: imgArray[0] } });
                 } else {
-                    bannerAdd = await Banner.updateOne({}, { images: imgArray });
+                    bannerAdd = await Banner.updateOne({}, { images: imgArray[0]});
                 }
             } else {
-                bannerAdd = await Banner.create({ images: imgArray });
+                bannerAdd = await Banner.create({ images: imgArray[0]});
             }
 
             if(bannerAdd){

@@ -18,17 +18,10 @@
     <% list.forEach((lst)=>{ %>
     <% products.forEach((pdt, index) => { %>
       <% if(lst.product_list.includes(pdt._id.toString())) { %>
-        
-
     <div class="mb-4 ms-5 " data-aos="fade-up" style="margin-left:20px;padding:20px;">
-      <!-- <a href="/viewProduct/<%= pdt._id %>"> -->
         <div class="block-4 text-center border" style="width:250px;height:450px;">     
-
-
-
           <figure class="block-4-image" style="width:300px;height:250px;">
             <button class="wish-close" class="icon icon-heart rounded-circle " type="button" onclick="removeFromList('<%= pdt._id %>')">X
-              <!-- &#10084; -->
             </button>       
             <a href="/viewProduct/<%= pdt._id %>"><img src="../upload/<%= pdt.images[0]%>" alt="Image placeholder" class="img-fluid" style="width:300px;height:250px;"></a>
           </figure>
@@ -36,29 +29,39 @@
             <h3><a href="/viewProduct/<%= pdt._id %>"><%= pdt.product_name %></a></h3>
             <div class="d-flex justify-content-around mt-2 ">
               <p class=" mb-0 text-danger font-weight-light"><del>RS.<%= pdt.price_unit %></del></p>
-            
               <p class="text-black font-weight-light">Rs.<%=pdt.discountedsalePrice %></p>
             </div>
             <div class="">
               <button class="use-but ord-but text-center bg-light" onclick="addingtoCart('<%= pdt._id %>','<%=pdt.discountedsalePrice %>')" type="button" style="color:  #4F0341;" >Add to cart</button></div>
-              <!-- <button  class="use-but ord-but text-center bg-light" ype="button" onclick="removeFromList('<%= pdt._id %>')" style="background-color:  #4F0341;" >Remove</button>   -->
             </div>
         </div>
-      <!-- </a> -->
     </div>
     <%}%>
     <%})%>
     <%})%>
-
   </div>
-
   <% if (errorMessage.length > 0) { %>                
-    <div class="alert alert-danger" role="alert"> <%- errorMessage %>  </div>                  
+    <div id="errorMessageDiv" class="alert alert-danger mt-3" role="alert"> <%- errorMessage %>  </div>                
+                     <script>                                
+                       setTimeout(function() {
+                          var errorMessageDiv = document.getElementById("errorMessageDiv");
+                          if (errorMessageDiv) {
+                              errorMessageDiv.style.display = "none";
+                          }
+                      }, 4000); 
+                  </script>
   <% } %>
   <% if (successMessage.length > 0) { %>                
-    <div class="alert alert-success" role="alert"> <%- successMessage %>  </div>                    
-  <% } %>
-
+    <div id="successMessageDiv" class="alert alert-success" role="alert"> <%- successMessage %>  </div>                    
+    <script>                                
+      setTimeout(function() {
+         var successMessageDiv = document.getElementById("successMessageDiv");
+         if (successMessageDiv) {
+          successMessageDiv.style.display = "none";
+         }
+     }, 4000); 
+ </script>
+    <% } %>
 <div class="row" data-aos="fade-up">
 <div class="col-md-12 text-center">
 <div class="site-block-27">

@@ -50,41 +50,23 @@
             <table class="table align-items-center mb-0">
                 <tbody>
                      <tr>
-                        <td>
-                             <div class="d-flex px-2 py-1">
-                                <div>
-                                    <img src="<%= `/upload/${odr.productDetails.images[0]}` %>" class="pdt-img rounded border" >
-                                </div>                         
-                            </div>
+                        <td  style="width:110px;">
+                          <img src="<%= `/upload/${odr.productDetails.images[0]}` %>" width="100" height="100" class="rounded border" >
                         </td>
-                        <td>
-                             <div class="d-block">
-                                <p class="text-dark font-weight-bold"><%=odr.productDetails.product_name%></p>
-                                <p>₹<%=odr.product_list.price%></p>
-                             </div>
+                        <td  style="width:110px;">
+                            <p class="text-dark font-weight-bold"><%=odr.productDetails.product_name%></p>
+                        </td>  
+                        <td  style="width:110px;">
+                             MRP : <span>₹<%=odr.product.price%></span>
                         </td>
-                        <td>
-                            <div>
-                                <p><%=odr.product_list.quantity%></p>
-                            </div>
+                        <td style="width:110px;">
+                          Qty : <span><%=odr.product.quantity%></span>
                         </td>
-                        <td>
-                            <div>
-                                <p>₹<%=odr.product_list.total%></p>
-                            </div>
+                        <td  style="width:110px;">
+                           Total : <span>₹<%=odr.product.total%></span>
                         </td>
                     </tr>                                
-                    <tr>
-                        <td></td>
-                        <td></td>
-                        <td>Total</td>
-                        <td>
-                            <div>
-                                <p>₹<%=odr.product_list.total%></p>
-                            </div>
-                        </td>
-                    </tr>
-                    
+                                        
                 </tbody>
             
         </div>

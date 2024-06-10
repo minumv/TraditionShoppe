@@ -58,8 +58,7 @@
                 <div class="block-4 div-height text-center border">
                  
                   <figure class="block-4-image-1">
-                    <button id="wish-but" class="icon icon-heart" type="button" onclick="clickWishButton(event)">
-                    </button>
+                    <span id="wish-but" class="icon icon-heart" ></span>
                     <a href="/viewProduct/<%= pdt._id %>"><img src="../upload/<%= pdt.images[0]%>" alt="Image placeholder" class="img-fluid"></a>
                     <%if(pdt.totalrating > 0){%>
                       <span class="review_box"><p class="text-black"><%=pdt.totalrating%>&nbsp;<i class="fas fa-star" style="color:#00bfa5;"></i>&nbsp;|&nbsp;<%=pdt.numRatings%></p></span>
@@ -90,8 +89,8 @@
          
             <%})%>
         <%} else {%>
-          <div class="col-sm-6 col-lg-4 mb-4" >  
-            <div class="d-flex justify-content-center" > <h1>There is no such product in here!!</h1></div>
+          <div class="col-sm-12 col-lg-12 mb-4" >  
+            <div class="d-flex justify-content-center" style="width:800px;height:500px;position: absolute;top:40px;left:220px;"> <h1>There is no such product in here!!</h1></div>
           </div>
           <%}%>
 
@@ -523,9 +522,7 @@
                 if(minSelected !== "" && maxSelected !== "" ){
                     document.getElementById(`C${selectedMinPrice}`).checked =true
                 }
-               // if(colorSelected!=""){
-                    //document.getElementById(selectedColor).checked =true
-               // }
+              
                 if(sortSelected!=""){
                     document.getElementById(selectedSort).checked =true
                 }
@@ -547,25 +544,7 @@
                 }
         
             };
-  function changeUrl(e,queryString){
-    e.preventDefault()
-    var currentURL = window.location.href;
-        var baseURL = currentURL.split('/?')[0];
-        var currentParams = currentURL.split('/?')[1];
-
-        if (currentURL.endsWith('allproducts')) {
-            window.location.href = currentURL + queryString;
-        } else if(currentParams.startsWith('page')) {
-          queryString = queryString.startsWith('/?') ? queryString.split('/')[1]: queryString;
-            window.location.href = baseURL  + queryString;
-        } else if(!currentParams.startsWith('page') && currentParams.includes('&')) {
-          queryString = queryString.startsWith('/?') ? queryString.split('?')[1]: queryString;
-           window.location.href = currentURL.split('&')[0] + '&' + queryString;
-        } else if(!currentParams.startsWith('page')){
-          queryString = queryString.startsWith('/?') ? queryString.split('?')[1]: queryString;
-           window.location.href = currentURL + '&' + queryString;
-        }
-  }
+ 
 </script>
 
   <%- include('../layout/userFooter') %>
