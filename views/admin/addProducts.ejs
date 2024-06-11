@@ -338,15 +338,10 @@ textarea:not(:placeholder-shown) ~ .floating-label {
   form.addEventListener('submit',function(event){
     event.preventDefault() 
     let formData = new FormData(form); 
-    //get canvas of each images, croppers[] has the cropper instance for each images
+    
     croppers.forEach((cropper, index) => {
       console.log("getcanvas",cropper)
-      // if (!cropper || !cropper.originalDimensions) {
-      //       console.error(`Original dimensions not set for cropper ${index}`);
-      //       return;
-      //   }
-      // const { originalWidth, originalHeight } = cropper.originalDimensions;
-        
+     
         cropper.getCroppedCanvas({
           minWidth: 256,
           minHeight: 256,
