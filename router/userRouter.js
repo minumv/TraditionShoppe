@@ -1,7 +1,7 @@
 const express = require("express")
 const userRoute = express()
 const passport = require('passport')
-
+const passportFile =require('../passportFile')
 
 userRoute.use(passport.initialize())
 userRoute.use(passport.session())
