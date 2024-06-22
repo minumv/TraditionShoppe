@@ -266,10 +266,10 @@ textarea:not(:placeholder-shown) ~ .floating-label {
     console.log("files :",files);
     // Iterate through each file
    
-    for (let i = 0; i <= files.length; i++) {
+    for (let i = 0; i < files.length; i++) {
         const reader = new FileReader(); 
 
-        // Define a callback function to handle the FileReader's onload event
+       
         reader.onload = function(event) {
             const imgSrc = event.target.result; // Get the base64 data URL of the image
             const imgIndex = i + 1; // Index of the image (e.g., img1, img2, etc.)
@@ -300,35 +300,18 @@ textarea:not(:placeholder-shown) ~ .floating-label {
 
     const imageElement = document.getElementById(imageId);
 
-    // Ensure the image is loaded before getting dimensions
-  //  imageElement.onload = () => {
-    // Get original dimensions of the image
-    // const originalWidth = imageElement.naturalWidth;
-    // const originalHeight = imageElement.naturalHeight;
-
-    // console.log(`Original Dimensions for ${imageElement}:`, originalWidth, originalHeight);
-
     let cropper = new Cropper(imageElement, {        
         aspectRatio:1/1,
-        ready: function () {
-                // Save original dimensions in cropper instance
-                // cropper.originalDimensions = { originalWidth, originalHeight };
-                // console.log("dimensiion:",cropper.originalDimensions)
-                // console.log(`Cropper ready for ${imageId}:`, cropper);
-            }
+        // ready: function () {               
+        //     }
     });
     console.log(`cropper${imageId} :`,cropper);
 
-    // Save cropper instance
-    // croppers.push(cropper);
+   
     croppers[inputIndex - 1] = cropper;
     console.log('croppers :',inputIndex ,":",croppers)
   }
-  // if (imageElement.complete) {
-  //     console.log("image",imageElement)
-  //       imageElement.onload();        
-  //   }
-  // }
+ 
 
   
 
@@ -348,27 +331,26 @@ textarea:not(:placeholder-shown) ~ .floating-label {
           maxWidth: 4096,
           maxHeight: 4096,
       }).toBlob(function(blob){
-        //  console.log(`Cropped image`, blob);
+        console.log("index",index)
+         console.log(`Cropped image`, blob);
           formData.append('croppedImage',blob,`cropped_image_${Date.now()}.png`); 
-       //   bloabArray.push(blob)
-        if( index === 2)
+        // bloabArray.push(blob)
+        console.log(bloabArray)       
+         if(index === croppers.length - 1 ){
           appendCroppedImageToForm(formData)
-      })
+         }
+      })      
     });
   })
 
 
   function  appendCroppedImageToForm(formData){  
     
-   // let form = document.getElementById('profile_form');
     console.log("form: ",form)
-   // let formData = new FormData(form)
     for (var pair of formData.entries()) {
         console.log(pair[0] + ': ' + pair[1]);
         
-    }
-    //console.log("blob :",bloabArray)
-  //  formData.append('croppedImage',bloabArray,`cropped_image_${Date.now()}.png`); /*`cropped_image_${Date.now()}.png`*/
+    }  
     console.log("crr",formData.croppedImage)
     
     console.log("formdata: ",formData)
@@ -379,8 +361,6 @@ textarea:not(:placeholder-shown) ~ .floating-label {
       console.log(key + ':', formData.get(key));
     }
     console.log('Form data:', formData);
-    //console.log('Blob:', blob);
-
 
 $.ajax('/uploadPdtImage', {
   method: 'POST',

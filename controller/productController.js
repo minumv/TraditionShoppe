@@ -255,9 +255,10 @@ const submitProducts = async (req,res)=>{
             console.log('One or more documents not found in the database.');          
         }
         let imgArray = req.uploadedFiles
+        console.log(imgArray)
        // imgArray.pop()
        imgArray.splice(0,3)
-        //console.log(imgArray)
+        console.log(imgArray)
 
         const product = new Products({
 

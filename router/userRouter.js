@@ -51,7 +51,7 @@ userRoute.post("/forgotMail",userController.sendResetLink)
 
 /************user home navigation****************/
 
-userRoute.get("/",userAuthent.isAuthenticated,userController.loadIndex)
+userRoute.get("/",userController.loadIndex)
 userRoute.get("/index",userController.loadIndex)
 userRoute.get("/home",userAuthent.isAuthenticated,userController.loadHome)
 

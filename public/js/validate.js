@@ -41,7 +41,7 @@
 			nameError.innerHTML = 'Name is required'
 			return false
 		}
-		if(!name.match(/^[a-zA-Z0-9][a-zA-Z0-9\s]*$/)){
+		if(!name.match(/^[a-zA-Z0-9\s\-_!@#$%^&*(){}\[\].,;:'"<>\|+=?~\\\/]*$/)){
 			nameError.innerHTML = 'Name should be valid'
 			return false
 		}

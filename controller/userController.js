@@ -65,13 +65,16 @@ const loadLogin = async (req,res)=>{
 //loginto system 
 const verifyLogin = async(req,res)=>{
     try{
+        console.log("checklogin")
         const {email,password} = req.body
         const userData =await User.findOne({email:email})
         if(userData.status === 'Blocked'){
+            console.log("user blocked")
             req.flash("errorMessage","You are blocked by the admin!!!")
             res.redirect('/signin/userLogin')
         }
         if(!userData){
+            console.log("user not authenticated")
             req.flash("errorMessage","You are not authenticated to access this site!!")
             res.redirect('/signin/userLogin')
         }
@@ -79,9 +82,11 @@ const verifyLogin = async(req,res)=>{
         if(passwordMatch){
                 req.session.user = userData._id ;
                 req.session.blocked = false
+                console.log("successfully login")
                 req.flash("successMessage","You are successfully logged in.")
                 res.redirect('/home')
         } else {
+                console.log("invalid details")            
                 req.flash("errorMessage","Invalid Username and Password!!")
                 res.redirect('/signin/userLogin')
         }
@@ -610,23 +615,24 @@ const loadIndex = async (req,res)=>{
 //load homepage
 const loadHome = async (req,res)=>{
     try{
+        console.log("load home")
         let condition = {
             status:'new',
             isListing:true}
         const products = await content.getProducts(req,res,condition)
         const banner = await Banner.findOne().sort({ _id: -1 }).exec()
-        const pdtExpl = await Products.findOne({status: { $in: ['new', 'active'] },product_type:'decor'}).sort({_id: -1}).skip(2).exec()
-        const pdtToy = await Products.findOne({status: { $in: ['new', 'active'] },product_type:'toys'}).sort({_id: -1}).skip(1).exec()
-        const category = await Category.findOne({ name: 'apparel' }).exec();
-        const pdtApparel = await Products.findOne({status: { $in: ['new', 'active'] }}).populate('category').sort({_id: -1}).skip(1).exec()
-        const pdtGifts = await Products.findOne({status: { $in: ['new', 'active'] },product_type:'gift'}).sort({_id: -1}).skip(1).exec()
-        const pdtJewllry = await Products.findOne({status: { $in: ['new', 'active'] },product_type:'jewellery'}).sort({_id: -1}).skip(1).exec()
-        const pdtWest = await Products.findOne({status: { $in: ['new', 'active'] },product_type:'western'}).sort({_id: -1}).skip(1).exec()
-        const pdtFig = await Products.findOne({status: { $in: ['new', 'active'] },product_type:'figurine'}).sort({_id: -1}).skip(1).exec()
-            const loadPdt = {
-                pdtExpl, pdtToy, pdtApparel, pdtGifts, pdtJewllry, pdtWest, pdtFig
-            }
-        console.log("load",loadPdt)
+        // const pdtExpl = await Products.findOne({status: { $in: ['new', 'active'] },product_type:'decor'}).sort({_id: -1}).exec()
+        // const pdtToy = await Products.findOne({status: { $in: ['new', 'active'] },product_type:'toys'}).sort({_id: -1}).exec()
+        // const category = await Category.findOne({ name: 'apparel' }).exec();
+        // const pdtApparel = await Products.findOne({status: { $in: ['new', 'active'] }}).populate('category').sort({_id: -1}).exec()
+        // const pdtGifts = await Products.findOne({status: { $in: ['new', 'active'] },product_type:'gift'}).sort({_id: -1}).exec()
+        // const pdtJewllry = await Products.findOne({status: { $in: ['new', 'active'] },product_type:'jewellery'}).sort({_id: -1}).exec()
+        // const pdtWest = await Products.findOne({status: { $in: ['new', 'active'] },product_type:'western'}).sort({_id: -1}).exec()
+        // const pdtFig = await Products.findOne({status: { $in: ['new', 'active'] },product_type:'figurine'}).sort({_id: -1}).exec()
+        //     const loadPdt = {
+        //         pdtExpl, pdtToy, pdtApparel, pdtGifts, pdtJewllry, pdtWest, pdtFig
+        //     }
+        //console.log("load",loadPdt)
         await getQtyCount(req,res); 
         await getListCount(req,res);
    
@@ -637,7 +643,7 @@ const loadHome = async (req,res)=>{
             listCount:req.session.listCount,
             products,           
             banner,
-            loadPdt,       
+            //loadPdt,       
             errorMessage:req.flash('errorMessage'),
             successMessage:req.flash('successMessage')
         })
