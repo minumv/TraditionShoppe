@@ -26,7 +26,8 @@ app.use(session({
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(express.static('public')); // Static files
-app.use(express.static('upload'));
+// app.use(express.static('upload'));
+app.use('/upload', express.static(path.join(__dirname, 'upload')));
 app.use(morgan('dev')); // Logging
 app.use(nocache()); // No cache
 app.use(flash()); // Flash messages
